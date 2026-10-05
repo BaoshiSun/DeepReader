@@ -209,6 +209,7 @@ public static class NativeIntegration {
                 Click(panel,9111);
                 Check(!IsWindowVisible(GetDlgItem(panel,9139)) && IsWindowVisible(GetDlgItem(panel,9142)),"leaving initial setup shows the regular reading panes");
                 Check(Math.Abs(Height(panel,9101)-Height(panel,9102))<=2,"selected text and explanation initially share the available space equally");
+                Shot(GetDlgItem(panel,9142),Path.GetFullPath("artifacts/native-divider.png"));
                 Check(IsWindowVisible(GetDlgItem(panel,9147)) && IsWindowVisible(GetDlgItem(panel,9148)) &&
                     !IsWindowEnabled(GetDlgItem(panel,9148)) && Read(panel,9149).Contains("追问"),
                     "follow-up input and send button are integrated into the reading sidebar");
@@ -218,6 +219,7 @@ public static class NativeIntegration {
                 int duringDrag=Height(panel,9101);
                 SendMessage(splitter,0x200,new IntPtr(1),new IntPtr(10|(35<<16)));
                 Check(Height(panel,9101)>duringDrag,"divider retains mouse capture for a continuous drag");
+                Shot(splitter,Path.GetFullPath("artifacts/native-divider-active.png"));
                 SendMessage(splitter,0x202,IntPtr.Zero,IntPtr.Zero); Pump(100);
                 Check(Height(panel,9101)>beforeDrag,"dragging the divider resizes the selected text pane");
                 SendMessage(splitter,0x100,new IntPtr(0x24),IntPtr.Zero);

@@ -62,7 +62,7 @@ struct Panel {
     HWND hwnd = nullptr, floatingHost = nullptr, grip = nullptr;
     HFONT font = nullptr, titleFont = nullptr;
     bool open = true, ownedByWindow = false, extracting = false, layingOut = false;
-    bool showIntro = false, dragging = false, highlighted = false, savingAnnotations = false;
+    bool showIntro = false, dragging = false, splitterHover = false, highlighted = false, savingAnnotations = false;
     bool floating = false, resizingWidth = false;
     int dockRight = 0, dockLimit = 0, fontDpi = 0;
     PanelPlacement placement;
@@ -287,8 +287,14 @@ LRESULT CALLBACK SplitterProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
     switch(msg) {
         case WM_GETDLGCODE: return DLGC_WANTARROWS;
         case WM_SETCURSOR: SetCursor(LoadCursorW(nullptr,IDC_SIZENS)); return TRUE;
-        case WM_LBUTTONDOWN: SetFocus(hwnd); p->dragging=true; SetCapture(hwnd); return 0;
+        case WM_LBUTTONDOWN:
+            SetFocus(hwnd); p->dragging=true; SetCapture(hwnd); InvalidateRect(hwnd,nullptr,FALSE); return 0;
         case WM_MOUSEMOVE:
+            if (!p->splitterHover) {
+                p->splitterHover=true;
+                TRACKMOUSEEVENT track{sizeof(track),TME_LEAVE,hwnd,0}; TrackMouseEvent(&track);
+                InvalidateRect(hwnd,nullptr,FALSE);
+            }
             if (p->dragging) {
                 POINT pt{(short)LOWORD(lp),(short)HIWORD(lp)}; MapWindowPoints(hwnd,p->hwnd,&pt,1);
                 int midpoint=MulDiv(11,DpiGet(p->hwnd),96);
@@ -297,22 +303,35 @@ LRESULT CALLBACK SplitterProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
             }
             return 0;
         case WM_LBUTTONUP:
-            if (p->dragging) { p->dragging=false; ReleaseCapture(); SaveSplit(p); }
+            if (p->dragging) { p->dragging=false; ReleaseCapture(); SaveSplit(p); InvalidateRect(hwnd,nullptr,FALSE); }
             return 0;
         case WM_CAPTURECHANGED:
-            if (p->dragging) { p->dragging=false; SaveSplit(p); } return 0;
+            if (p->dragging) { p->dragging=false; SaveSplit(p); InvalidateRect(hwnd,nullptr,FALSE); } return 0;
+        case WM_MOUSELEAVE: p->splitterHover=false; InvalidateRect(hwnd,nullptr,FALSE); return 0;
         case WM_KEYDOWN:
             if (wp==VK_UP || wp==VK_DOWN || wp==VK_HOME) {
                 p->config.lookupSplit=wp==VK_HOME?50:std::max(20,std::min(80,p->config.lookupSplit+(wp==VK_UP?-5:5)));
                 Layout(p); SaveSplit(p); return 0;
             }
             break;
-        case WM_SETFOCUS: case WM_KILLFOCUS: InvalidateRect(hwnd,nullptr,TRUE); return 0;
+        case WM_SETFOCUS: case WM_KILLFOCUS: InvalidateRect(hwnd,nullptr,FALSE); return 0;
         case WM_PAINT: {
             PAINTSTRUCT ps; auto dc=BeginPaint(hwnd,&ps); RECT r; GetClientRect(hwnd,&r);
-            SetDCBrushColor(dc,GetFocus()==hwnd?RGB(197,233,212):RGB(232,238,235)); FillRect(dc,&r,(HBRUSH)GetStockObject(DC_BRUSH));
-            SetTextColor(dc,RGB(65,108,80)); SetBkMode(dc,TRANSPARENT); SelectObject(dc,p->font);
-            DrawTextW(dc,L(p,L"⋯ 拖动调整 ⋯",L"⋯ Drag to resize ⋯"),-1,&r,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+            // Keep the generous hit area while drawing only a quiet rule and grip.
+            int dpi=DpiGet(hwnd),centerX=(r.left+r.right)/2,centerY=(r.top+r.bottom)/2;
+            bool hot=p->splitterHover || p->dragging || GetFocus()==hwnd;
+            auto brush=(HBRUSH)GetStockObject(DC_BRUSH);
+            SetDCBrushColor(dc,RGB(255,255,255)); FillRect(dc,&r,brush);
+            int lineHeight=std::max(1,MulDiv(1,dpi,96)),gap=MulDiv(22,dpi,96);
+            RECT left{r.left,centerY-lineHeight/2,std::max(r.left,(LONG)(centerX-gap)),centerY+(lineHeight+1)/2};
+            RECT right{std::min(r.right,(LONG)(centerX+gap)),left.top,r.right,left.bottom};
+            SetDCBrushColor(dc,hot?RGB(211,222,215):RGB(231,235,233));
+            FillRect(dc,&left,brush); FillRect(dc,&right,brush);
+            int gripWidth=std::min((int)(r.right-r.left),MulDiv(28,dpi,96)),gripHeight=MulDiv(3,dpi,96);
+            SetDCBrushColor(dc,p->dragging?RGB(64,121,85):hot?RGB(111,149,125):RGB(186,198,190));
+            auto oldBrush=SelectObject(dc,brush),oldPen=SelectObject(dc,GetStockObject(NULL_PEN));
+            RoundRect(dc,centerX-gripWidth/2,centerY-gripHeight/2,centerX+(gripWidth+1)/2,centerY+(gripHeight+1)/2,gripHeight,gripHeight);
+            SelectObject(dc,oldPen); SelectObject(dc,oldBrush);
             EndPaint(hwnd,&ps); return 0;
         }
     }
@@ -804,6 +823,7 @@ void Labels(Panel* p) {
     Text(p,ShowGuide,L(p,L"查看使用引导",L"Show getting-started guide"));
     Text(p,SaveHighlights,L(p,L"保存批注",L"Save PDF"));
     Text(p,AnswerLabel,L(p,L"解释",L"Explanation"));
+    Text(p,LookupSplitter,L(p,L"调整选文与解释的比例",L"Resize selection and explanation panes"));
     FollowupUI(p);
     Text(p,Intro,L(p,
         L"欢迎使用 DeepReader\r\n\r\n1. 配置 API：申请并保存自己的密钥。\r\n\r\n2. 打开 PDF，选词后按 Ctrl + Alt + D。\r\n\r\n3. 用“历史”回顾，用“总结”整理阅读内容。\r\n\r\n默认使用 DeepSeek，按量计费。\r\n点击 English 可切换界面和回答语言。\r\n\r\n只有主动解释、追问或总结时，才会发送相关文字给所选服务。",
