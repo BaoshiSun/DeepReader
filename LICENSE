@@ -1,0 +1,16 @@
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+Copyright 2026 DeepReader contributors.
+
+The original code added by DeepReader and its legacy helper is licensed under the GNU Affero General Public License,
+version 3 or (at your option) any later version.
+
+The complete license is available in LICENSE-AGPL-3.0.txt distributed with this
+project and at https://www.gnu.org/licenses/agpl-3.0.txt.
+
+This software is provided without warranty. See the license for details.
+
+DeepReader is an independently modified version of SumatraPDF 3.6.1rel, not an
+official SumatraPDF release. Upstream code retains its own licenses, including
+GPLv3, BSD and MuPDF's AGPLv3. This notice does not relicense upstream code.
+See THIRD-PARTY-NOTICES.md and docs/MODIFICATIONS.md for attribution and changes.

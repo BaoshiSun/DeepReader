@@ -1,0 +1,17 @@
+name: Public source checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  source-safety:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check public source and packaging boundaries
+        run: |
+          python tools/public_release.py --check-tracked
+          python -m unittest discover -s tests -p test_release.py -v
+          python tools/public_release.py --source-zip

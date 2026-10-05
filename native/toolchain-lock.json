@@ -1,0 +1,425 @@
+{
+  "vs": [
+    {
+      "id": "Microsoft.Build.Dependencies",
+      "version": "17.14.36015.10",
+      "type": "Vsix",
+      "productArch": "neutral",
+      "payloads": [
+        {
+          "fileName": "payload.vsix",
+          "sha256": "02cf79e4335684c439d5cb5d587aec12bccb53037869c5aea93aca62a6f42a31",
+          "size": 2746375,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/58af20f6-56e8-48a0-86d3-115fb110097b/02cf79e4335684c439d5cb5d587aec12bccb53037869c5aea93aca62a6f42a31/payload.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 1251
+      },
+      "dependencies": {
+        "Microsoft.Build.FileTracker.Msi": "[17.0,18.0)"
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.ATL.Headers.base",
+      "version": "14.44.35208",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.ATL.Headers.base.vsix",
+          "sha256": "f8d375a254b6cfdbe0e7dc4fe7342d6212052068eb6394070dd932c815adb500",
+          "size": 579876,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/d2fa077f-a814-4fb2-b903-1fca7658d17e/f8d375a254b6cfdbe0e7dc4fe7342d6212052068eb6394070dd932c815adb500/Microsoft.VC.14.44.17.14.ATL.Headers.base.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 2895720
+      },
+      "dependencies": {
+        "Microsoft.VC.14.44.17.14.Servicing.ATL": "14.44.35208"
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.ATL.X64.base",
+      "version": "14.44.35208",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.ATL.X64.base.vsix",
+          "sha256": "6dd0b7f8079c654db2b8fdaebc74900e8418b5204914a77bde93a5b01ac0998c",
+          "size": 808455,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/d2fa077f-a814-4fb2-b903-1fca7658d17e/6dd0b7f8079c654db2b8fdaebc74900e8418b5204914a77bde93a5b01ac0998c/Microsoft.VC.14.44.17.14.ATL.X64.base.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 2747690
+      },
+      "dependencies": {
+        "Microsoft.VC.14.44.17.14.Servicing.ATL": "14.44.35208",
+        "Microsoft.VC.14.44.17.14.Props.ATLMFC": "14.44.35208"
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.CRT.Headers.base",
+      "version": "14.44.35220",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.CRT.Headers.base.vsix",
+          "sha256": "852382a9aa73502b7849c1bcadfb603ba7175c4e8b60e6aba03c7de711d4ece5",
+          "size": 2128977,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/c610cd8c-801b-44b8-a80a-82cc382aeb43/852382a9aa73502b7849c1bcadfb603ba7175c4e8b60e6aba03c7de711d4ece5/Microsoft.VC.14.44.17.14.CRT.Headers.base.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 14832781
+      },
+      "dependencies": {
+        "Microsoft.VC.14.44.17.14.Servicing.CrtHeaders": "14.44.35220"
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.CRT.Redist.X64",
+      "version": "14.44.35211",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.CRT.Redist.X64.vsix",
+          "sha256": "e4fa4a3f1b32b187222320b8c8419b79e5bb5f9d94cce88122b3163cbc210a2d",
+          "size": 1066,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/45d3b8dd-bced-4b37-9974-142f748d710c/e4fa4a3f1b32b187222320b8c8419b79e5bb5f9d94cce88122b3163cbc210a2d/Microsoft.VC.14.44.17.14.CRT.Redist.X64.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "dependencies": {
+        "Microsoft.VC.14.44.17.14.CRT.Redist.X64.base": "14.0"
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.CRT.Redist.X64.base",
+      "version": "14.44.35211",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.CRT.Redist.X64.base.vsix",
+          "sha256": "4aaf54db0bfc9435f7c3660e1a00237a4b556042bfeea64bde44c2e0194e6ee5",
+          "size": 3236248,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/45d3b8dd-bced-4b37-9974-142f748d710c/4aaf54db0bfc9435f7c3660e1a00237a4b556042bfeea64bde44c2e0194e6ee5/Microsoft.VC.14.44.17.14.CRT.Redist.X64.base.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 9912456
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.CRT.x64.Desktop.base",
+      "version": "14.44.35226",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.CRT.x64.Desktop.base.vsix",
+          "sha256": "f01f701a7bcd9587a340898c851424f6a52bb913a70c185ff0d5bf0288c5831a",
+          "size": 51521199,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/67cf767c-5e71-47c2-a54a-cd5631e28942/f01f701a7bcd9587a340898c851424f6a52bb913a70c185ff0d5bf0288c5831a/Microsoft.VC.14.44.17.14.CRT.x64.Desktop.base.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 214908508
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.CRT.x64.Store.base",
+      "version": "14.44.35226",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.CRT.x64.Store.base.vsix",
+          "sha256": "9135b03c0df53c7a0aa9bef7230a1c2ff4263a0ee7baa7e419d034f484f6bb56",
+          "size": 28032384,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/67cf767c-5e71-47c2-a54a-cd5631e28942/9135b03c0df53c7a0aa9bef7230a1c2ff4263a0ee7baa7e419d034f484f6bb56/Microsoft.VC.14.44.17.14.CRT.x64.Store.base.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 94234281
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.Tools.Core.Props",
+      "version": "14.44.35208",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.Tools.Core.Props.vsix",
+          "sha256": "44fb41ef08834d014f1f08ad09ee2c61404881d47a63a71591575e1befef19a9",
+          "size": 2340,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/d2fa077f-a814-4fb2-b903-1fca7658d17e/44fb41ef08834d014f1f08ad09ee2c61404881d47a63a71591575e1befef19a9/Microsoft.VC.14.44.17.14.Tools.Core.Props.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 434
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.Tools.Core.x86",
+      "version": "14.44.35208",
+      "type": "Vsix",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.Tools.Core.x86.vsix",
+          "sha256": "e30231b8843df0312fb9dff5b9ca7793acbce053562d9db6457494ed750f352b",
+          "size": 2868,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/d2fa077f-a814-4fb2-b903-1fca7658d17e/e30231b8843df0312fb9dff5b9ca7793acbce053562d9db6457494ed750f352b/Microsoft.VC.14.44.17.14.Tools.Core.x86.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 1309
+      },
+      "dependencies": {
+        "Microsoft.VC.14.44.17.14.Tools.Core.Props": "14.44.35208"
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.Tools.HostX64.TargetX64.base",
+      "version": "14.44.35229",
+      "type": "Vsix",
+      "chip": "x64",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.Tools.HostX64.TargetX64.base.vsix",
+          "sha256": "f4ad3cee4ef18e9f36382399261de27be6910ab3467178d7e687377ec841306d",
+          "size": 26662704,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/aa209763-134c-427b-9960-9ca54ccc1734/f4ad3cee4ef18e9f36382399261de27be6910ab3467178d7e687377ec841306d/Microsoft.VC.14.44.17.14.Tools.HostX64.TargetX64.base.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 62411581
+      },
+      "nonCriticalProcesses": [
+        "vctip",
+        "mspdbsrv"
+      ],
+      "dependencies": {
+        "Microsoft.VC.14.44.17.14.Tools.HostX64.TargetX64.Res.base": "14.44.35229",
+        "Microsoft.VC.14.44.17.14.Props.x64": "14.44.35229",
+        "Microsoft.VC.14.44.17.14.Servicing.Compilers": "14.44.35229"
+      }
+    },
+    {
+      "id": "Microsoft.VC.14.44.17.14.Tools.HostX64.TargetX64.Res.base",
+      "version": "14.44.35229",
+      "type": "Vsix",
+      "chip": "x64",
+      "language": "en-US",
+      "payloads": [
+        {
+          "fileName": "Microsoft.VC.14.44.17.14.Tools.HostX64.TargetX64.Res.base.enu.vsix",
+          "sha256": "603375e4d6d639bc6e0a7d0d657b17e0c3b72e52450f78eb41e987f40c3b5305",
+          "size": 225547,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/aa209763-134c-427b-9960-9ca54ccc1734/603375e4d6d639bc6e0a7d0d657b17e0c3b72e52450f78eb41e987f40c3b5305/Microsoft.VC.14.44.17.14.Tools.HostX64.TargetX64.Res.base.enu.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 918032
+      }
+    },
+    {
+      "id": "Microsoft.VisualStudio.VC.MSBuild.v170.Base",
+      "version": "17.14.36518.7",
+      "type": "Vsix",
+      "productArch": "neutral",
+      "payloads": [
+        {
+          "fileName": "payload.vsix",
+          "sha256": "1e6e4a79da18b5fa6170be38cc3495f17c1898a80bbd2db074136835cabe3394",
+          "size": 612761,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/c8fc9133-40be-4412-8403-7a2525e10208/1e6e4a79da18b5fa6170be38cc3495f17c1898a80bbd2db074136835cabe3394/payload.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {},
+      "dependencies": {
+        "Microsoft.VisualStudio.VC.MSBuild.v170.Base.Resources": "[17.0,18.0)"
+      }
+    },
+    {
+      "id": "Microsoft.VisualStudio.VC.MSBuild.v170.Base.Resources",
+      "version": "17.14.37502.0",
+      "type": "Vsix",
+      "language": "en-US",
+      "productArch": "neutral",
+      "payloads": [
+        {
+          "fileName": "payload.vsix",
+          "sha256": "c4a588ead42bdadc39b63dad39991febef6844ee76f22fd40a3a3513f19ea92f",
+          "size": 102361,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/a4042166-7ed1-461e-8a33-6ec856b4de62/c4a588ead42bdadc39b63dad39991febef6844ee76f22fd40a3a3513f19ea92f/payload.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {
+        "targetDrive": 122206
+      }
+    },
+    {
+      "id": "Microsoft.VisualStudio.VC.MSBuild.v170.X64",
+      "version": "17.14.36015.10",
+      "type": "Vsix",
+      "productArch": "neutral",
+      "payloads": [
+        {
+          "fileName": "payload.vsix",
+          "sha256": "ff449f187733d3334cd141988979f3e7c3a3cbaa504fead7b135c0460a032805",
+          "size": 5172,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/58af20f6-56e8-48a0-86d3-115fb110097b/ff449f187733d3334cd141988979f3e7c3a3cbaa504fead7b135c0460a032805/payload.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {},
+      "dependencies": {
+        "Microsoft.VisualStudio.VC.MSBuild.v170.Base": "[17.0,18.0)"
+      }
+    },
+    {
+      "id": "Microsoft.VisualStudio.VC.MSBuild.v170.X64.v143",
+      "version": "17.14.36015.10",
+      "type": "Vsix",
+      "productArch": "neutral",
+      "payloads": [
+        {
+          "fileName": "payload.vsix",
+          "sha256": "3b2d6b39798ac7219cfd6bf22e1ebac85cd7c2d41011d14b689108a66c03b136",
+          "size": 3087,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/58af20f6-56e8-48a0-86d3-115fb110097b/3b2d6b39798ac7219cfd6bf22e1ebac85cd7c2d41011d14b689108a66c03b136/payload.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {},
+      "dependencies": {
+        "Microsoft.VisualStudio.VC.MSBuild.v170.X64": "[17.0,18.0)"
+      }
+    },
+    {
+      "id": "Microsoft.VisualStudio.VC.MSBuild.v170.X86",
+      "version": "17.14.36015.10",
+      "type": "Vsix",
+      "productArch": "neutral",
+      "payloads": [
+        {
+          "fileName": "payload.vsix",
+          "sha256": "b761fb85b2b2d9b2271e01939ae26c4ee65d1c9b57c5d8ef7ed514886594a79e",
+          "size": 5019,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/58af20f6-56e8-48a0-86d3-115fb110097b/b761fb85b2b2d9b2271e01939ae26c4ee65d1c9b57c5d8ef7ed514886594a79e/payload.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {},
+      "dependencies": {
+        "Microsoft.VisualStudio.VC.MSBuild.v170.Base": "[17.0,18.0)"
+      }
+    },
+    {
+      "id": "Microsoft.VisualStudio.VC.MSBuild.v170.x86.v143",
+      "version": "17.14.36015.10",
+      "type": "Vsix",
+      "productArch": "neutral",
+      "payloads": [
+        {
+          "fileName": "payload.vsix",
+          "sha256": "87eda804f96d176429b9b21934c57def4c711240fe7c806eaa08942aa28f50d6",
+          "size": 3102,
+          "url": "https://download.visualstudio.microsoft.com/download/pr/58af20f6-56e8-48a0-86d3-115fb110097b/87eda804f96d176429b9b21934c57def4c711240fe7c806eaa08942aa28f50d6/payload.vsix",
+          "signer": {
+            "$ref": "1"
+          }
+        }
+      ],
+      "installSizes": {},
+      "dependencies": {
+        "Microsoft.VisualStudio.VC.MSBuild.v170.x86": "[17.0,18.0)"
+      }
+    }
+  ],
+  "nuget": {
+    "microsoft.bcl.asyncinterfaces.9.0.0.nupkg": "06c5cd3961207c5ab7633ed54ed2ba9bfa2fe3f7ab46ac81ce2796488a667355",
+    "microsoft.bcl.hashcode.1.1.1.nupkg": "80fe99844b238db9b0e9ae3beec9bb52e3af185153c5961f444da42b12bc8e77",
+    "microsoft.build.17.14.8.nupkg": "e0d50c2d827656cf2b4c1da1009b0147de6fe51ded11ec8f5994e2d9669c972a",
+    "microsoft.build.framework.17.14.8.nupkg": "54a584364c5a3f60350117701b36d33f0fb24f33f9589c1266d9aab3360b87bb",
+    "microsoft.build.runtime.17.14.8.nupkg": "70fefdd4a57d8efbfb39dbcac5c98fd48bcc2b350b13846c36046b9ad10c3479",
+    "microsoft.build.tasks.core.17.14.8.nupkg": "a0f7cd6de3e24ec79bf78314bf74feaf6d8b051311fc6f7f0bd56c2fdb790bc7",
+    "microsoft.build.utilities.core.17.14.8.nupkg": "c37b460ccd5f9e48d3ea54ad8ba3bcc1a465990e53c1a4a679d22b89729de8ef",
+    "microsoft.io.redist.6.1.0.nupkg": "74f2a8b9698622178a6b8314fe0a01a65c202c96d2d44876fa35d9435d3db1a9",
+    "microsoft.net.stringtools.17.14.8.nupkg": "fd4648d43d2e17db0790d7e0d3658b1ae264dcbb168c2b0f1e2cb7a105135355",
+    "microsoft.windows.sdk.cpp.10.0.26100.1.nupkg": "b4730a467a8f29145fc0136b2b3f626767e985f6aa6e32f1352953c38d6ff5d2",
+    "microsoft.windows.sdk.cpp.x64.10.0.26100.1.nupkg": "7670843ddee568ca1e89b0feb36046ede6a3df5dbf5fa0106ec2eee9e8224e38",
+    "system.buffers.4.5.1.nupkg": "c30b3dd2c7e2f4cee4b823d692fd42118309b42ab1f5007f923d329a5b0d6b12",
+    "system.buffers.4.6.0.nupkg": "736425805075e8895f066b3960bb1308543f41e2a84baa61d5af6675192afc97",
+    "system.collections.immutable.9.0.0.nupkg": "fbaab954c7a87396e6e1616ca15ea705703d755e696bf3b8c96fa039d8bcc9a7",
+    "system.configuration.configurationmanager.9.0.0.nupkg": "fa92e74c2d180cfe8a8f0e43541885ad5fd0df1e62b3ffba37abc0b63be15569",
+    "system.diagnostics.diagnosticsource.9.0.0.nupkg": "d55ccef62f14ab62a54f0d709c20ab11d0013d9b81d89043e6006c3131534af1",
+    "system.formats.nrbf.9.0.0.nupkg": "738a9fe82a1c414641d3248641df2cd793d763bc5fae342a3065f1930cad2b2c",
+    "system.io.pipelines.9.0.0.nupkg": "bdbd0dacf8df11aa3791f674b5abe9d89ff6f579ec4132605efdffa9a030c33d",
+    "system.memory.4.5.5.nupkg": "10f43da352a29fb2b3188e4edd4dcf5100194c8b526e4f61fe2e2b5623775a22",
+    "system.memory.4.6.0.nupkg": "3a10042b350ce9e11a1fdf4370668ccf6a452c6feafcde0a556aaa881614385a",
+    "system.numerics.vectors.4.5.0.nupkg": "a9d49320581fda1b4f4be6212c68c01a22cdf228026099c20a8eabefcf90f9cf",
+    "system.numerics.vectors.4.6.0.nupkg": "7ca4b7b964361e647af6f3610c7a8f2d834eb77aa98e25903976431ef444d475",
+    "system.reflection.metadata.9.0.0.nupkg": "6af1166dc0a1ed7829b127ac9d1dff4a0c568bfe82e4ec6347cf497ff49f4634",
+    "system.reflection.metadataloadcontext.9.0.0.nupkg": "be817c0ac93558b3e290c46b2a61b150eb4cf64e96e110762407f08ec685f28a",
+    "system.resources.extensions.9.0.0.nupkg": "cb680b10cb80cba41f132349c40042fdac8c5869f09695fbdf98ec5102e4b61a",
+    "system.runtime.compilerservices.unsafe.4.5.3.nupkg": "96764c52a44ee1161151e48ef07489f72047a851cb55b99e9f01d6908536d1a9",
+    "system.runtime.compilerservices.unsafe.6.0.0.nupkg": "6c41b53e70e9eee298cff3a02ce5acdd15b04125589be0273f0566026720a762",
+    "system.runtime.compilerservices.unsafe.6.1.0.nupkg": "372aaaa51707ba6cd2c69b2044382e0f9486c1d50d1c16e8d0e39dccb4c8cc25",
+    "system.security.principal.windows.5.0.0.nupkg": "081390c25f6f78592b28ada853c24514488a221fe9f9a24efaaf5373643ff3d6",
+    "system.text.encodings.web.9.0.0.nupkg": "586694925404272c28191da3b4212ce5bc5dbd8bb948769072177ab38444e71d",
+    "system.text.json.9.0.0.nupkg": "68ce43878a242e70eff78d339a8140cd19aa66b7bcdee401b46388989a6822a9",
+    "system.threading.tasks.dataflow.9.0.0.nupkg": "9d1cdc16f2c1a5c39fc8825d08266ae6f0ca64dd311d5b81f32097a0caf06490",
+    "system.threading.tasks.extensions.4.5.4.nupkg": "a304a963cc0796c5179f9c6b7d8022bbce3b2fa7c029eb6196f631f7b462d678",
+    "system.threading.tasks.extensions.4.6.0.nupkg": "3b0201d1da5c767c9fbd35148fa8107ca5b65c5da95ac421ca4c0cd473421ea6",
+    "system.valuetuple.4.5.0.nupkg": "9e21fa9767d4e76bc0cee065c1d40cc34384a114bfec4d70e6c981168a926802",
+    "webview2.nupkg": "632e2b03d5382689232b1d3a632fc8b8adf92d97b5a27e402f60f3df37c0a2f3"
+  }
+}
