@@ -6,6 +6,10 @@
 
 这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.0.0**；代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
 
+## AI 制作与维护声明
+
+DeepReader 的新增功能与项目文档主要由 AI 制作。项目日常开发和维护托管给 AI，管理者会不定期审查。本项目基于 SumatraPDF 等上游开源项目，上游作者的署名与许可证均予以保留。
+
 ## 功能
 
 - 在同一阅读器窗口中解释单词、短语或句子，按原生文字位置提取语境，不使用剪贴板取词。
@@ -80,6 +84,8 @@ python native/package-native.py
 默认测试不调用在线 API，也不需要真实密钥。GitHub Actions 检查公开源码与打包边界；完整 C++ 编译和窗口测试按上述命令在 Windows 执行。
 
 ## English
+
+DeepReader's added features and project documentation are primarily created by AI. Day-to-day development and maintenance are delegated to AI, with occasional review by the project maintainer. DeepReader builds on upstream open-source projects such as SumatraPDF, whose authorship and licenses are preserved.
 
 An independent Windows x64 build of SumatraPDF with a native, collapsible AI sidebar. Select text and press **Ctrl + Alt + D** for a concise contextual explanation. Supports Chinese / English, saved lookups, multiple providers, full-document summaries, and daily / weekly / monthly reviews based on saved records.
 
