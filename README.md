@@ -4,7 +4,7 @@
 
 项目地址：[BaoshiSun/DeepReader](https://github.com/BaoshiSun/DeepReader)。**1.0.0 是首个公开发行版本。**
 
-这是独立开源项目，不是 SumatraPDF 官方发布。当前源码版本 **1.1.0**，尚未发布到 GitHub Release；公开下载仍为 **1.0.0**。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
+这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.1.0**；[下载 Windows 便携版](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.1.0)。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
 
 ## AI 制作与维护声明
 
@@ -24,12 +24,14 @@ DeepReader 的新增功能与项目文档主要由 AI 制作。项目日常开�
 
 ## 快速开始
 
-1. 从 [v1.0.0 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.0.0)下载 `DeepReader-v1.0.0-win64.zip`，完整解压到可写文件夹。
+1. 从 [v1.1.0 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.1.0)下载 `DeepReader-v1.1.0-win64.zip`，完整解压到可写文件夹。
 2. 运行其中的 `DeepReader.exe`；右侧栏默认展开，简短引导仅在新配置首次启动时显示。之后可从“设置 → 查看使用引导”重新打开。
 3. 点击“配置 API”或“设置”，完成下方的 DeepSeek API 配置，再打开具有文字层的 PDF。
 4. 拖选文字，按 **Ctrl + Alt + D**。使用“English / 中文”切换语言，使用“收起”恢复阅读区域。
 
-从本源码构建的 **1.1.0** 还支持可调宽度与悬浮窗口；目前公开的 **1.0.0** 下载包不包含这两项新增功能。悬浮窗口随阅读器最小化、退出；点击浮窗的关闭按钮只收起侧栏，可从“查看 → AI 阅读侧栏”重新打开。
+**1.1.0 新增**侧栏宽度调整和悬浮窗口，并将选文与解释之间的拖动条改为细线和短手柄。悬浮窗口随阅读器最小化、退出；点击浮窗的关闭按钮只收起侧栏，可从“查看 → AI 阅读侧栏”重新打开。
+
+从 1.0.0 升级：关闭阅读器，将新版便携包完整解压到原文件夹并覆盖程序、说明和源码文件。已有 `AIReader.json`、`AIHistory/` 等个人文件请保留；如果提示覆盖 `SumatraPDF-settings.txt`，选择保留原文件，以保留阅读器偏好。也可先解压到新文件夹试用。
 
 运行原生阅读器不需要 Python、.NET 或外部悬浮助手。扫描 PDF 需要先 OCR；已经做过的高亮批注需要重新拖选文字。
 
@@ -92,7 +94,7 @@ DeepReader's added features and project documentation are primarily created by A
 
 An independent Windows x64 build of SumatraPDF with a native, collapsible AI sidebar. Select text and press **Ctrl + Alt + D** for a concise contextual explanation. Supports Chinese / English, saved lookups, multiple providers, full-document summaries, and daily / weekly / monthly reviews based on saved records.
 
-The 1.1.0 source adds a resizable sidebar and Float / Dock switching. Drag the sidebar's left edge to change its width, or move and resize its floating window using the title bar and borders. Current content and drafts survive switching; mode and sizes are saved. The floating window follows its reader when minimized or closed. Closing the floating window hides the panel; reopen it from View → AI reader sidebar. These additions are not yet included in the public 1.0.0 release.
+Version 1.1.0 adds a resizable sidebar and Float / Dock switching. Drag the sidebar's left edge to change its width, or move and resize its floating window using the title bar and borders. Current content and drafts survive switching; mode and sizes are saved. A thin divider and centered grip replace the colored instruction bar between the reading panes. The floating window follows its reader when minimized or closed. Closing the floating window hides the panel; reopen it from View → AI reader sidebar. [Download 1.1.0](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.1.0).
 
 After an explanation, use the follow-up field and Send or Ctrl + Enter to ask another question; Enter inserts a line break. Each question carries the selected passage, nearby context and the current conversation. Successful turns are appended to the original history record. Failed or canceled requests keep your question and prior answers. New selections and document changes reset the conversation.
 

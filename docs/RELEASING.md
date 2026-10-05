@@ -27,7 +27,7 @@ python native/package-native.py
 
 输出 `DeepReader-v1.1.0-win64.zip`。打包脚本只接受明确列出的文件，使用干净阅读器设置，包含完整对应上游源码及许可。它不会复制旧 API Key；即使本机交付目录已有用户配置，ZIP 也不会包含这些文件。
 
-1.1.0 当前为本地构建版本。正式发布时创建新的版本标签和 Release、上传该版本生成的 ZIP，并更新 README 下载入口；修改源码或本地打包不会自动替换 GitHub 上的 1.0.0 附件。
+发布新版本时，创建对应提交的版本标签和 Release，上传该版本生成的 ZIP 与 SHA-256 校验文件，并更新 README 下载入口。1.1.0 使用标签 `v1.1.0`；旧的 1.0.0 Release 保留。修改源码或本地打包不会自动更新 GitHub 上的附件。
 
 公开下载应使用 GitHub Release 附件，避免将约 84 MB 的二进制及上游源码归档放入 Git 仓库。软件版本号位于 `tools/public_release.py`；发布新版本时同时更新使用说明与本文档。
 
