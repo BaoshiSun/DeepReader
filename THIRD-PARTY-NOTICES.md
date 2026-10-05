@@ -1,6 +1,6 @@
 # 第三方组件与授权
 
-DeepReader 1.0.0 是基于 SumatraPDF 3.6.1rel 的独立修改版，修改日期 2026-10-05。原创增量及保留的旧版助手原创代码采用 AGPL-3.0-or-later，Copyright 2026 DeepReader contributors；完整许可见 LICENSE-AGPL-3.0.txt。上游代码保留各自许可证；本声明不重新许可上游代码。
+DeepReader 1.1.0 是基于 SumatraPDF 3.6.1rel 的独立修改版，修改日期 2026-10-06。原创增量及保留的旧版助手原创代码采用 AGPL-3.0-or-later，Copyright 2026 DeepReader contributors；完整许可见 LICENSE-AGPL-3.0.txt。上游代码保留各自许可证；本声明不重新许可上游代码。
 
 ## 当前原生阅读器
 

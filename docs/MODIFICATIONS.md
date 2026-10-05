@@ -1,10 +1,11 @@
 # DeepReader modifications
 
-Release: **DeepReader 1.0.0**, modified **2026-10-05**.
+Version: **DeepReader 1.1.0**, modified **2026-10-06**. First public release: 1.0.0 (2026-10-05).
 
 DeepReader is an independent modification of **SumatraPDF 3.6.1rel**. It is not an official SumatraPDF release and is not endorsed by the upstream project or model providers.
 
 - Adds a native right sidebar for concise contextual AI explanations, saved reading history, document summaries and daily / weekly / monthly reviews.
+- Version 1.1.0 adds a draggable sidebar width and an owned, movable, resizable floating window with Float / Dock switching. Reparents the same controls to retain selections, answers, drafts and active work; saves mode and independent docked/floating sizes in DPI-independent units. Closing the floating window hides the sidebar, while closing its reader destroys both. Existing profiles default to the original docked layout.
 - Adds a multiline follow-up field beneath the explanation, with Send / Stop and Ctrl + Enter. Carries the selected passage, source context and current conversation, saves successful turns in the original history record, and preserves drafts on failure. New selections and document changes reset the active conversation.
 - Supports Chinese / English UI and responses, with user-supplied provider keys. The default provider is the official DeepSeek API; no developer key is included.
 - Opens the sidebar automatically for each reader window, including an empty startup window. Shows a short guide only for a new profile's first launch; Settings can reopen it. Existing profiles skip the guide.

@@ -54,7 +54,7 @@ edit('src/HomePage.cpp', 'TempWStr title = ToWStrTemp(_TRA("About SumatraPDF"));
 edit('src/HomePage.cpp', 'static AboutLayoutInfoEl gAboutLayoutInfo[] = {',
      'static AboutLayoutInfoEl gAboutLayoutInfo[] = {\n'
      '    {"DeepReader", "Independent SumatraPDF 3.6.1 fork", nullptr},\n'
-     '    {"modified", "2026-10-05: AI sidebar, history, summaries", nullptr},\n'
+     '    {"modified", "2026-10-06: resizable and floating AI sidebar", nullptr},\n'
      '    {"copyright", "2006-2025 SumatraPDF authors", nullptr},\n'
      '    {"changes", "2026 DeepReader contributors", nullptr},\n'
      '    {"terms", "Redistribution permitted; NO WARRANTY", nullptr},\n'
@@ -101,7 +101,7 @@ edit('premake5.lua', '"unrar", ', '', changes['premake5.lua'].count('"unrar", ')
 for name, value in changes.items():
     target = SOURCE / name
     marker = '--' if name.endswith('.lua') else '//'
-    value = f'{marker} Modified for DeepReader {VERSION} on 2026-10-05; see source/docs/MODIFICATIONS.md.\n' + value
+    value = f'{marker} Modified for DeepReader {VERSION} on 2026-10-06; see source/docs/MODIFICATIONS.md.\n' + value
     data = value.encode('utf-8')
     if not target.exists() or target.read_bytes() != data:
         target.write_bytes(data)

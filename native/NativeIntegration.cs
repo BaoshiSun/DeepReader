@@ -20,6 +20,9 @@ public static class NativeIntegration {
     [DllImport("user32.dll", CharSet=CharSet.Unicode)] static extern IntPtr FindWindowEx(IntPtr parent, IntPtr after, string cls, string title);
     [DllImport("user32.dll")] static extern IntPtr GetDlgItem(IntPtr h, int id);
     [DllImport("user32.dll")] static extern IntPtr GetParent(IntPtr h);
+    [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr h, uint relation);
+    [DllImport("user32.dll")] static extern bool IsWindow(IntPtr h);
+    [DllImport("user32.dll")] static extern uint GetDpiForWindow(IntPtr h);
     [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
     [DllImport("user32.dll")] static extern bool ShowWindow(IntPtr h, int how);
     [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr a, int x, int y, int w, int z, uint flags);
@@ -185,7 +188,7 @@ public static class NativeIntegration {
                 Check(IsWindowVisible(panel),"sidebar is visible on startup without a command");
                 var version=FileVersionInfo.GetVersionInfo(args[0]);
                 Check(WindowText(frame).Contains("DeepReader") && Read(panel,9112)=="DeepReader" &&
-                    version.ProductName=="DeepReader" && version.ProductVersion=="1.0.0","window, sidebar and executable metadata identify DeepReader 1.0.0");
+                    version.ProductName=="DeepReader" && version.ProductVersion=="1.1.0","window, sidebar and executable metadata identify DeepReader 1.1.0");
                 Check(IsWindowVisible(GetDlgItem(panel,9139)) && Read(panel,9139).Contains("欢迎使用 DeepReader") &&
                     Read(panel,9139).Contains("Ctrl + Alt + D") && Read(panel,9139).Contains("按量计费"),"new reader shows concise Chinese onboarding and pricing context");
                 Check(File.ReadAllText(aiConfig).Contains("\"OnboardingSeen\":true"),"first-use guide is marked seen without requiring an API key");
@@ -221,6 +224,17 @@ public static class NativeIntegration {
                 Check(Math.Abs(Height(panel,9101)-Height(panel,9102))<=2,"Home on the divider restores the equal split");
                 for(int i=0;i<3;i++) SendMessage(splitter,0x100,new IntPtr(0x28),IntPtr.Zero);
                 Check(File.ReadAllText(aiConfig).Contains("\"LookupSplit\":65"),"resized pane proportion is persisted");
+                IntPtr grip=GetDlgItem(frame,9151);
+                Rect oldSidebar,newSidebar; GetWindowRect(panel,out oldSidebar);
+                Check(IsWindowVisible(grip) && Read(panel,9150)=="悬浮","docked sidebar exposes a resize grip and Float button");
+                SendMessage(grip,0x201,new IntPtr(1),new IntPtr(3 | (40<<16)));
+                SendMessage(grip,0x200,new IntPtr(1),new IntPtr(unchecked((ushort)-120) | (40<<16)));
+                SendMessage(grip,0x202,IntPtr.Zero,IntPtr.Zero); Pump(100);
+                GetWindowRect(panel,out newSidebar);
+                Check(newSidebar.right-newSidebar.left>oldSidebar.right-oldSidebar.left,"dragging the left boundary widens the sidebar");
+                SendMessage(grip,0x100,new IntPtr(0x24),IntPtr.Zero);
+                for(int i=0;i<4;i++) SendMessage(grip,0x100,new IntPtr(0x25),IntPtr.Zero);
+                Check(File.ReadAllText(aiConfig).Contains("\"PanelWidth\":500"),"sidebar width is saved independently of the selected/explanation split");
                 Click(panel,9107); Click(panel,9143);
                 Check(IsWindowVisible(GetDlgItem(panel,9139)),"guide can be reopened explicitly from settings");
                 Click(panel,9141);
@@ -248,6 +262,46 @@ public static class NativeIntegration {
                 Check(!IsWindowEnabled(GetDlgItem(panel,9148)),"follow-up cannot send without a successful initial explanation");
                 Click(panel,9107); Click(panel,9111);
                 Check(Read(panel,9147).Contains("请给一个例子"),"follow-up draft survives visiting settings");
+                string keepSelection=Read(panel,9101),keepContext=Read(panel,9104),keepDraft=Read(panel,9147);
+                Edit(panel,9102,"Offline answer retained across window modes");
+                var readingCanvas=FindWindowEx(frame,IntPtr.Zero,"SUMATRA_PDF_CANVAS",null);
+                Rect dockedCanvas,floatingCanvas; GetWindowRect(readingCanvas,out dockedCanvas);
+                Click(panel,9150);
+                IntPtr floating=Find(process.Id,"DeepReaderFloatingPanel");
+                Check(floating!=IntPtr.Zero && GetParent(panel)==floating && GetWindow(floating,4)==frame && Read(panel,9150)=="停靠",
+                    "Float reparents the same panel into a reader-owned window");
+                GetWindowRect(readingCanvas,out floatingCanvas);
+                Check(IsWindowVisible(floating) && !IsWindowVisible(grip) && floatingCanvas.right>dockedCanvas.right,
+                    "floating sidebar returns its docked space to the document");
+                Check(Read(panel,9101)==keepSelection && Read(panel,9104)==keepContext && Read(panel,9147)==keepDraft &&
+                    Read(panel,9102).Contains("Offline answer retained"),"floating preserves selected text, context, explanation and follow-up draft");
+                var workArea=Screen.FromHandle(floating).WorkingArea;
+                int floatX=workArea.Left+40,floatY=workArea.Top+40;
+                int floatWidth=Math.Min((int)(560*GetDpiForWindow(floating)/96),workArea.Width-80);
+                int floatHeight=Math.Min((int)(640*GetDpiForWindow(floating)/96),workArea.Height-80);
+                SetWindowPos(floating,IntPtr.Zero,floatX,floatY,floatWidth,floatHeight,0x14); Pump(100);
+                SendMessage(floating,0x232,IntPtr.Zero,IntPtr.Zero);
+                Rect floatBounds; GetWindowRect(floating,out floatBounds);
+                var floatConfig=new JavaScriptSerializer().Deserialize<Dictionary<string,object>>(File.ReadAllText(aiConfig));
+                int savedFloatWidth=Convert.ToInt32(floatConfig["PanelFloatingWidth"]),savedFloatHeight=Convert.ToInt32(floatConfig["PanelFloatingHeight"]);
+                Check(floatBounds.left==floatX && floatBounds.top==floatY && floatBounds.right-floatBounds.left==floatWidth &&
+                    Math.Abs(savedFloatWidth-floatWidth*96.0/GetDpiForWindow(floating))<=1 && Math.Abs(savedFloatHeight-floatHeight*96.0/GetDpiForWindow(floating))<=1,
+                    "floating window can move and resize, and persists dimensions independently of screen scaling");
+                Shot(floating,Path.GetFullPath("artifacts/native-floating-sidebar.png"));
+                PostMessage(GetDlgItem(panel,9147),0x100,new IntPtr(0x1B),IntPtr.Zero); Pump(150);
+                Check(!IsWindowVisible(floating) && IsWindow(floating) && Read(panel,9147)==keepDraft,"Escape in a floating edit hides the panel without destroying its content");
+                Command(frame,"[CmdDeepSeekPanel]");
+                Check(IsWindowVisible(floating),"the reader command reopens the same floating sidebar");
+                ShowWindow(frame,6); Pump(150);
+                Check(!IsWindowVisible(floating),"floating sidebar hides when its reader is minimized");
+                ShowWindow(frame,9); Pump(150);
+                Check(IsWindowVisible(floating),"floating sidebar returns when its reader is restored");
+                SendMessage(floating,0x10,IntPtr.Zero,IntPtr.Zero); Pump(100);
+                Check(!IsWindowVisible(floating) && !process.HasExited,"closing the floating sidebar keeps the reader alive");
+                Command(frame,"[CmdDeepSeekPanel]"); Click(panel,9150);
+                Check(GetParent(panel)==frame && !IsWindowVisible(floating) && Read(panel,9101)==keepSelection && Read(panel,9147)==keepDraft,
+                    "Dock returns the existing panel and draft to the reader");
+                Edit(panel,9102,"");
                 // The DDE Search command does not populate the toolbar's find
                 // box; use the reader's Find Next Selection command here.
                 Command(frame,"[CmdFindNextSel]");
@@ -281,12 +335,16 @@ public static class NativeIntegration {
                 Check(Read(panel,9109)=="openai/gpt-6.1-sol" && Read(panel,9123).Contains("Paid"),"mainstream model selection clearly labels paid access");
                 Edit(panel,9108,"synthetic-unsaved-key"); Click(panel,9117); Click(panel,9117);
                 Check(Read(panel,9109)=="openai/gpt-6.1-sol","language switch preserves the unsaved model input");
+                Click(panel,9150);
+                Check(Read(panel,9150)=="Dock" && Read(panel,9109)=="openai/gpt-6.1-sol","floating preferences preserve the unsaved model and translate Dock");
+                Click(panel,9150);
+                Check(Read(panel,9150)=="Float" && IsWindowVisible(GetDlgItem(panel,9108)),"docking keeps the active preferences view");
                 Choose(panel,9109,0); Click(panel,9110);
                 var savedConfig=new JavaScriptSerializer().Deserialize<Dictionary<string,object>>(File.ReadAllText(aiConfig));
                 var savedKeys=(Dictionary<string,object>)savedConfig["Keys"];
                 var bytes=System.Security.Cryptography.ProtectedData.Unprotect(Convert.FromBase64String((string)savedKeys["OpenRouter"]),
                     Encoding.UTF8.GetBytes("SumatraDeepSeek/1"),System.Security.Cryptography.DataProtectionScope.CurrentUser);
-                Check(Encoding.UTF8.GetString(bytes)=="synthetic-unsaved-key","language switch preserves the unsaved key, which is encrypted correctly on save");
+                Check(Encoding.UTF8.GetString(bytes)=="synthetic-unsaved-key","language and floating/docking switches preserve the unsaved key, which is encrypted correctly on save");
                 Array.Clear(bytes,0,bytes.Length);
                 // Restore the isolated offline profile to no credentials before testing missing-key behavior.
                 savedKeys["OpenRouter"]="";
@@ -335,6 +393,8 @@ public static class NativeIntegration {
                 Check(!IsWindowVisible(panel) && after.right>before.right,"collapsing sidebar returns space to the document");
                 Command(frame,"[CmdDeepSeekPanel]");
                 Click(panel,9120); Choose(panel,9131,0);
+                Click(panel,9150);
+                Check(IsWindowVisible(floating),"floating mode can be reused after history and summary workflows");
                 // CmdCloseCurrentDocument exits on the last document; CmdClose keeps Home open.
                 Command(frame,"[CmdClose]");
                 Check(!process.HasExited && Find(process.Id)==frame,"closing the last document keeps the Home window alive");
@@ -357,11 +417,20 @@ public static class NativeIntegration {
                         Check(second!=IntPtr.Zero,"reader can reopen with the saved profile");
                         ShowWindow(second,4);
                         SetWindowPos(second,IntPtr.Zero,20,20,1800,1250,0x14); Pump(400);
-                        var other=FindWindowEx(second,IntPtr.Zero,"SumatraDeepSeekPanel",null);
+                        var otherHost=Find(reopened.Id,"DeepReaderFloatingPanel");
+                        var other=FindWindowEx(otherHost,IntPtr.Zero,"SumatraDeepSeekPanel",null);
+                        Check(otherHost!=IntPtr.Zero && GetWindow(otherHost,4)==second && IsWindowVisible(otherHost),"restart restores the floating mode in a window owned by the new reader");
+                        Rect restoredBounds; GetWindowRect(otherHost,out restoredBounds);
+                        Check(Math.Abs((restoredBounds.right-restoredBounds.left)*96.0/GetDpiForWindow(otherHost)-savedFloatWidth)<=1 &&
+                            Math.Abs((restoredBounds.bottom-restoredBounds.top)*96.0/GetDpiForWindow(otherHost)-savedFloatHeight)<=1,
+                            "floating dimensions survive restarting the reader");
                         Check(IsWindowVisible(other) && !IsWindowVisible(GetDlgItem(other,9139)),"restart shows the sidebar without repeating onboarding");
                         Check(Read(other,9112)=="DeepReader" && Read(other,9118)=="Lookup","English preference survives restart");
                         int selectedHeight=Height(other,9101), answerHeight=Height(other,9102);
                         Check(Math.Abs(selectedHeight*100.0/(selectedHeight+answerHeight)-65)<1,"selected/explanation ratio survives restart");
+                        Click(other,9150); GetWindowRect(other,out restoredBounds);
+                        Check(GetParent(other)==second && Math.Abs((restoredBounds.right-restoredBounds.left)*96.0/GetDpiForWindow(second)-500)<=1,
+                            "docking after restart restores the independently saved sidebar width");
                         Shot(second,Path.GetFullPath("artifacts/deepreader-empty-start.png"));
                         Click(other,9119);
                         Check(Read(other,9127).Contains("银行"),"query history survives restart");
@@ -372,6 +441,9 @@ public static class NativeIntegration {
                         Click(other,9105); Click(other,9144); Pump(700);
                         Check(Read(other,9105)=="Highlight" && Read(other,9103).Contains("saved to the PDF"),"unhighlight can be saved back to the PDF");
                         File.Copy(pdf,Path.GetFullPath("artifacts/highlight-removed.pdf"),true);
+                        Click(other,9150);
+                        PostMessage(second,0x10,IntPtr.Zero,IntPtr.Zero);
+                        Check(reopened.WaitForExit(4000) && reopened.ExitCode==0 && !IsWindow(otherHost),"closing the reader with a floating panel exits cleanly without an orphan window");
                     } finally {
                         if(second!=IntPtr.Zero) PostMessage(second,0x10,IntPtr.Zero,IntPtr.Zero);
                         if(!reopened.WaitForExit(4000)) reopened.Kill();

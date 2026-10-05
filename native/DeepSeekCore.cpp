@@ -214,6 +214,17 @@ struct ConfigVisitor : json::ValueVisitor {
         if (!strcmp(path, "/LookupSplit") && type==json::Type::Number) {
             int n=atoi(value); if (n>=20 && n<=80) config.lookupSplit=n;
         }
+        if (!strcmp(path, "/PanelFloating") && type==json::Type::Bool) config.panel.floating=!strcmp(value,"true");
+        if (type==json::Type::Number) {
+            struct SizeField { const char* path; int* value; int low,high; };
+            SizeField fields[]={{"/PanelWidth",&config.panel.width,360,1200},
+                {"/PanelFloatingWidth",&config.panel.floatingWidth,360,1600},
+                {"/PanelFloatingHeight",&config.panel.floatingHeight,300,1600}};
+            for (auto field:fields) if (!strcmp(path,field.path)) {
+                char* end=nullptr; long n=strtol(value,&end,10);
+                if (end && !*end && n>=field.low && n<=field.high) *field.value=(int)n;
+            }
+        }
         if (type != json::Type::String) return true;
         if (!strcmp(path, "/Provider")) {
             config.provider = -1;
@@ -245,7 +256,11 @@ bool SaveConfig(const std::wstring& path, const Config& c) {
     std::string data = "{\"Schema\":3,\"Provider\":" + JsonString(ProviderName(c.provider)) +
         ",\"Language\":" + JsonString(c.english ? "en" : "zh") +
         ",\"OnboardingSeen\":" + (c.onboardingSeen ? "true" : "false") +
-        ",\"LookupSplit\":" + std::to_string(std::max(20,std::min(80,c.lookupSplit))) + ",\"Keys\":{";
+        ",\"LookupSplit\":" + std::to_string(std::max(20,std::min(80,c.lookupSplit))) +
+        ",\"PanelWidth\":" + std::to_string(std::max(360,std::min(1200,c.panel.width))) +
+        ",\"PanelFloating\":" + (c.panel.floating ? "true" : "false") +
+        ",\"PanelFloatingWidth\":" + std::to_string(std::max(360,std::min(1600,c.panel.floatingWidth))) +
+        ",\"PanelFloatingHeight\":" + std::to_string(std::max(300,std::min(1600,c.panel.floatingHeight))) + ",\"Keys\":{";
     for (int i=0; i<ProviderCount; ++i) {
         if (!ValidModel(c.models[i]) || c.keys[i].size() > 8192) return false;
         if (i) data += ',';

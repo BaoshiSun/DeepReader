@@ -1,10 +1,10 @@
 # DeepReader · AI 阅读器
 
-基于 **SumatraPDF 3.6.1rel** 的 Windows x64 原生定制版，在阅读器右侧加入可收起的 AI 侧栏。选中词句、按 **Ctrl + Alt + D**，即可结合附近上下文获得简短解释。
+基于 **SumatraPDF 3.6.1rel** 的 Windows x64 原生定制版，提供可调宽度、可收起或悬浮的 AI 侧栏。选中词句、按 **Ctrl + Alt + D**，即可结合附近上下文获得简短解释。
 
 项目地址：[BaoshiSun/DeepReader](https://github.com/BaoshiSun/DeepReader)。**1.0.0 是首个公开发行版本。**
 
-这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.0.0**；代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
+这是独立开源项目，不是 SumatraPDF 官方发布。当前源码版本 **1.1.0**，尚未发布到 GitHub Release；公开下载仍为 **1.0.0**。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
 
 ## AI 制作与维护声明
 
@@ -14,6 +14,7 @@ DeepReader 的新增功能与项目文档主要由 AI 制作。项目日常开�
 
 - 在同一阅读器窗口中解释单词、短语或句子，按原生文字位置提取语境，不使用剪贴板取词。
 - 中英文界面和 AI 回答切换。
+- 拖动侧栏左侧边界调整宽度；点击“悬浮”后可拖动标题栏移动、拖动边框缩放，再点击“停靠”回到阅读器。切换保留当前内容，宽度、悬浮状态和悬浮窗口大小自动记住。
 - 解释区下方支持连续追问：输入问题后点击“发送”或按 Ctrl + Enter，沿用当前选文、语境和对话，并保存到同一条历史。
 - 查询与总结成功后自动保存，可搜索、查看语境、导出和删除。
 - 默认直连 DeepSeek 官方 API；可选 OpenRouter 免费路由及 GPT、Claude、Gemini、Qwen、Kimi 等模型，也支持 Gemini 官方 API。
@@ -27,6 +28,8 @@ DeepReader 的新增功能与项目文档主要由 AI 制作。项目日常开�
 2. 运行其中的 `DeepReader.exe`；右侧栏默认展开，简短引导仅在新配置首次启动时显示。之后可从“设置 → 查看使用引导”重新打开。
 3. 点击“配置 API”或“设置”，完成下方的 DeepSeek API 配置，再打开具有文字层的 PDF。
 4. 拖选文字，按 **Ctrl + Alt + D**。使用“English / 中文”切换语言，使用“收起”恢复阅读区域。
+
+从本源码构建的 **1.1.0** 还支持可调宽度与悬浮窗口；目前公开的 **1.0.0** 下载包不包含这两项新增功能。悬浮窗口随阅读器最小化、退出；点击浮窗的关闭按钮只收起侧栏，可从“查看 → AI 阅读侧栏”重新打开。
 
 运行原生阅读器不需要 Python、.NET 或外部悬浮助手。扫描 PDF 需要先 OCR；已经做过的高亮批注需要重新拖选文字。
 
@@ -88,6 +91,8 @@ python native/package-native.py
 DeepReader's added features and project documentation are primarily created by AI. Day-to-day development and maintenance are delegated to AI, with occasional review by the project maintainer. DeepReader builds on upstream open-source projects such as SumatraPDF, whose authorship and licenses are preserved.
 
 An independent Windows x64 build of SumatraPDF with a native, collapsible AI sidebar. Select text and press **Ctrl + Alt + D** for a concise contextual explanation. Supports Chinese / English, saved lookups, multiple providers, full-document summaries, and daily / weekly / monthly reviews based on saved records.
+
+The 1.1.0 source adds a resizable sidebar and Float / Dock switching. Drag the sidebar's left edge to change its width, or move and resize its floating window using the title bar and borders. Current content and drafts survive switching; mode and sizes are saved. The floating window follows its reader when minimized or closed. Closing the floating window hides the panel; reopen it from View → AI reader sidebar. These additions are not yet included in the public 1.0.0 release.
 
 After an explanation, use the follow-up field and Send or Ctrl + Enter to ask another question; Enter inserts a line break. Each question carries the selected passage, nearby context and the current conversation. Successful turns are appended to the original history record. Failed or canceled requests keep your question and prior answers. New selections and document changes reset the conversation.
 

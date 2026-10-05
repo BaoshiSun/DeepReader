@@ -4,11 +4,16 @@
 #include <vector>
 namespace deepseek {
 enum Provider { OpenRouter, DeepSeek, Gemini, ProviderCount };
+struct PanelPlacement {
+    int width = 420, floatingWidth = 440, floatingHeight = 700; // logical pixels (96 DPI)
+    bool floating = false;
+};
 struct Config {
     int provider = DeepSeek;
     bool english = false;
     bool onboardingSeen = false;
     int lookupSplit = 50;
+    PanelPlacement panel;
     std::string keys[ProviderCount];
     std::string models[ProviderCount] = {"openrouter/free", "deepseek-flash", "gemini-3.8-flash"};
 };

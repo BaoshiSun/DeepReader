@@ -140,15 +140,24 @@ int wmain(int argc,WCHAR** argv) {
         std::wstring path=argv[1];
         Config original; original.provider=OpenRouter; original.keys[DeepSeek]=encrypted; original.keys[OpenRouter]=Protect("other-synthetic-key"); original.english=true;
         original.onboardingSeen=true; original.lookupSplit=65;
+        original.panel.width=520; original.panel.floating=true;
+        original.panel.floatingWidth=640; original.panel.floatingHeight=820;
         Check(SaveConfig(path,original),"multi-provider settings written atomically");
         Config restored;
         Check(ReadConfig(path,restored) && restored.english && restored.provider==OpenRouter &&
             Unprotect(restored.keys[DeepSeek])=="synthetic-test-key" && Unprotect(restored.keys[OpenRouter])=="other-synthetic-key","explicit OpenRouter choice, provider credentials and language survive reload without mixing");
         Check(restored.onboardingSeen && restored.lookupSplit==65,"guide completion and selected/explanation ratio survive restart");
+        Check(restored.panel.width==520 && restored.panel.floating && restored.panel.floatingWidth==640 && restored.panel.floatingHeight==820,
+            "sidebar width, floating mode and independent floating dimensions survive restart alongside encrypted provider settings");
         Check(!Config().onboardingSeen && Config().lookupSplit==50,"new profiles start with one-time guide and equal reading panes");
         WriteFileAtomic(path,"{\"Schema\":3,\"Provider\":\"DeepSeek\",\"LookupSplit\":999}");
         Check(ReadConfig(path,restored) && restored.onboardingSeen && restored.lookupSplit==50,
             "existing profiles skip onboarding and invalid split values use a safe default");
+        Check(!restored.panel.floating && restored.panel.width==420 && restored.panel.floatingWidth==440 && restored.panel.floatingHeight==700,
+            "older profiles retain the default docked sidebar without a settings migration");
+        WriteFileAtomic(path,"{\"Schema\":3,\"PanelWidth\":99999999999999999,\"PanelFloating\":\"true\",\"PanelFloatingWidth\":-2,\"PanelFloatingHeight\":700.5}");
+        Check(ReadConfig(path,restored) && !restored.panel.floating && restored.panel.width==420 && restored.panel.floatingWidth==440 && restored.panel.floatingHeight==700,
+            "malformed layout values cannot create an oversized or unusable floating window");
         original.onboardingSeen=false; SaveConfig(path,original);
         Check(ReadConfig(path,restored) && !restored.onboardingSeen,"explicit unfinished onboarding state round trips");
         WriteFileAtomic(path,"{\"ProtectedKey\":"+JsonString(encrypted)+",\"Model\":\"deepseek-flash\"}");

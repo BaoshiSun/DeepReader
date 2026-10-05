@@ -11,7 +11,7 @@ python -m unittest discover -s tests -p test_release.py -v
 python tools/public_release.py --source-zip
 ```
 
-输出 `DeepReader-v1.0.0-source.zip`，包含 `tools/public_release.py` 明确列出的源文件及 SHA-256 清单。源码包很小；上游完整源码和编译工具按锁定 URL 与 SHA-256 下载。
+输出 `DeepReader-v1.1.0-source.zip`，包含 `tools/public_release.py` 明确列出的源文件及 SHA-256 清单。源码包很小；上游完整源码和编译工具按锁定 URL 与 SHA-256 下载。
 
 若将已有开发目录发布到 GitHub，建议解压该源码包到一个新的空目录，再初始化 Git。这样旧版本交付文件、个人配置、阅读历史、日志、快捷方式和本地 Git 辅助快照都不会进入公开提交。使用 GitHub 的 noreply 邮箱提交，可避免将私人邮箱写进公开提交记录。
 
@@ -25,7 +25,9 @@ python -m pip install -r requirements-build.txt
 python native/package-native.py
 ```
 
-输出 `DeepReader-v1.0.0-win64.zip`。打包脚本只接受明确列出的文件，使用干净阅读器设置，包含完整对应上游源码及许可。它不会复制旧 API Key；即使本机交付目录已有用户配置，ZIP 也不会包含这些文件。
+输出 `DeepReader-v1.1.0-win64.zip`。打包脚本只接受明确列出的文件，使用干净阅读器设置，包含完整对应上游源码及许可。它不会复制旧 API Key；即使本机交付目录已有用户配置，ZIP 也不会包含这些文件。
+
+1.1.0 当前为本地构建版本。正式发布时创建新的版本标签和 Release、上传该版本生成的 ZIP，并更新 README 下载入口；修改源码或本地打包不会自动替换 GitHub 上的 1.0.0 附件。
 
 公开下载应使用 GitHub Release 附件，避免将约 84 MB 的二进制及上游源码归档放入 Git 仓库。软件版本号位于 `tools/public_release.py`；发布新版本时同时更新使用说明与本文档。
 

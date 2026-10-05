@@ -34,6 +34,8 @@ namespace {
 using namespace deepseek;
 constexpr const WCHAR* kPanelClass = L"SumatraDeepSeekPanel";
 constexpr const WCHAR* kPanelProperty = L"Sumatra.DeepSeek.Panel";
+constexpr const WCHAR* kFloatClass = L"DeepReaderFloatingPanel";
+constexpr const WCHAR* kGripClass = L"DeepReaderPanelGrip";
 constexpr UINT kRefreshDocument = WM_APP+17;
 enum { Close = 9100, Selected, Answer, Status, ContextView, ContextToggle, Retry, Settings,
        KeyInput, ModelInput, Save, Back, Title, SelectedLabel, KeyLabel, ModelLabel, Privacy,
@@ -41,7 +43,7 @@ enum { Close = 9100, Selected, Answer, Status, ContextView, ContextToggle, Retry
        HistorySearch, HistoryList, HistoryDetail, HistoryExport, HistoryDelete, HistoryInfo,
        SummaryScope, SummaryDate, SummaryLabel, SummaryInfo, SummaryPrepare, SummaryRun, SummaryAnswer,
        SummaryExport, Intro, Configure, DismissIntro, LookupSplitter, ShowGuide, SaveHighlights, SummaryStats, AnswerLabel,
-       FollowupInput, FollowupSend, FollowupLabel };
+       FollowupInput, FollowupSend, FollowupLabel, FloatToggle, DockGrip };
 enum class View { Lookup, History, Summary, Preferences };
 struct Job {
     std::atomic<bool> stopped{false}, done{false};
@@ -57,10 +59,13 @@ struct Job {
 };
 struct Panel {
     MainWindow* win = nullptr;
-    HWND hwnd = nullptr;
+    HWND hwnd = nullptr, floatingHost = nullptr, grip = nullptr;
     HFONT font = nullptr, titleFont = nullptr;
     bool open = true, ownedByWindow = false, extracting = false, layingOut = false;
     bool showIntro = false, dragging = false, highlighted = false, savingAnnotations = false;
+    bool floating = false, resizingWidth = false;
+    int dockRight = 0, dockLimit = 0, fontDpi = 0;
+    PanelPlacement placement;
     int scrollY = 0, splitTop = 0, splitAvailable = 1;
     View view = View::Lookup, returnView = View::Lookup;
     std::wstring selected, context, file, configPath, historyDir, extraction, summaryInfo;
@@ -101,6 +106,123 @@ void Layout(Panel* p);
 void Labels(Panel* p);
 void HistoryView(Panel* p);
 void SettingsView(Panel* p, bool show);
+void UpdateFonts(Panel* p) {
+    int dpi=DpiGet(p->hwnd);
+    if (p->font && p->fontDpi==dpi) return;
+    auto font=CreateFontW(-MulDiv(14,dpi,96),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
+    auto title=CreateFontW(-MulDiv(18,dpi,96),0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
+    if (!font || !title) { DeleteObject(font); DeleteObject(title); return; }
+    for (int id=Close;id<=FloatToggle;++id) SendMessageW(Item(p,id),WM_SETFONT,(WPARAM)(id==Title?title:font),TRUE);
+    DeleteObject(p->font); DeleteObject(p->titleFont);
+    p->font=font; p->titleFont=title; p->fontDpi=dpi;
+}
+void SavePlacement(Panel* p) {
+    p->config.panel=p->placement; p->editing.panel=p->placement;
+    if (!HasPermission(Perm::SavePreferences)) return;
+    Config latest=p->config; ReadConfig(p->configPath,latest); latest.panel=p->placement;
+    if (!SaveConfig(p->configPath,latest)) Text(p,Status,L(p,L"布局已调整，但无法保存设置。",L"Layout changed, but settings could not be saved."));
+}
+void RememberFloatingSize(Panel* p) {
+    if (!p->floatingHost || !p->floating || IsIconic(p->floatingHost)) return;
+    RECT bounds{}; GetWindowRect(p->floatingHost,&bounds); int dpi=DpiGet(p->floatingHost);
+    p->placement.floatingWidth=std::max(360,std::min(1600,MulDiv(bounds.right-bounds.left,96,dpi)));
+    p->placement.floatingHeight=std::max(300,std::min(1600,MulDiv(bounds.bottom-bounds.top,96,dpi)));
+}
+Rect FitFloatingBounds(Rect bounds,HWND owner=nullptr) {
+    auto work=GetWorkAreaRect(bounds,owner);
+    bounds.dx=std::min(bounds.dx,work.dx); bounds.dy=std::min(bounds.dy,work.dy);
+    return ShiftRectToWorkArea(bounds,owner,true);
+}
+LRESULT CALLBACK FloatingProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
+    auto p=(Panel*)GetWindowLongPtrW(hwnd,GWLP_USERDATA);
+    if (msg==WM_NCCREATE) { p=(Panel*)((CREATESTRUCTW*)lp)->lpCreateParams; SetWindowLongPtrW(hwnd,GWLP_USERDATA,(LONG_PTR)p); }
+    if (!p) return DefWindowProcW(hwnd,msg,wp,lp);
+    switch (msg) {
+        case WM_SIZE: {
+            if (wp!=SIZE_MINIMIZED && GetParent(p->hwnd)==hwnd) {
+                RECT r{}; GetClientRect(hwnd,&r); MoveWindow(p->hwnd,0,0,r.right,r.bottom,TRUE);
+            }
+            return 0;
+        }
+        case WM_GETMINMAXINFO: {
+            auto limits=(MINMAXINFO*)lp; int dpi=DpiGet(hwnd);
+            limits->ptMinTrackSize={MulDiv(360,dpi,96),MulDiv(300,dpi,96)};
+            limits->ptMaxTrackSize={MulDiv(1600,dpi,96),MulDiv(1600,dpi,96)}; return 0;
+        }
+        case WM_EXITSIZEMOVE: RememberFloatingSize(p); SavePlacement(p); return 0;
+        case WM_DPICHANGED: {
+            auto r=(RECT*)lp; SetWindowPos(hwnd,nullptr,r->left,r->top,r->right-r->left,r->bottom-r->top,SWP_NOZORDER|SWP_NOACTIVATE);
+            UpdateFonts(p); Layout(p); return 0;
+        }
+        case WM_SETFOCUS: SetFocus(Item(p,p->view==View::Preferences?KeyInput:Selected)); return 0;
+        case WM_CLOSE: RememberFloatingSize(p); SavePlacement(p); if (p->open) DeepSeekToggle(p->win); return 0;
+    }
+    return DefWindowProcW(hwnd,msg,wp,lp);
+}
+bool SetFloating(Panel* p,bool floating,bool save=true) {
+    if (floating==p->floating) return true;
+    HWND focused=GetFocus(); bool restoreFocus=focused==p->hwnd || IsChild(p->hwnd,focused);
+    if (floating && !p->floatingHost) {
+        RECT reader{}; GetWindowRect(p->win->hwndFrame,&reader); int dpi=DpiGet(p->win->hwndFrame);
+        Rect bounds(reader.right-MulDiv(p->placement.floatingWidth+24,dpi,96),reader.top+MulDiv(80,dpi,96),
+            MulDiv(p->placement.floatingWidth,dpi,96),MulDiv(p->placement.floatingHeight,dpi,96));
+        bounds=FitFloatingBounds(bounds,p->win->hwndFrame);
+        p->floatingHost=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_CONTROLPARENT,kFloatClass,L"DeepReader",
+            WS_CAPTION|WS_SYSMENU|WS_THICKFRAME|WS_CLIPCHILDREN,bounds.x,bounds.y,bounds.dx,bounds.dy,
+            p->win->hwndFrame,nullptr,GetModuleHandleW(nullptr),p);
+        if (!p->floatingHost) return false;
+    }
+    if (!floating) RememberFloatingSize(p);
+    HWND parent=floating?p->floatingHost:p->win->hwndFrame;
+    if (!SetParent(p->hwnd,parent)) return false;
+    p->floating=floating; p->placement.floating=floating;
+    if (floating) {
+        RECT r{}; GetWindowRect(parent,&r);
+        Rect bounds=FitFloatingBounds(Rect(r.left,r.top,r.right-r.left,r.bottom-r.top));
+        SetWindowPos(parent,nullptr,bounds.x,bounds.y,bounds.dx,bounds.dy,SWP_NOZORDER|SWP_NOACTIVATE);
+        GetClientRect(parent,&r); MoveWindow(p->hwnd,0,0,r.right,r.bottom,TRUE);
+    } else ShowWindow(p->floatingHost,SW_HIDE);
+    UpdateFonts(p); Labels(p); Layout(p);
+    if (save) { SavePlacement(p); SendMessageW(p->win->hwndFrame,WM_SIZE,0,0); }
+    if (restoreFocus) SetFocus(focused);
+    return true;
+}
+LRESULT CALLBACK GripProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
+    auto p=(Panel*)GetWindowLongPtrW(hwnd,GWLP_USERDATA);
+    if (msg==WM_NCCREATE) { p=(Panel*)((CREATESTRUCTW*)lp)->lpCreateParams; SetWindowLongPtrW(hwnd,GWLP_USERDATA,(LONG_PTR)p); }
+    if (!p) return DefWindowProcW(hwnd,msg,wp,lp);
+    switch (msg) {
+        case WM_GETDLGCODE: return DLGC_WANTARROWS;
+        case WM_SETCURSOR: SetCursor(LoadCursorW(nullptr,IDC_SIZEWE)); return TRUE;
+        case WM_LBUTTONDOWN: SetFocus(hwnd); p->resizingWidth=true; SetCapture(hwnd); return 0;
+        case WM_MOUSEMOVE:
+            if (p->resizingWidth) {
+                POINT pt{(short)LOWORD(lp),(short)HIWORD(lp)}; MapWindowPoints(hwnd,p->win->hwndFrame,&pt,1);
+                int dpi=DpiGet(p->win->hwndFrame);
+                int width=std::min(p->dockLimit,std::max(MulDiv(360,dpi,96),p->dockRight-(int)pt.x-MulDiv(3,dpi,96)));
+                p->placement.width=std::max(360,std::min(1200,MulDiv(width,96,dpi)));
+                SendMessageW(p->win->hwndFrame,WM_SIZE,0,0);
+            }
+            return 0;
+        case WM_LBUTTONUP:
+            if (p->resizingWidth) { p->resizingWidth=false; ReleaseCapture(); SavePlacement(p); } return 0;
+        case WM_CAPTURECHANGED:
+            if (p->resizingWidth) { p->resizingWidth=false; SavePlacement(p); } return 0;
+        case WM_KEYDOWN:
+            if (wp==VK_LEFT || wp==VK_RIGHT || wp==VK_HOME) {
+                p->placement.width=wp==VK_HOME?420:std::max(360,std::min(1200,p->placement.width+(wp==VK_LEFT?20:-20)));
+                SendMessageW(p->win->hwndFrame,WM_SIZE,0,0); SavePlacement(p); return 0;
+            }
+            break;
+        case WM_SETFOCUS: case WM_KILLFOCUS: InvalidateRect(hwnd,nullptr,TRUE); return 0;
+        case WM_PAINT: {
+            PAINTSTRUCT ps; auto dc=BeginPaint(hwnd,&ps); RECT r{}; GetClientRect(hwnd,&r);
+            SetDCBrushColor(dc,GetFocus()==hwnd?RGB(145,196,161):RGB(222,231,225)); FillRect(dc,&r,(HBRUSH)GetStockObject(DC_BRUSH));
+            EndPaint(hwnd,&ps); return 0;
+        }
+    }
+    return DefWindowProcW(hwnd,msg,wp,lp);
+}
 bool LookupTask(Task task) { return task==Task::Explain || task==Task::Followup; }
 void FollowupUI(Panel* p) {
     bool following=p->job && p->job->task==Task::Followup;
@@ -217,7 +339,7 @@ Result Call(const std::shared_ptr<Job>& job, Task task, const std::wstring& sour
         metadata=L"[Requested scope: "+Wide(job->record.kind)+L"; "+job->record.title+L"; "+job->record.context+L"]\n";
     std::string body=RequestBody(job->config,task,metadata+source,LookupTask(task)?job->selected:L"",job->record.answer,job->question);
     if (body.empty()) return failure;
-    Internet session(WinHttpOpen(L"DeepReader/1.0.0",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
+    Internet session(WinHttpOpen(L"DeepReader/1.1.0",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
         WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS,0));
     if (!session.handle || job->stopped) return failure;
     WinHttpSetTimeouts(session.handle,8000,10000,30000,60000);
@@ -328,6 +450,7 @@ void SettingsView(Panel* p,bool show) {
     if (show) {
         if (p->view!=View::Preferences) p->returnView=p->view;
         ReadConfig(p->configPath,p->config);
+        p->config.panel=p->placement;
         p->editing=p->config;
         p->view=View::Preferences;
         FillProvider(p);
@@ -608,9 +731,10 @@ void Layout(Panel* p) {
     auto place=[&](int id,int x,int y,int width,int height) {
         auto child=Item(p,id); ShowWindow(child,SW_SHOW); MoveWindow(child,x,y-p->scrollY,std::max(1,width),std::max(1,height),TRUE);
     };
-    for (int id=Close;id<=FollowupLabel;++id)
+    for (int id=Close;id<=FloatToggle;++id)
         if (id!=LookupSplitter || !p->dragging) ShowWindow(Item(p,id),SW_HIDE);
-    place(Title,m,d(13),inner-d(136),d(29));
+    place(Title,m,d(13),inner-d(204),d(29));
+    place(FloatToggle,w-m-d(198),d(10),d(62),d(30));
     place(Language,w-m-d(130),d(10),d(62),d(30));
     place(Close,w-m-d(62),d(10),d(62),d(30));
     int tabs[]={LookupTab,HistoryTab,SummaryTab,Settings};
@@ -670,6 +794,8 @@ void Layout(Panel* p) {
 }
 void Labels(Panel* p) {
     Text(p,Title,L"DeepReader");
+    Text(p,FloatToggle,p->floating?L(p,L"停靠",L"Dock"):L(p,L"悬浮",L"Float"));
+    if (p->floatingHost) SetWindowTextW(p->floatingHost,L(p,L"DeepReader · AI 阅读侧栏",L"DeepReader · AI sidebar"));
     Text(p,Language,L(p,L"English",L"中文")); Text(p,Close,L(p,L"收起",L"Hide"));
     Text(p,LookupTab,L(p,L"解释",L"Lookup")); Text(p,HistoryTab,L(p,L"历史",L"History"));
     Text(p,SummaryTab,L(p,L"总结",L"Summary")); Text(p,Settings,L(p,L"设置",L"Settings"));
@@ -738,7 +864,8 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
     if (!p) return DefWindowProcW(hwnd,msg,wp,lp);
     switch (msg) {
         case kRefreshDocument: RefreshStats(p); HighlightUI(p); return 0;
-        case WM_SIZE: Layout(p); return 0;
+        case WM_SIZE: UpdateFonts(p); Layout(p); return 0;
+        case WM_DPICHANGED_AFTERPARENT: UpdateFonts(p); Layout(p); return 0;
         case WM_VSCROLL: {
             SCROLLINFO s{sizeof(s),SIF_ALL}; GetScrollInfo(hwnd,SB_VERT,&s);
             int step=MulDiv(36,DpiGet(hwnd),96);
@@ -794,6 +921,9 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
             if (event!=BN_CLICKED) break;
             switch (id) {
                 case Close: DeepSeekToggle(p->win); return 0;
+                case FloatToggle:
+                    if (!SetFloating(p,!p->floating)) Text(p,Status,L(p,L"无法切换侧栏显示方式。",L"Could not change the sidebar mode."));
+                    return 0;
                 case LookupTab: p->view=View::Lookup; p->scrollY=0; HighlightUI(p); Layout(p); return 0;
                 case HistoryTab: HistoryView(p); return 0;
                 case SummaryTab: p->view=View::Summary; p->scrollY=0; RefreshStats(p); Layout(p); return 0;
@@ -834,6 +964,7 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
                     return 0;
                 case Save:
                     if (!HasPermission(Perm::SavePreferences) || !StageSettings(p)) return 0;
+                    p->editing.panel=p->placement;
                     if (!SaveConfig(p->configPath,p->editing)) { Text(p,Privacy,L(p,L"设置保存失败，请检查文件夹是否可写。",L"Could not save settings. Check folder access.")); return 0; }
                     Cancel(p); p->config=p->editing; Text(p,KeyInput,L"");
                     InvalidateSummary(p); SettingsView(p,false);
@@ -869,6 +1000,12 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
         }
         case WM_NCDESTROY:
             Cancel(p); RemovePropW(p->win->hwndFrame,kPanelProperty);
+            if (p->grip) { SetWindowLongPtrW(p->grip,GWLP_USERDATA,0); DestroyWindow(p->grip); }
+            if (p->floatingHost) {
+                // The owner can destroy us before DeleteMainWindow is reached.
+                // Detach callbacks before the Panel is freed; the empty host can close normally.
+                SetWindowLongPtrW(p->floatingHost,GWLP_USERDATA,0); PostMessageW(p->floatingHost,WM_CLOSE,0,0);
+            }
             DeleteObject(p->font); DeleteObject(p->titleFont); SetWindowLongPtrW(hwnd,GWLP_USERDATA,0);
             if (p->ownedByWindow) delete p;
             break;
@@ -883,11 +1020,16 @@ Panel* Ensure(MainWindow* win) {
     WNDCLASSW divider=cls; divider.lpfnWndProc=SplitterProc;
     divider.hCursor=LoadCursorW(nullptr,IDC_SIZENS); divider.lpszClassName=L"DeepReaderLookupSplitter";
     RegisterClassW(&divider);
+    WNDCLASSW floating=cls; floating.lpfnWndProc=FloatingProc; floating.lpszClassName=kFloatClass;
+    RegisterClassW(&floating);
+    WNDCLASSW grip=cls; grip.lpfnWndProc=GripProc; grip.hCursor=LoadCursorW(nullptr,IDC_SIZEWE); grip.lpszClassName=kGripClass;
+    RegisterClassW(&grip);
     p=new Panel(); p->win=win; p->configPath=Wide(GetPathInAppDataDirTemp("AIReader.json"));
     p->historyDir=Wide(GetPathInAppDataDirTemp("AIHistory"));
     auto legacyPath=Wide(GetPathInAppDataDirTemp("DeepSeek.json"));
     bool loaded=ReadConfig(p->configPath,p->config);
     if (!loaded) loaded=ReadConfig(legacyPath,p->config);
+    p->placement=p->config.panel;
     bool hasProfile=GetFileAttributesW(p->configPath.c_str())!=INVALID_FILE_ATTRIBUTES ||
         GetFileAttributesW(legacyPath.c_str())!=INVALID_FILE_ATTRIBUTES;
     // A broken existing profile must not be overwritten just to record onboarding.
@@ -896,15 +1038,15 @@ Panel* Ensure(MainWindow* win) {
     HWND hwnd=CreateWindowExW(WS_EX_CONTROLPARENT,kPanelClass,L"DeepReader",WS_CHILD|WS_CLIPCHILDREN,0,0,100,100,win->hwndFrame,nullptr,cls.hInstance,p);
     if (!hwnd) { delete p; return nullptr; }
     p->ownedByWindow=true; SetPropW(win->hwndFrame,kPanelProperty,p);
-    int dpi=DpiGet(win->hwndFrame);
-    p->font=CreateFontW(-MulDiv(14,dpi,96),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
-    p->titleFont=CreateFontW(-MulDiv(18,dpi,96),0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
+    UpdateFonts(p);
+    p->grip=CreateWindowExW(0,kGripClass,L"Adjust AI sidebar width",WS_CHILD|WS_TABSTOP,0,0,1,1,win->hwndFrame,
+        (HMENU)(INT_PTR)DockGrip,cls.hInstance,p);
     auto make=[&](int id,const WCHAR* type,DWORD style=0) {
         HWND control=CreateWindowExW(0,type,L"",WS_CHILD|style,0,0,1,1,hwnd,(HMENU)(INT_PTR)id,cls.hInstance,nullptr);
         SendMessageW(control,WM_SETFONT,(WPARAM)(id==Title?p->titleFont:p->font),TRUE); return control;
     };
     for (int id:{Title,SelectedLabel,Status,KeyLabel,ModelLabel,Privacy,ProviderLabel,ModelHint,HistoryInfo,SummaryLabel,SummaryInfo,AnswerLabel,FollowupLabel}) make(id,L"STATIC");
-    for (int id:{Close,Language,ContextToggle,Retry,Save,Back,KeyLink,HistoryExport,HistoryDelete,SummaryPrepare,SummaryRun,SummaryExport,Configure,DismissIntro,ShowGuide,SaveHighlights,FollowupSend}) make(id,L"BUTTON",WS_TABSTOP);
+    for (int id:{Close,Language,ContextToggle,Retry,Save,Back,KeyLink,HistoryExport,HistoryDelete,SummaryPrepare,SummaryRun,SummaryExport,Configure,DismissIntro,ShowGuide,SaveHighlights,FollowupSend,FloatToggle}) make(id,L"BUTTON",WS_TABSTOP);
     for (int id:{LookupTab,HistoryTab,SummaryTab,Settings}) make(id,L"BUTTON",WS_TABSTOP|BS_AUTOCHECKBOX|BS_PUSHLIKE);
     DWORD readOnly=ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|WS_VSCROLL|WS_TABSTOP;
     for (int id:{Selected,Answer,ContextView,HistoryDetail,SummaryAnswer,Intro,SummaryStats}) { make(id,L"EDIT",readOnly); SendMessageW(Item(p,id),EM_SETLIMITTEXT,100000,0); }
@@ -937,11 +1079,19 @@ Panel* Ensure(MainWindow* win) {
 void DeepSeekInitialize(MainWindow* win) { Ensure(win); }
 void DeepSeekLayout(MainWindow* win,Rect& available) {
     Panel* p=Get(win); if (!p) return;
-    bool visible=p->open && !win->presentation;
+    bool visible=p->open && !win->presentation && !IsIconic(win->hwndFrame);
+    if (visible && p->placement.floating && !p->floating && !SetFloating(p,true,false)) p->placement.floating=false;
+    ShowWindow(p->grip,visible && !p->floating?SW_SHOWNA:SW_HIDE);
+    if (p->floatingHost) ShowWindow(p->floatingHost,visible && p->floating?SW_SHOWNOACTIVATE:SW_HIDE);
     ShowWindow(p->hwnd,visible?SW_SHOWNA:SW_HIDE); if (!visible) return;
-    int width=std::min(MulDiv(420,DpiGet(win->hwndFrame),96),available.dx*3/5);
-    MoveWindow(p->hwnd,available.x+available.dx-width,available.y,width,available.dy,TRUE);
-    available.dx-=width;
+    if (p->floating) return;
+    int dpi=DpiGet(win->hwndFrame),gripWidth=std::min(MulDiv(6,dpi,96),std::max(0,available.dx));
+    p->dockRight=available.x+available.dx;
+    p->dockLimit=std::max(0,available.dx*3/5-gripWidth);
+    int width=std::min(MulDiv(p->placement.width,dpi,96),p->dockLimit);
+    MoveWindow(p->grip,p->dockRight-width-gripWidth,available.y,gripWidth,available.dy,TRUE);
+    MoveWindow(p->hwnd,p->dockRight-width,available.y,width,available.dy,TRUE);
+    available.dx-=width+gripWidth;
 }
 void DeepSeekToggle(MainWindow* win) {
     Panel* p=Get(win);
@@ -992,12 +1142,26 @@ void DeepSeekReset(MainWindow* win) {
     // Upstream calls Reset before it replaces/closes the current tab's engine.
     PostMessageW(p->hwnd,kRefreshDocument,0,0);
 }
-void DeepSeekDestroy(MainWindow* win) { Panel* p=Get(win); if (p) DestroyWindow(p->hwnd); }
+void DeepSeekDestroy(MainWindow* win) {
+    Panel* p=Get(win); if (!p) return;
+    HWND host=p->floatingHost; p->floatingHost=nullptr;
+    if (host) SetWindowLongPtrW(host,GWLP_USERDATA,0);
+    DestroyWindow(p->hwnd);
+    if (host) DestroyWindow(host);
+}
 bool DeepSeekPreTranslate(MSG& msg) {
-    MainWindow* win=FindMainWindowByHwnd(msg.hwnd); if (!win) return false;
-    Panel* p=Get(win); if (!p || !p->open || !IsChild(p->hwnd,msg.hwnd)) return false;
+    Panel* p=nullptr;
+    for (MainWindow* candidate:gWindows) {
+        auto panel=Get(candidate);
+        if (panel && panel->open && (msg.hwnd==panel->hwnd || msg.hwnd==panel->floatingHost || msg.hwnd==panel->grip || IsChild(panel->hwnd,msg.hwnd))) { p=panel; break; }
+    }
+    if (!p) return false;
+    MainWindow* win=p->win;
     if (msg.message==WM_KEYDOWN) {
         if (msg.wParam==VK_ESCAPE) { DeepSeekToggle(win); return true; }
+        if (msg.hwnd==p->grip && (msg.wParam==VK_LEFT || msg.wParam==VK_RIGHT || msg.wParam==VK_HOME)) {
+            SendMessageW(p->grip,msg.message,msg.wParam,msg.lParam); return true;
+        }
         bool ctrl=(GetKeyState(VK_CONTROL)&0x8000)!=0,alt=(GetKeyState(VK_MENU)&0x8000)!=0;
         if (ctrl && !alt && msg.wParam==VK_RETURN && msg.hwnd==Item(p,FollowupInput)) { StartFollowup(p); return true; }
         if (ctrl && alt && msg.wParam=='D') { DeepSeekExplain(win); return true; }
