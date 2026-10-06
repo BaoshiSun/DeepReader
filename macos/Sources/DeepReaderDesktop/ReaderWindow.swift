@@ -196,6 +196,10 @@ import DeepReaderCore
         closingApproved = true; model.cancel(); panel?.orderOut(nil)
     }
     public func canTerminate() -> Bool { closingApproved || mayDiscard() }
+    public func layoutState() -> String {
+        let pdf = model.pdf.view
+        return "PDF frame=\(pdf.frame), bounds=\(pdf.bounds), hidden=\(pdf.isHidden), window=\(String(describing: pdf.window?.windowNumber)), scale=\(pdf.scaleFactor), documentFrame=\(String(describing: pdf.documentView?.frame)), visible=\(String(describing: pdf.documentView?.visibleRect)), destination=\(String(describing: pdf.currentDestination?.point)), split=\(split.splitView.frame), items=\(split.splitViewItems.count)"
+    }
     public func snapshot(to url: URL) throws {
         guard let target = window else { throw ReaderError("无法截取窗口。", "Could not capture the window.") }
         // CI only: capture this application's exact window, including PDFKit's tiled rendering.
