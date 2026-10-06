@@ -37,10 +37,10 @@ import DeepReaderCore
                         try controller.snapshot(to: folder.appendingPathComponent("macos-window.png"))
                         controller.setFloating(true)
                         try await Task.sleep(nanoseconds: 300000000)
-                        try controller.snapshot(to: folder.appendingPathComponent("macos-floating.png"), floating: true)
+                        try controller.snapshot(to: folder.appendingPathComponent("macos-floating.png"))
                         model.language(); model.tab = 4
                         try await Task.sleep(nanoseconds: 300000000)
-                        try controller.snapshot(to: folder.appendingPathComponent("macos-settings-en.png"), floating: true)
+                        try controller.snapshot(to: folder.appendingPathComponent("macos-settings-en.png"))
                         controller.setFloating(false); model.tab = 0
                         if let window = controller.window {
                             window.setFrame(NSRect(x: window.frame.minX, y: window.frame.minY, width: 850, height: 640), display: true)
