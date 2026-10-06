@@ -1,0 +1,46 @@
+name: macOS build and tests
+on:
+  push:
+    branches: ['codex/macos-native']
+  pull_request:
+    paths: ['macos/**', '.github/workflows/macos-build.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check public sources
+        run: python3 tools/public_release.py --check-tracked
+      - name: Offline unit and PDF integration tests
+        working-directory: macos
+        run: swift test
+      - name: Build universal app and run packaged smoke test
+        if: matrix.os == 'macos-15'
+        run: bash macos/build.sh
+      - name: Keep universal installation packages
+        if: matrix.os == 'macos-15'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeepReader-macOS-universal
+          path: |
+            macos/dist/*.zip
+            macos/dist/*.dmg
+            macos/dist/SHA256SUMS.txt
+          if-no-files-found: error
+      - name: Keep offline smoke evidence
+        if: always() && matrix.os == 'macos-15'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-smoke-evidence
+          path: |
+            macos/dist/smoke/*.png
+            macos/dist/smoke/smoke-result.txt
+          if-no-files-found: ignore

@@ -13,6 +13,24 @@ PRODUCT = "DeepReader"
 PUBLIC_PATHS = tuple("""
 .gitignore
 .github/workflows/release-checks.yml
+.github/workflows/macos-build.yml
+macos/Package.swift
+macos/Info.plist
+macos/build.sh
+macos/README.md
+macos/Sources/DeepReaderCore/Models.swift
+macos/Sources/DeepReaderCore/LibraryStore.swift
+macos/Sources/DeepReaderCore/Credentials.swift
+macos/Sources/DeepReaderCore/AIClient.swift
+macos/Sources/DeepReaderDesktop/PDFReader.swift
+macos/Sources/DeepReaderDesktop/ReaderModel.swift
+macos/Sources/DeepReaderDesktop/Sidebar.swift
+macos/Sources/DeepReaderDesktop/ReaderWindow.swift
+macos/Sources/DeepReaderDesktop/Application.swift
+macos/Sources/DeepReaderDesktop/SmokeTest.swift
+macos/Sources/DeepReader/DeepReader.swift
+macos/Tests/DeepReaderTests/CoreTests.swift
+macos/Tests/DeepReaderTests/PDFTests.swift
 README.md
 LICENSE
 LICENSE-AGPL-3.0.txt

@@ -29,3 +29,10 @@ BookLibrary/
 *.key
 SumatraPDF-settings.txt
 *-source.zip
+
+# macOS generated builds and local settings
+.DS_Store
+.build/
+.swiftpm/
+*.dmg
+/macos/dist/

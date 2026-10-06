@@ -2,6 +2,8 @@
 
 Version: **DeepReader 1.2.0**, modified **2026-10-06**. First public release: 1.0.0 (2026-10-05).
 
+macOS preview, **2026-10-06**: adds a separate native Swift/PDFKit application in `macos/`, targeting macOS 13+ on arm64 and x86_64. Implements contextual selection, follow-ups, provider-specific Keychain credentials, bilingual UI, resizable/floating sidebar, saved PDF highlights, history, document/period summaries, ratings, reading status, archive copies and book lists. Includes offline tests and a universal build workflow. It uses Apple system PDF frameworks instead of the Windows SumatraPDF engine. The preview is ad-hoc signed, not Developer ID signed or notarized; its complete corresponding source and licenses are embedded in the app.
+
 DeepReader is an independent modification of **SumatraPDF 3.6.1rel**. It is not an official SumatraPDF release and is not endorsed by the upstream project or model providers.
 
 - Adds a native right sidebar for concise contextual AI explanations, saved reading history, document summaries and daily / weekly / monthly reviews.

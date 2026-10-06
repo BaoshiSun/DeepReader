@@ -3,6 +3,7 @@
 发布包不附带 API Key。新配置默认 DeepSeek 官方 API，使用者需要自己的 DeepSeek Key 与 API 余额或赠送额度，按量计费。可选免费模型同样需要账号，额度以服务商为准。
 
 - 原生阅读器用 Windows DPAPI 加密保存各服务的密钥，文件为 `AIReader.json`。旧版配置还可能是 `DeepSeek.json` 或 `config.json`。密文也不应提交到 GitHub。
+- Mac 版将每个服务的 Key 存入 macOS 钥匙串（service: `org.deepreader.macos.providers`），不写入设置文件。普通设置和阅读资料位于 `~/Library/Application Support/DeepReader/`。可在设置中移除此服务的密钥；这不会撤销服务商后台的 Key。Mac 首个测试版尚未进行 Developer ID 签名和 Apple 公证。
 - `AIHistory/` 包含原文片段、AI 回答、日期和本地文档路径，以明文保存在电脑上。备份时按个人阅读资料对待。
 - `BookLibrary/` 包含书名、评分、阅读状态、完成日期及原文件和归档路径，同样属于个人明文资料。归档会将 PDF 复制到用户指定目录；评分、书单和归档操作不发送 AI 请求。不要将书单或归档 PDF 提交到源码仓库，公开打包明确排除 `BookLibrary/`。
 - `SumatraPDF-settings.txt` 可能包含近期打开的文件。不要直接上传整个运行目录；发布脚本会用干净的默认设置替代它。

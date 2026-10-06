@@ -1,6 +1,10 @@
 # 第三方组件与授权
 
-DeepReader 1.1.0 是基于 SumatraPDF 3.6.1rel 的独立修改版，修改日期 2026-10-06。原创增量及保留的旧版助手原创代码采用 AGPL-3.0-or-later，Copyright 2026 DeepReader contributors；完整许可见 LICENSE-AGPL-3.0.txt。上游代码保留各自许可证；本声明不重新许可上游代码。
+DeepReader Windows 1.2.0 是基于 SumatraPDF 3.6.1rel 的独立修改版，修改日期 2026-10-06。原创增量及保留的旧版助手原创代码采用 AGPL-3.0-or-later，Copyright 2026 DeepReader contributors；完整许可见 LICENSE-AGPL-3.0.txt。上游代码保留各自许可证；本声明不重新许可上游代码。
+
+## macOS 原生实现
+
+`macos/` 为独立的 Swift / PDFKit 实现，Copyright 2026 DeepReader contributors，AGPL-3.0-or-later。使用系统提供的 AppKit、SwiftUI、PDFKit、CoreText、CryptoKit 和 Security 框架，不将 Windows SumatraPDF / MuPDF 引擎链接进 Mac 应用。应用图标继续使用下述 Alex 图标的绿色改编，构建时转换为 ICNS，原 CC BY 3.0 署名和许可不变。系统 SF Symbols 用于原生界面按钮，不单独提取分发。Mac 应用内包含本声明、AGPL 许可和对应源码 ZIP。
 
 ## 当前原生阅读器
 
