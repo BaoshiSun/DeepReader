@@ -71,7 +71,7 @@ import DeepReaderCore
     }
     public func didOpen() throws {
         cancel(); captured = nil; currentRecord = nil; selected = ""; answer = ""; followup = ""
-        clearSummary(); dirty = false
+        clearSummary(); dirty = false; book = nil
         if let url = pdf.url { book = try store.ensureBook(url) }
         try reload(); status = t("选中文字后按 ⌘⇧D 解释。", "Select text and press ⌘⇧D to explain.")
     }
@@ -223,8 +223,8 @@ import DeepReaderCore
             _ = try AIClient.request(settings: snapshot.settings, key: key, task: .part, source: "validate")
             begin { [weak self] id in
                 guard let self = self else { return }
-                let response = try await self.ai.summarize(settings: snapshot.settings, key: key, source: snapshot.source, review: snapshot.scope > 0) { [weak self] done, count in
-                    await MainActor.run { guard let self = self, self.job == id else { return }; self.status = self.t("正在总结：\(done)/\(count)", "Summarizing: \(done)/\(count)") }
+                let response = try await self.ai.summarize(settings: snapshot.settings, key: key, source: snapshot.source, review: snapshot.scope > 0) { [self] done, count in
+                    await MainActor.run { guard self.job == id else { return }; self.status = self.t("正在总结：\(done)/\(count)", "Summarizing: \(done)/\(count)") }
                 }
                 try Task.checkCancellation(); guard self.job == id else { return }
                 var record = ReadingRecord(); record.kind = ["file", "day", "week", "month"][snapshot.scope]

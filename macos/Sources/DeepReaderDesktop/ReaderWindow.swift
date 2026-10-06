@@ -184,8 +184,8 @@ import DeepReaderCore
     }
     public func windowDidResize(_ notification: Notification) {
         guard let panel = panel, notification.object as? NSWindow === panel else { return }
-        model.settings.floatingWidth = panel.contentView?.bounds.width ?? 460
-        model.settings.floatingHeight = panel.contentView?.bounds.height ?? 760; model.persist()
+        model.settings.floatingWidth = Double(panel.contentView?.bounds.width ?? 460)
+        model.settings.floatingHeight = Double(panel.contentView?.bounds.height ?? 760); model.persist()
     }
     public func windowShouldClose(_ sender: NSWindow) -> Bool {
         if sender === panel { hidden = true; panel?.orderOut(nil); return false }

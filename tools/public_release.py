@@ -31,6 +31,7 @@ macos/Sources/DeepReaderDesktop/SmokeTest.swift
 macos/Sources/DeepReader/DeepReader.swift
 macos/Tests/DeepReaderTests/CoreTests.swift
 macos/Tests/DeepReaderTests/PDFTests.swift
+macos/Tests/DeepReaderTests/AITests.swift
 README.md
 LICENSE
 LICENSE-AGPL-3.0.txt
