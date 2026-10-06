@@ -197,7 +197,20 @@ import DeepReaderCore
     }
     public func canTerminate() -> Bool { closingApproved || mayDiscard() }
     public func snapshot(to url: URL, floating: Bool = false) throws {
-        guard let content = (floating ? panel : window)?.contentView, let bitmap = content.bitmapImageRepForCachingDisplay(in: content.bounds) else { throw ReaderError("无法截取窗口。", "Could not capture the window.") }
+        guard let target = floating ? panel : window else { throw ReaderError("无法截取窗口。", "Could not capture the window.") }
+        // CI only: capture this application's exact window, including PDFKit's tiled rendering.
+        // AppKit's cacheDisplay omits GPU-backed page layers and returns transparent backgrounds.
+        let capture = Process(); capture.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
+        capture.arguments = ["-x", "-o", "-l", String(target.windowNumber), url.path]
+        capture.standardOutput = FileHandle.nullDevice; capture.standardError = FileHandle.nullDevice
+        try capture.run()
+        for _ in 0..<50 { if !capture.isRunning { break }; Thread.sleep(forTimeInterval: 0.1) }
+        if capture.isRunning { capture.terminate() }
+        if FileManager.default.fileExists(atPath: url.path), let data = try? Data(contentsOf: url), data.count > 1000 { return }
+        throw ReaderError("窗口截图不可用。", "Window capture is unavailable on this test runner.")
+    }
+    public func viewSnapshot(to url: URL) throws {
+        guard let content = window?.contentView, let bitmap = content.bitmapImageRepForCachingDisplay(in: content.bounds) else { throw ReaderError("无法截取窗口。", "Could not capture the window.") }
         content.cacheDisplay(in: content.bounds, to: bitmap)
         guard let png = bitmap.representation(using: .png, properties: [:]) else { return }
         try png.write(to: url)
