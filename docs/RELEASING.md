@@ -33,6 +33,8 @@ python native/package-native.py
 
 ## macOS 测试版
 
+正式签名和公证准备见 [macOS 发行工具](../macos/DISTRIBUTION.md)；商店渠道的独立准备材料见 [App Store 准备包](app-store/README.md)。
+
 macOS 的版本号位于 `macos/Info.plist`；Windows 版本号独立保留。macOS 1.2.1 使用标签 `v1.2.1-macos`，发布为 Pre-release。
 
 在 Mac 上先运行 `python3 macos/Tests/make_format_fixtures.py --upstream`，再进入 `macos/` 执行 `swift test`。确认公开源码检查通过并提交源码后，在仓库根目录运行 `bash macos/build.sh`。构建会生成 Apple Silicon / Intel 通用应用并执行离线启动测试。

@@ -45,6 +45,8 @@ macOS 13 Ventura 或更新版本，通用应用同时支持 Apple Silicon（M �
 
 ## 源码构建与验证
 
+Developer ID 签名、公证工具及安装 Xcode 的步骤见 [发行工具说明](DISTRIBUTION.md)。商店文案、隐私政策草稿和尚未完成的沙盒／审核事项见 [Mac App Store 准备包](../docs/app-store/README.md)。这些准备材料不表示当前测试版已满足商店提交要求。
+
 安装 Xcode 15 或更新版本以及其命令行工具。没有第三方 Swift 包依赖；libmobi 0.12 的固定版本源码随仓库提供，使用系统 libarchive 和 zlib。
 
 ```sh

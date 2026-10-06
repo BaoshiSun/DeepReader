@@ -19,6 +19,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check public sources
         run: python3 tools/public_release.py --check-tracked
+      - name: Check distribution preparation tools offline
+        run: |
+          bash -n macos/distribute.sh
+          python3 -m unittest discover -s tests -p test_distribution.py -v
       - name: Prepare synthetic and hash-pinned ebook fixtures
         run: python3 macos/Tests/make_format_fixtures.py --upstream
       - name: Offline unit and document integration tests

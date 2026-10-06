@@ -56,6 +56,9 @@ macos/Vendor/libmobi/write.c
 macos/Vendor/libmobi/write.h
 macos/Info.plist
 macos/build.sh
+macos/distribute.sh
+macos/release_preflight.py
+macos/DISTRIBUTION.md
 macos/README.md
 macos/Sources/DeepReaderCore/Models.swift
 macos/Sources/DeepReaderCore/LibraryStore.swift
@@ -85,6 +88,11 @@ build.ps1
 requirements-build.txt
 docs/legacy-helper.md
 docs/RELEASING.md
+docs/app-store/README.md
+docs/app-store/listing.json
+docs/app-store/privacy-policy.md
+docs/app-store/review-notes.md
+docs/app-store/readiness.md
 docs/LICENSE-REVIEW.md
 docs/MODIFICATIONS.md
 native/README.md
@@ -126,6 +134,7 @@ tests/test-selection.ps1
 tests/test_context.py
 tests/test_packaged.py
 tests/test_release.py
+tests/test_distribution.py
 tools/public_release.py
 """.split())
 BINARY_ASSETS = {"assets/DeepReader-green.png": b"\x89PNG\r\n\x1a\n", "assets/DeepReader.ico": b"\x00\x00\x01\x00"}
