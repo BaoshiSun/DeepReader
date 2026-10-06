@@ -35,7 +35,7 @@ final class EBookTests: XCTestCase {
         }
         let md = try load("garden.md"), html = String(decoding: md.resources["book.html"]!, as: UTF8.self)
         let dom = try XMLDocument(xmlString: html, options: [.documentTidyHTML, .nodeLoadExternalEntitiesNever])
-        XCTAssertEqual(BookMarkup.elements(dom, named: "h1").first?.stringValue, "Reading garden")
+        XCTAssertEqual(BookMarkup.elements(dom, named: "h1").first?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines), "Reading garden")
         XCTAssertEqual(BookMarkup.elements(dom, named: "strong").first?.stringValue, "EPUB")
         XCTAssertTrue(BookMarkup.elements(dom, named: "code").first?.stringValue?.contains("let reading = true") == true)
     }
@@ -92,7 +92,20 @@ final class EBookTests: XCTestCase {
         XCTAssertEqual(marked as? Int, 1)
         let didRun = try await reader.javascript("return document.querySelector('script') !== null;")
         XCTAssertEqual(didRun as? Bool, false)
+        let saved = reader.marks
+        reader.open(book, marks: saved); try await ready(reader)
+        let restored = try await reader.javascript("return CSS.highlights ? CSS.highlights.get('deepreader').size : document.querySelectorAll('mark[data-deepreader]').length;")
+        XCTAssertEqual(restored as? Int, 1)
+        _ = try await reader.javascript("Object.defineProperty(CSS, 'highlights', {value: undefined, configurable: true}); return true;")
+        try await reader.setMarks(saved)
+        let fallback = try await reader.javascript("return document.querySelectorAll('mark[data-deepreader]').length;")
+        XCTAssertEqual(fallback as? Int, 1, "The macOS 13 highlight fallback must work too")
         try await reader.setMarks(reader.toggled(selection)); XCTAssertTrue(reader.marks.isEmpty)
+        let removed = try await reader.javascript("return document.querySelectorAll('mark[data-deepreader]').length;")
+        XCTAssertEqual(removed as? Int, 0)
+        reader.go(to: 1); reader.go(to: 0); reader.go(to: 1); try await ready(reader)
+        let finalBody = try await reader.javascript("return document.body.textContent;") as? String
+        XCTAssertTrue(finalBody?.contains("CHAPTER_TWO_SENTINEL") == true)
     }
     @MainActor private func ready(_ reader: EBookReader) async throws {
         for _ in 0..<600 { if reader.ready { return }; try await Task.sleep(nanoseconds: 50000000) }

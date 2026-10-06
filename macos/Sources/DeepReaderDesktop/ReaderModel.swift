@@ -175,6 +175,7 @@ import DeepReaderCore
                 try Task.checkCancellation(); guard self.job == id, case .ebook(let selection) = captured else { return }
                 let next = try self.reader.ebook.toggled(selection)
                 try self.store.saveHighlights(next, bookID: book.id, fingerprint: fingerprint)
+                self.captured = captured
                 try await self.reader.ebook.setMarks(next)
                 guard self.job == id else { return }
                 self.status = self.t("高亮已切换并保存到本机阅读记录。", "Highlight toggled and saved to your local reading data.")

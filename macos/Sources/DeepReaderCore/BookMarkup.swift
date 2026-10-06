@@ -77,7 +77,7 @@ enum BookMarkup {
         @media (max-width:500px) { body { padding:24px 22px 80px; } }
         </style></head><body>\(content)</body></html>
         """
-        return (html, text.trimmingCharacters(in: .whitespacesAndNewlines), String(title.prefix(160)))
+        return (html, text.trimmingCharacters(in: .whitespacesAndNewlines), String(title.trimmingCharacters(in: .whitespacesAndNewlines).prefix(160)))
     }
     static func textHTML(_ text: String) -> String { "<html><body><pre style=\"font:inherit;white-space:pre-wrap;background:transparent;padding:0\">\(escape(text))</pre></body></html>" }
     static func markdown(_ text: String) -> String {

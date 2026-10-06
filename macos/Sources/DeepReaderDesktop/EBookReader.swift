@@ -35,6 +35,8 @@ private final class BookResources: NSObject, WKURLSchemeHandler {
     public var failed: ((Error) -> Void)?
     private let resources = BookResources()
     private var zoom = 1.0
+    private var navigation: WKNavigation?
+    private var generation = 0
     public override init() {
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .nonPersistent()
@@ -52,9 +54,9 @@ private final class BookResources: NSObject, WKURLSchemeHandler {
     }
     public func go(to index: Int) {
         guard let book = book, book.chapters.indices.contains(index) else { return }
-        chapter = index; ready = false
+        chapter = index; ready = false; generation += 1
         var url = URLComponents(); url.scheme = "deepreader-book"; url.host = resources.host; url.path = "/" + book.chapters[index].path
-        if let url = url.url { view.load(URLRequest(url: url)) }; changed?()
+        if let url = url.url { navigation = view.load(URLRequest(url: url)) }; changed?()
     }
     public func zoomBy(_ factor: Double) { zoom = min(2.5, max(0.65, zoom * factor)); view.pageZoom = zoom }
     public func fit() { zoom = 1; view.pageZoom = 1 }
@@ -69,21 +71,32 @@ private final class BookResources: NSObject, WKURLSchemeHandler {
               let index = book.chapters.firstIndex(where: { "/" + $0.path == url.path }) else { decisionHandler(.cancel); return }
         chapter = index; changed?(); decisionHandler(.allow)
     }
+    public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        self.navigation = navigation; generation += 1; ready = false
+    }
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        guard navigation === self.navigation else { return }
+        let token = generation
         Task { @MainActor in
-            do { try await renderHighlights(); ready = true; changed?() } catch { ready = false; failed?(error) }
+            do {
+                try await renderHighlights(); guard generation == token else { return }
+                ready = true; changed?()
+            } catch { if generation == token { ready = false; failed?(error) } }
         }
     }
-    public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { ready = false; failed?(error) }
-    public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { ready = false; failed?(error) }
+    public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        guard navigation === self.navigation, (error as NSError).code != NSURLErrorCancelled else { return }
+        ready = false; failed?(error)
+    }
+    public func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { self.webView(webView, didFail: navigation, withError: error) }
     public func javascript(_ code: String, arguments: [String: Any] = [:]) async throws -> Any? {
         try await view.callAsyncJavaScript(code, arguments: arguments, in: nil, contentWorld: .defaultClient)
     }
     public func selected() async throws -> EBookSelection {
         guard ready, let book = book else { throw ReaderError("电子书仍在加载，请稍候。", "The ebook is still loading. Please wait.") }
-        let expected = book.fingerprint, page = chapter
+        let expected = book.fingerprint, page = chapter, token = generation
         let result = try await javascript(Self.selectionScript)
-        guard self.book?.fingerprint == expected, chapter == page, let result = result as? [String: Any],
+        guard ready, generation == token, self.book?.fingerprint == expected, chapter == page, let result = result as? [String: Any],
               let text = result["text"] as? String, let context = result["context"] as? String,
               let start = result["start"] as? Int, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw ReaderError("请先在正文中拖动选中文字，再按 ⌘⇧D。", "Select text in the book, then press ⌘⇧D.")
