@@ -145,7 +145,7 @@ import DeepReaderCore
         } catch { show(error); if (try? credentials.read(settings.provider)) == "" { tab = 4 } }
     }
     public func ask() {
-        guard !busy, let original = currentRecord else { status = t("请先解释一次选中文字。", "Explain a selection first."); return }
+        guard !busy, !opening, let original = currentRecord else { status = t("请先解释一次选中文字。", "Explain a selection first."); return }
         do {
             let question = followup.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !question.isEmpty, question.utf16.count <= 1200, original.answer.utf16.count <= 12000 else {
@@ -179,6 +179,7 @@ import DeepReaderCore
                 guard self.job == id else { return }
                 self.status = self.t("高亮已切换并保存到本机阅读记录。", "Highlight toggled and saved to your local reading data.")
             }
+            status = t("正在保存高亮…", "Saving highlight…")
             return
         }
         do {

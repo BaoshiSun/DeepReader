@@ -8,6 +8,7 @@ import argparse
 import hashlib
 import struct
 import urllib.request
+import urllib.parse
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1] / ".build" / "format-fixtures"
@@ -47,7 +48,8 @@ def make():
     # A minimal uncompressed PalmDOC (Text/REAd) file is a legacy MOBI input.
     text = ("<html><body><h1>Legacy MOBI</h1><p>" + SENTENCE + "</p></body></html>").encode()
     pdb = bytearray(78)
-    pdb[:16] = b"DeepReader MOBI\0\0"
+    name = b"DeepReader MOBI"
+    pdb[:len(name)] = name
     pdb[60:68] = b"TEXtREAd"
     struct.pack_into(">H", pdb, 76, 2)
     first = 78 + 16 + 2
@@ -73,7 +75,7 @@ if __name__ == "__main__":
         for name, digest in UPSTREAM.items():
             path = ROOT / ("sample-kf8.azw3" if name == "sample-obfuscated-fonts.mobi" else name)
             if not path.exists() or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
-                url = "https://raw.githubusercontent.com/bfabiszewski/libmobi/85dcfe803fc2a21020ddcf15c3eb66b93d388add/tests/samples/" + urllib.request.quote(name)
+                url = "https://raw.githubusercontent.com/bfabiszewski/libmobi/85dcfe803fc2a21020ddcf15c3eb66b93d388add/tests/samples/" + urllib.parse.quote(name)
                 data = urllib.request.urlopen(url, timeout=40).read()
                 if hashlib.sha256(data).hexdigest() != digest:
                     raise ValueError("Upstream fixture checksum mismatch")

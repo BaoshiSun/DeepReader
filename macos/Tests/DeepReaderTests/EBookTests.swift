@@ -34,7 +34,10 @@ final class EBookTests: XCTestCase {
             XCTAssertTrue(text.contains(sentence)); XCTAssertTrue(text.contains("中文") || text.contains("上下文"))
         }
         let md = try load("garden.md"), html = String(decoding: md.resources["book.html"]!, as: UTF8.self)
-        XCTAssertTrue(html.contains("<h1>Reading garden</h1>")); XCTAssertTrue(html.contains("<strong>EPUB</strong>")); XCTAssertTrue(html.contains("<code>"))
+        let dom = try XMLDocument(xmlString: html, options: [.documentTidyHTML, .nodeLoadExternalEntitiesNever])
+        XCTAssertEqual(BookMarkup.elements(dom, named: "h1").first?.stringValue, "Reading garden")
+        XCTAssertEqual(BookMarkup.elements(dom, named: "strong").first?.stringValue, "EPUB")
+        XCTAssertTrue(BookMarkup.elements(dom, named: "code").first?.stringValue?.contains("let reading = true") == true)
     }
     func testLegacyMOBI() throws {
         let book = try load("garden.mobi")

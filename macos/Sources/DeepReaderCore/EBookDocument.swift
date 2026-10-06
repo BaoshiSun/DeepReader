@@ -9,7 +9,7 @@ public enum BookFormat {
 }
 enum EBookError {
     static var invalid: ReaderError { ReaderError("无法解析此电子书，文件可能损坏或格式不受支持。", "Could not parse this ebook. It may be damaged or unsupported.") }
-    static var tooLarge: ReaderError { ReaderError("电子书超出大小限制（文件 128 MB，解压后 256 MB）。", "The ebook exceeds the size limit (128 MB file, 256 MB expanded).") }
+    static var tooLarge: ReaderError { ReaderError("文件或章节超出读取限制：文件 128 MB、解包总量 256 MB、单章文本 8 MB。", "The file or chapter exceeds a reading limit: 128 MB file, 256 MB expanded, 8 MB per text chapter.") }
     static var drm: ReaderError { ReaderError("此电子书有 DRM 保护，暂不支持。请使用未加 DRM 的 EPUB、MOBI 或 AZW3。", "This ebook is DRM-protected. Use a DRM-free EPUB, MOBI or AZW3 file.") }
 }
 public struct EBookChapter: Sendable {
@@ -118,6 +118,7 @@ public struct EBookDocument: Sendable {
         return try build(url, title: title, fingerprint: fingerprint, files: files, spine: spine)
     }
     public func fullText() throws -> String {
+        guard chapters.contains(where: { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }) else { throw EBookError.invalid }
         var text = ""
         for (index, chapter) in chapters.enumerated() {
             text += "[Chapter \(index + 1): \(chapter.title)]\n\(chapter.text)\n\n"

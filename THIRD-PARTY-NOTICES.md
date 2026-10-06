@@ -4,7 +4,9 @@ DeepReader Windows 1.2.0 是基于 SumatraPDF 3.6.1rel 的独立修改版，修�
 
 ## macOS 原生实现
 
-`macos/` 为独立的 Swift / PDFKit 实现，Copyright 2026 DeepReader contributors，AGPL-3.0-or-later。使用系统提供的 AppKit、SwiftUI、PDFKit、CoreText、CryptoKit 和 Security 框架，不将 Windows SumatraPDF / MuPDF 引擎链接进 Mac 应用。应用图标继续使用下述 Alex 图标的绿色改编，构建时转换为 ICNS，原 CC BY 3.0 署名和许可不变。系统 SF Symbols 用于原生界面按钮，不单独提取分发。Mac 应用内包含本声明、AGPL 许可和对应源码 ZIP。
+`macos/` 为独立的 Swift / PDFKit / WebKit 实现，Copyright 2026 DeepReader contributors，AGPL-3.0-or-later。使用系统提供的 AppKit、SwiftUI、PDFKit、WebKit、CoreText、CryptoKit、Security、libarchive 和 zlib，不将 Windows SumatraPDF / MuPDF 引擎链接进 Mac 应用。应用图标继续使用下述 Alex 图标的绿色改编，构建时转换为 ICNS，原 CC BY 3.0 署名和许可不变。系统 SF Symbols 用于原生界面按钮，不单独提取分发。Mac 应用内包含本声明、AGPL 许可和对应源码 ZIP。
+
+Mac 1.2.1 新增 **libmobi 0.12**，Copyright Bartek Fabiszewski and contributors，采用 **LGPL-3.0-or-later**。项目与源码：https://github.com/bfabiszewski/libmobi ，固定提交 `85dcfe803fc2a21020ddcf15c3eb66b93d388add`。随附 `macos/Vendor/libmobi/` 中的 C/H 源码、原版权声明、COPYING（LGPLv3）、COPYING.GPL3、来源校验信息和构建说明。原库文件未修改；DeepReader 添加 SwiftPM 编译配置及接口头文件，禁用 DRM/加密和 OPF 生成，链接系统 zlib。可以修改该库并使用随附完整应用源码执行 `swift build` 或 `bash macos/build.sh` 重新编译、链接与 ad-hoc 签名，无需维护者的私钥。完整对应源码随应用 `Resources/Source.zip` 分发，不限制为调试库的修改而进行的反向工程。官方测试样本仅由 CI 按固定校验值下载，不包含在应用包或源码包内。
 
 ## 当前原生阅读器
 
