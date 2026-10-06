@@ -25,6 +25,8 @@ macos/Sources/DeepReaderDesktop/DocumentReader.swift
 macos/Sources/DeepReaderDesktop/EBookReader.swift
 macos/Vendor/libmobi/AUTHORS
 macos/Vendor/libmobi/COPYING
+macos/Vendor/libmobi/COPYING.GPL3
+macos/Vendor/libmobi/opf.h
 macos/Vendor/libmobi/ORIGIN.json
 macos/Vendor/libmobi/README.md
 macos/Vendor/libmobi/buffer.c

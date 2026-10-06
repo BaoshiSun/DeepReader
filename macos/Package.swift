@@ -8,7 +8,7 @@ let package = Package(
     products: [.executable(name: "DeepReader", targets: ["DeepReader"])],
     targets: [
         .systemLibrary(name: "CArchive"),
-        .target(name: "CMobi", path: "Vendor/libmobi", exclude: ["COPYING", "AUTHORS", "README.md", "ORIGIN.json"],
+        .target(name: "CMobi", path: "Vendor/libmobi", exclude: ["COPYING", "COPYING.GPL3", "AUTHORS", "README.md", "ORIGIN.json"],
             publicHeadersPath: "include", cSettings: [.define("HAVE_STRDUP"), .define("PACKAGE_VERSION", to: "\"0.12\"")],
             linkerSettings: [.linkedLibrary("z")]),
         .target(name: "DeepReaderCore", dependencies: ["CArchive", "CMobi"]),
