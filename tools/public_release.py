@@ -15,6 +15,43 @@ PUBLIC_PATHS = tuple("""
 .github/workflows/release-checks.yml
 .github/workflows/macos-build.yml
 macos/Package.swift
+macos/Sources/CArchive/module.modulemap
+macos/Sources/CArchive/shim.h
+macos/Sources/DeepReaderCore/BookArchive.swift
+macos/Sources/DeepReaderCore/BookMarkup.swift
+macos/Sources/DeepReaderCore/EBookDocument.swift
+macos/Sources/DeepReaderCore/EBookHighlights.swift
+macos/Sources/DeepReaderDesktop/DocumentReader.swift
+macos/Sources/DeepReaderDesktop/EBookReader.swift
+macos/Vendor/libmobi/AUTHORS
+macos/Vendor/libmobi/COPYING
+macos/Vendor/libmobi/ORIGIN.json
+macos/Vendor/libmobi/README.md
+macos/Vendor/libmobi/buffer.c
+macos/Vendor/libmobi/buffer.h
+macos/Vendor/libmobi/compression.c
+macos/Vendor/libmobi/compression.h
+macos/Vendor/libmobi/config.h
+macos/Vendor/libmobi/debug.c
+macos/Vendor/libmobi/debug.h
+macos/Vendor/libmobi/include/libmobi.h
+macos/Vendor/libmobi/index.c
+macos/Vendor/libmobi/index.h
+macos/Vendor/libmobi/memory.c
+macos/Vendor/libmobi/memory.h
+macos/Vendor/libmobi/meta.c
+macos/Vendor/libmobi/meta.h
+macos/Vendor/libmobi/mobi.h
+macos/Vendor/libmobi/parse_rawml.c
+macos/Vendor/libmobi/parse_rawml.h
+macos/Vendor/libmobi/read.c
+macos/Vendor/libmobi/read.h
+macos/Vendor/libmobi/structure.c
+macos/Vendor/libmobi/structure.h
+macos/Vendor/libmobi/util.c
+macos/Vendor/libmobi/util.h
+macos/Vendor/libmobi/write.c
+macos/Vendor/libmobi/write.h
 macos/Info.plist
 macos/build.sh
 macos/README.md
@@ -134,7 +171,7 @@ def safe_name(name):
     path = PurePosixPath(name)
     if "\\" in name or path.is_absolute() or ".." in path.parts or ":" in name:
         raise ValueError("Unsafe archive path")
-    if any(p.lower() in {"aihistory", "booklibrary", ".git", ".env"} for p in path.parts):
+    if any(p.lower() in {"aihistory", "booklibrary", "bookhighlights", ".git", ".env"} for p in path.parts):
         raise ValueError(f"Private directory in archive: {name}")
     if path.name.lower() in PRIVATE_NAMES or path.suffix.lower() in {".lnk", ".log", ".tmp", ".pem", ".key"}:
         raise ValueError(f"Private file in archive: {name}")

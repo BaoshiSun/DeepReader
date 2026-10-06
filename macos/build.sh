@@ -4,6 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 root="$(cd .. && pwd)"
 out="$root/macos/dist"
+version="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' Info.plist)"
 mkdir -p "$out"
 export MACOSX_DEPLOYMENT_TARGET=13.0
 for arch in arm64 x86_64; do
@@ -28,8 +29,8 @@ done
 iconutil -c icns "$iconset" -o "$app/Contents/Resources/DeepReader.icns"
 rm -rf "$iconset"
 python3 "$root/tools/public_release.py" --source-zip
-cp "$root/DeepReader-v1.2.0-source.zip" "$out/DeepReader-v1.2.0-macos-source.zip"
-cp "$out/DeepReader-v1.2.0-macos-source.zip" "$app/Contents/Resources/Source.zip"
+cp "$root/DeepReader-v1.2.0-source.zip" "$out/DeepReader-v${version}-macos-source.zip"
+cp "$out/DeepReader-v${version}-macos-source.zip" "$app/Contents/Resources/Source.zip"
 cp "$root/LICENSE-AGPL-3.0.txt" "$app/Contents/Resources/LICENSE.txt"
 cp "$root/THIRD-PARTY-NOTICES.md" "$app/Contents/Resources/THIRD-PARTY-NOTICES.md"
 cp "$root/macos/README.md" "$app/Contents/Resources/README.md"
@@ -38,11 +39,11 @@ codesign --force --sign - "$app"
 codesign --verify --deep --strict --verbose=2 "$app"
 lipo "$app/Contents/MacOS/DeepReader" -verify_arch arm64 x86_64
 lipo -info "$app/Contents/MacOS/DeepReader"
-ditto -c -k --sequesterRsrc --keepParent "$app" "$out/DeepReader-v1.2.0-macos-universal.zip"
+ditto -c -k --sequesterRsrc --keepParent "$app" "$out/DeepReader-v${version}-macos-universal.zip"
 ln -s /Applications "$stage/Applications"
 cp "$root/macos/README.md" "$stage/README.md"
 cp "$root/LICENSE-AGPL-3.0.txt" "$stage/LICENSE.txt"
-hdiutil create -volname DeepReader -srcfolder "$stage" -ov -format UDZO "$out/DeepReader-v1.2.0-macos-universal.dmg"
+hdiutil create -volname DeepReader -srcfolder "$stage" -ov -format UDZO "$out/DeepReader-v${version}-macos-universal.dmg"
 mkdir -p "$out/smoke"
 "$app/Contents/MacOS/DeepReader" --smoke-test "$out/smoke"
 (cd "$out" && shasum -a 256 ./*.zip ./*.dmg > SHA256SUMS.txt)

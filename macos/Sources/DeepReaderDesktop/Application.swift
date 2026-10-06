@@ -93,14 +93,14 @@ import DeepReaderCore
         app.addItem(.separator()); add(app, m.t("隐藏 DeepReader", "Hide DeepReader"), #selector(NSApplication.hide(_:)), "h", target: NSApp)
         add(app, m.t("退出 DeepReader", "Quit DeepReader"), #selector(NSApplication.terminate(_:)), "q", target: NSApp)
         let file = submenu(m.t("文件", "File"))
-        add(file, m.t("打开 PDF…", "Open PDF…"), #selector(ReaderWindow.openPanel), "o")
+        add(file, m.t("打开文档或电子书…", "Open Document or Ebook…"), #selector(ReaderWindow.openPanel), "o")
         add(file, m.t("保存 PDF", "Save PDF"), #selector(ReaderWindow.savePDF), "s")
         add(file, m.t("保存 PDF 副本…", "Save PDF copy…"), #selector(ReaderWindow.saveCopy), "s", [.command, .shift])
         let edit = submenu(m.t("编辑", "Edit"))
         for (title, action, key) in [(m.t("撤销", "Undo"), "undo:", "z"), (m.t("剪切", "Cut"), "cut:", "x"), (m.t("复制", "Copy"), "copy:", "c"), (m.t("粘贴", "Paste"), "paste:", "v"), (m.t("全选", "Select All"), "selectAll:", "a")] {
             let item = NSMenuItem(title: title, action: NSSelectorFromString(action), keyEquivalent: key); edit.addItem(item)
         }
-        edit.addItem(.separator()); add(edit, m.t("搜索 PDF", "Find in PDF"), #selector(ReaderWindow.focusSearch), "f")
+        edit.addItem(.separator()); add(edit, m.t("搜索正文", "Find Text"), #selector(ReaderWindow.focusSearch), "f")
         add(edit, m.t("下一个匹配", "Find Next"), #selector(ReaderWindow.findNext), "g")
         add(edit, m.t("上一个匹配", "Find Previous"), #selector(ReaderWindow.findPrevious), "g", [.command, .shift])
         let view = submenu(m.t("显示", "View"))

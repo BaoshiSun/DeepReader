@@ -78,7 +78,7 @@ private struct LookupSplit: NSViewRepresentable {
         return view
     }
     func updateNSView(_ view: TextSplitView, context: Context) {
-        let values = [model.selected.isEmpty ? model.t("在左侧 PDF 中选词，然后按 ⌘⇧D。", "Select text in the PDF, then press ⌘⇧D.") : model.selected, model.answer]
+        let values = [model.selected.isEmpty ? model.t("在左侧正文 中选词，然后按 ⌘⇧D。", "Select text in the book, then press ⌘⇧D.") : model.selected, model.answer]
         for index in 0..<2 where view.texts[index].string != values[index] { view.texts[index].string = values[index]; view.texts[index].textColor = .textColor }
         view.labels[0].stringValue = model.t("选中内容", "Selection")
         view.labels[1].stringValue = model.t("解释", "Explanation")
@@ -143,7 +143,7 @@ struct Sidebar: View {
                 Button(m.t("解释选中内容", "Explain selection")) { m.explain() }.disabled(m.busy)
                 Button(m.t("高亮／不高亮", "Highlight / off")) { m.highlight() }
                 Spacer(minLength: 0)
-                Button(m.t("保存 PDF", "Save PDF")) { m.savePDF() }.disabled(!m.dirty)
+                if m.isPDF { Button(m.t("保存 PDF", "Save PDF")) { m.savePDF() }.disabled(!m.dirty) }
             }.controlSize(.small)
             Text(m.t("继续追问", "Follow-up")).font(.caption).frame(maxWidth: .infinity, alignment: .leading)
             TextEditor(text: $m.followup).font(.system(size: 13)).frame(height: 62).overlay(RoundedRectangle(cornerRadius: 4).stroke(.secondary.opacity(0.3)))
@@ -172,7 +172,7 @@ struct Sidebar: View {
     private var summary: some View {
         VStack(spacing: 8) {
             Picker(m.t("范围", "Scope"), selection: $m.summaryScope) {
-                Text(m.t("当前文件", "Current PDF")).tag(0); Text(m.t("日总结", "Daily")).tag(1)
+                Text(m.t("当前文件", "Current book")).tag(0); Text(m.t("日总结", "Daily")).tag(1)
                 Text(m.t("周总结", "Weekly")).tag(2); Text(m.t("月总结", "Monthly")).tag(3)
             }.onChange(of: m.summaryScope) { _ in m.clearSummary() }.disabled(m.busy)
             if m.summaryScope > 0 { DatePicker(m.t("日期", "Date"), selection: $m.summaryDate, displayedComponents: .date).onChange(of: m.summaryDate) { _ in m.clearSummary() }.disabled(m.busy) }
@@ -200,7 +200,7 @@ struct Sidebar: View {
                     }.tag(book.id)
                 }
             }.frame(minHeight: 90, maxHeight: 160)
-            ReadOnlyText(text: m.libraryBook?.text(records: m.records, english: m.settings.english) ?? m.t("打开 PDF 后会自动加入书单。", "PDFs are added to your book list when opened."))
+            ReadOnlyText(text: m.libraryBook?.text(records: m.records, english: m.settings.english) ?? m.t("打开文档或电子书 后会自动加入书单。", "Books are added to your book list when opened."))
             HStack {
                 Button(m.t("打开书籍", "Open book")) { if let book = m.libraryBook { m.openBook(book) } }.disabled(m.libraryBook == nil || m.busy)
                 Spacer(); Button(m.t("导出当前书单", "Export this list")) { m.exportBooks() }
@@ -230,13 +230,13 @@ struct Sidebar: View {
                 Text(m.t("归档文件夹", "Archive folder")).font(.headline)
                 Text(m.settings.archiveFolder.isEmpty ? m.t("尚未选择", "Not selected") : m.settings.archiveFolder).font(.caption).textSelection(.enabled)
                 Button(m.t("选择文件夹…", "Choose folder…")) { m.chooseArchiveFolder() }
-                Text(m.t("PDF 按 1星–5星文件夹复制保存，保留原文件；同名且内容不同的文件会自动编号。", "PDFs are copied into 1星–5星 folders, preserving originals. Different files with the same name receive a numbered suffix.")).font(.caption).foregroundStyle(.secondary)
+                Text(m.t("文件按 1星–5星文件夹复制保存，保留原文件；同名且内容不同的文件会自动编号。", "Files are copied into 1星–5星 folders, preserving originals. Different files with the same name receive a numbered suffix.")).font(.caption).foregroundStyle(.secondary)
                 Divider()
                 Text(m.t("使用方法", "Getting started")).font(.headline)
-                Text(m.t("• 打开 PDF，拖动选词，按 ⌘⇧D。\n• 解释下方可追问，⌘↩ 发送。\n• 拖动侧栏边缘及选文／解释分隔线调整大小。\n• 右上角窗口按钮切换悬浮和停靠。\n• 高亮后保存 PDF（⌘S）。", "• Open a PDF, select text, press ⌘⇧D.\n• Ask follow-ups below; ⌘↩ sends.\n• Drag sidebar and selection/answer dividers to resize.\n• Use the window button to float or dock the panel.\n• Save PDF highlights with ⌘S.")).font(.callout)
+                Text(m.t("• 打开文档或电子书，拖动选词，按 ⌘⇧D。\n• 解释下方可追问，⌘↩ 发送。\n• 拖动侧栏边缘及选文／解释分隔线调整大小。\n• 右上角窗口按钮切换悬浮和停靠。\n• PDF 高亮后按 ⌘S 保存；电子书高亮自动保存在本机。", "• Open a document or ebook, select text, press ⌘⇧D.\n• Ask follow-ups below; ⌘↩ sends.\n• Drag sidebar and selection/answer dividers to resize.\n• Use the window button to float or dock the panel.\n• Save PDF highlights with ⌘S; ebook highlights are saved locally.")).font(.callout)
                 Text(m.t("解释发送选文与附近上下文；全文总结发送提取的全文；周期总结发送该范围的历史记录。只在您点击 AI 操作时发送。", "Lookups send selected text and nearby context. Document summaries send extracted full text; period summaries send that period's records. Data is sent only when you request an AI action.")).font(.caption).foregroundStyle(.secondary)
                 Link(m.t("源代码与许可证", "Source and license"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader")!)
-                Text("DeepReader for macOS · 1.2.0 preview · AGPL-3.0-or-later").font(.caption2).foregroundStyle(.secondary)
+                Text("DeepReader for macOS · 1.2.1 preview · AGPL-3.0-or-later").font(.caption2).foregroundStyle(.secondary)
             }.padding(3).textFieldStyle(.roundedBorder).disabled(m.busy)
         }
     }

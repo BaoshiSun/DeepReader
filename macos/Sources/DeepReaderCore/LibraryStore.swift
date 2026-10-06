@@ -87,7 +87,7 @@ public final class LibraryStore: @unchecked Sendable {
     }
     public func ensureBook(_ url: URL) throws -> Book {
         try locked {
-            guard url.isFileURL, url.pathExtension.lowercased() == "pdf" else { throw ReaderError("请打开 PDF 文件。", "Open a PDF file.") }
+            guard BookFormat.supports(url) else { throw ReaderError("请打开支持的文档或电子书。", "Open a supported document or ebook.") }
             if let book = try books().items.first(where: { $0.hasPath(url.path) }) { return book }
             let book = Book(file: url); try saveBook(book); return book
         }
@@ -103,7 +103,7 @@ public final class LibraryStore: @unchecked Sendable {
     public func importHistoryBooks() throws {
         try locked {
             let records = try records().items
-            for record in records where ["explain", "file"].contains(record.kind) && record.file.hasPrefix("/") && record.file.lowercased().hasSuffix(".pdf") {
+            for record in records where ["explain", "file"].contains(record.kind) && record.file.hasPrefix("/") && BookFormat.supports(URL(fileURLWithPath: record.file)) {
                 _ = try ensureBook(URL(fileURLWithPath: record.file))
             }
         }
@@ -127,8 +127,8 @@ public final class LibraryStore: @unchecked Sendable {
     }
     public func archive(book: Book, source: URL, root destination: URL) throws -> URL {
         try Task.checkCancellation()
-        guard book.valid, book.rating > 0, book.hasPath(source.path), source.isFileURL, source.pathExtension.lowercased() == "pdf", destination.isFileURL,
-              fm.fileExists(atPath: source.path) else { throw ReaderError("请先评分，并检查原 PDF。", "Rate the book and check the original PDF first.") }
+        guard book.valid, book.rating > 0, book.hasPath(source.path), BookFormat.supports(source), destination.isFileURL,
+              fm.fileExists(atPath: source.path) else { throw ReaderError("请先评分，并检查原文件。", "Rate the book and check the original file first.") }
         let directory = destination.appendingPathComponent("\(book.rating)星", isDirectory: true)
         try fm.createDirectory(at: directory, withIntermediateDirectories: true)
         let originalName = URL(fileURLWithPath: book.file).lastPathComponent
@@ -157,7 +157,7 @@ public final class LibraryStore: @unchecked Sendable {
         let stem = URL(fileURLWithPath: originalName).deletingPathExtension().lastPathComponent
         for number in 1...10000 {
             try Task.checkCancellation()
-            let name = number == 1 ? originalName : "\(stem) (\(number)).pdf"
+            let name = number == 1 ? originalName : "\(stem) (\(number)).\(source.pathExtension)"
             let target = directory.appendingPathComponent(name)
             do { try fm.moveItem(at: temporary, to: target) }
             catch let error as NSError where error.domain == NSCocoaErrorDomain && error.code == NSFileWriteFileExistsError { continue }
@@ -174,6 +174,21 @@ public final class LibraryStore: @unchecked Sendable {
             book.archivePath = url.path
             if !book.copies.contains(url.path) { book.copies.append(url.path) }
             book.updated = Dates.stamp(); try saveBook(book)
+        }
+    }
+    public func highlights(bookID: String, fingerprint: String) throws -> [EBookMark] {
+        try locked {
+            let url = try idURL(bookID, directory: "BookHighlights")
+            guard fm.fileExists(atPath: url.path) else { return [] }
+            let saved = try read(EBookHighlights.self, url: url)
+            guard saved.marks.count <= 10000, saved.marks.allSatisfy({ $0.valid }) else { throw EBookError.invalid }
+            return saved.fingerprint == fingerprint ? saved.marks : []
+        }
+    }
+    public func saveHighlights(_ marks: [EBookMark], bookID: String, fingerprint: String) throws {
+        try locked {
+            guard fingerprint.count == 64, marks.count <= 10000, marks.allSatisfy({ $0.valid }) else { throw EBookError.invalid }
+            try encode(EBookHighlights(fingerprint: fingerprint, marks: marks), at: idURL(bookID, directory: "BookHighlights"))
         }
     }
 }

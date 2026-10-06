@@ -36,3 +36,6 @@ SumatraPDF-settings.txt
 .swiftpm/
 *.dmg
 /macos/dist/
+
+# Local ebook annotations
+BookHighlights/

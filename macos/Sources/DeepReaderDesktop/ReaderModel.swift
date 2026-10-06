@@ -6,12 +6,15 @@ import DeepReaderCore
 @MainActor public final class ReaderModel: ObservableObject {
     public let store: LibraryStore
     public let credentials: Credentials
-    public let pdf = PDFReader()
+    public let reader = DocumentReader()
+    public var pdf: PDFReader { reader.pdf }
     public let ai: AIClient
     @Published public var settings: Settings
     @Published public var tab = 0
     @Published public var status = ""
     @Published public var busy = false
+    @Published public var opening = false
+    @Published public var isPDF = true
     @Published public var selected = ""
     @Published public var answer = ""
     @Published public var followup = ""
@@ -40,7 +43,7 @@ import DeepReaderCore
     private var task: Task<Void, Never>?
     private var job = UUID()
     private var currentRecord: ReadingRecord?
-    private var captured: SelectedText?
+    private var captured: ReaderSelection?
     private var badRecords = 0
     private var prepared: (source: String, stats: String, title: String, scope: Int, file: String, settings: Settings)?
     public var canSummarize: Bool { prepared != nil }
@@ -72,11 +75,12 @@ import DeepReaderCore
     public func didOpen() throws {
         cancel(); captured = nil; currentRecord = nil; selected = ""; answer = ""; followup = ""
         clearSummary(); dirty = false; book = nil
-        if let url = pdf.url { book = try store.ensureBook(url) }
+        isPDF = reader.isPDF
+        if let url = reader.url { book = try store.ensureBook(url) }
         try reload(); status = t("选中文字后按 ⌘⇧D 解释。", "Select text and press ⌘⇧D to explain.")
     }
     public func guide() {
-        status = t("① 选择服务和模型，填写自己的 API Key 并保存。② 打开 PDF，选词后按 ⌘⇧D。③ 可继续追问、评分和归档。AI 请求会发送所选文字及上下文；全文总结会发送提取的全文。", "1. Choose a provider and model, add your own API key and save. 2. Open a PDF, select text and press ⌘⇧D. 3. Ask follow-ups, rate and archive books. AI lookups send your selection and context; document summaries send extracted document text.")
+        status = t("① 选择服务和模型，填写自己的 API Key 并保存。② 打开文档或电子书，选词后按 ⌘⇧D。③ 可继续追问、评分和归档。AI 请求会发送所选文字及上下文；全文总结会发送提取的全文。", "1. Choose a provider and model, add your own API key and save. 2. Open a document or ebook, select text and press ⌘⇧D. 3. Ask follow-ups, rate and archive books. AI lookups send your selection and context; document summaries send extracted document text.")
         settings.onboardingSeen = true; persist()
     }
     public func language() { settings.english.toggle(); clearSummary(); persist(); languageAction?() }
@@ -101,7 +105,7 @@ import DeepReaderCore
     }
     public func chooseArchiveFolder() {
         let panel = NSOpenPanel(); panel.canChooseFiles = false; panel.canChooseDirectories = true; panel.canCreateDirectories = true
-        panel.message = t("选择归档根目录，PDF 将复制到对应星级子目录。", "Choose the archive folder. PDFs are copied into star-rating subfolders.")
+        panel.message = t("选择归档根目录，文件将复制到对应星级子目录。", "Choose the archive folder. Files are copied into star-rating subfolders.")
         if panel.runModal() == .OK, let url = panel.url { settings.archiveFolder = url.path; persist() }
     }
     private func begin(_ work: @escaping @MainActor (UUID) async throws -> Void) {
@@ -118,14 +122,16 @@ import DeepReaderCore
     public func cancel() { task?.cancel(); task = nil; job = UUID(); busy = false }
     public func stop() { cancel(); status = t("已取消。", "Cancelled.") }
     public func explain() {
-        guard !busy else { return }
+        guard !busy, !opening else { return }
         do {
-            let selection = try pdf.selected(), configuration = try settings.validated(), key = try credentials.read(settings.provider)
-            _ = try AIClient.request(settings: configuration, key: key, task: .explain, source: selection.text)
-            captured = selection; selected = selection.text; answer = ""; followup = ""; currentRecord = nil; tab = 0
-            let file = pdf.url?.path ?? "", title = pdf.url?.lastPathComponent ?? ""
+            let configuration = try settings.validated(), key = try credentials.read(settings.provider)
+            _ = try AIClient.request(settings: configuration, key: key, task: .explain, source: "validate")
+            let file = reader.url?.path ?? "", title = reader.url?.lastPathComponent ?? ""
             begin { [weak self] id in
                 guard let self = self else { return }
+                let selection = try await self.reader.selected()
+                try Task.checkCancellation(); guard self.job == id else { return }
+                self.captured = selection; self.selected = selection.text; self.answer = ""; self.followup = ""; self.currentRecord = nil; self.tab = 0
                 let response = try await self.ai.complete(settings: configuration, key: key, task: .explain,
                     source: "Selected text:\n\(selection.text)\n\nSource context (⟦…⟧ marks the selection):\n\(selection.context)")
                 try Task.checkCancellation(); guard self.job == id else { return }
@@ -160,23 +166,39 @@ import DeepReaderCore
         } catch { show(error) }
     }
     public func highlight() {
+        guard !busy, !opening else { return }
+        if !reader.isPDF {
+            begin { [weak self] id in
+                guard let self = self, let book = self.book, let fingerprint = self.reader.ebook.book?.fingerprint else { return }
+                let captured: ReaderSelection
+                if let previous = self.captured { captured = previous } else { captured = try await self.reader.selected() }
+                try Task.checkCancellation(); guard self.job == id, case .ebook(let selection) = captured else { return }
+                let next = try self.reader.ebook.toggled(selection)
+                try self.store.saveHighlights(next, bookID: book.id, fingerprint: fingerprint)
+                try await self.reader.ebook.setMarks(next)
+                guard self.job == id else { return }
+                self.status = self.t("高亮已切换并保存到本机阅读记录。", "Highlight toggled and saved to your local reading data.")
+            }
+            return
+        }
         do {
-            let selection = try captured ?? pdf.selected()
+            let selection: SelectedText
+            if case .pdf(let previous) = captured { selection = previous } else { selection = try pdf.selected() }
             try pdf.toggleHighlight(selection); dirty = pdf.dirty
             status = t("高亮已切换，点击“保存 PDF”写入批注。", "Highlight toggled. Save the PDF to persist annotations.")
         } catch { show(error) }
     }
-    public func savePDF() { do { try pdf.save(); dirty = pdf.dirty; status = t("PDF 已保存。", "PDF saved.") } catch { show(error) } }
+    public func savePDF() { guard reader.isPDF else { status = t("电子书高亮已自动保存在本机。", "Ebook highlights are saved locally automatically."); return }; do { try pdf.save(); dirty = pdf.dirty; status = t("PDF 已保存。", "PDF saved.") } catch { show(error) } }
     public func rate(_ rating: Int) { updateBook(rating: rating) }
     public func finish(_ value: Bool) { updateBook(finished: value) }
     private func updateBook(rating: Int? = nil, finished: Bool? = nil) {
-        guard !busy, let book = book else { return }
+        guard !busy, !opening, let book = book else { return }
         do { self.book = try store.updateBook(id: book.id, rating: rating, finished: finished); try reload() }
         catch { show(error) }
     }
     public func archive() {
-        guard !busy, let book = book, let source = pdf.url else { return }
-        guard book.rating > 0 else { status = t("请先为当前 PDF 评分。", "Rate the current PDF first."); return }
+        guard !busy, !opening, let book = book, let source = reader.url else { return }
+        guard book.rating > 0 else { status = t("请先为当前文件 评分。", "Rate the current file first."); return }
         if settings.archiveFolder.isEmpty { chooseArchiveFolder() }
         guard !settings.archiveFolder.isEmpty, beforeArchive?() ?? true else { return }
         let destination = URL(fileURLWithPath: settings.archiveFolder, isDirectory: true), store = self.store
@@ -186,10 +208,11 @@ import DeepReaderCore
             guard let self = self, self.job == id else { return }
             try self.reload(); self.status = self.t("归档完成，原文件保留：", "Archived; original kept: ") + result.path
         }
-        status = t("正在复制 PDF 到归档文件夹…", "Copying the PDF to the archive folder…")
+        status = t("正在复制文件 到归档文件夹…", "Copying the file to the archive folder…")
     }
     public func clearSummary() { prepared = nil; summaryPreview = ""; summaryAnswer = "" }
     public func prepareSummary() {
+        guard !opening else { return }
         do {
             try reload()
             guard badRecords == 0 else { throw ReaderError("有无法读取的历史记录，请修复后再统计。", "Some history records are unreadable. Repair them before summarizing.") }
@@ -197,8 +220,8 @@ import DeepReaderCore
             let source: String, stats: String, title: String, file: String
             var notice = ""
             if summaryScope == 0 {
-                guard let book = book else { throw ReaderError("请先打开 PDF。", "Open a PDF first.") }
-                let extracted = try pdf.fullText(); source = extracted.text; file = pdf.url?.path ?? ""
+                guard let book = book else { throw ReaderError("请先打开文档或电子书。", "Open a document or ebook first.") }
+                let extracted = try reader.fullText(); source = extracted.text; file = reader.url?.path ?? ""
                 title = book.title; stats = ReadingStats(records, book: book).text(total: total, english: settings.english)
                 if extracted.blankPages > 0 { notice = t("\n其中 \(extracted.blankPages) 页没有可提取文字，这些页面未包含在总结中。", "\n\(extracted.blankPages) pages have no extractable text and are omitted from the summary.") }
             } else {
