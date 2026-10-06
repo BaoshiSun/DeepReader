@@ -34,7 +34,17 @@ import DeepReaderCore
         let archived = try m.store.archive(book: book, source: url, root: folder.appendingPathComponent("archive"))
         guard FileManager.default.fileExists(atPath: url.path), FileManager.default.fileExists(atPath: archived.path) else { throw ReaderError("测试失败。", "Archive lost a file.") }
         try m.reload()
-        controller.setFloating(true); controller.setFloating(false)
+        let anchor = m.pdf.view.currentDestination
+        controller.setFloating(true)
+        controller.window?.contentView?.layoutSubtreeIfNeeded()
+        if let before = anchor?.point, let after = m.pdf.view.currentDestination?.point {
+            guard abs(before.y-after.y) < 12 else { throw ReaderError("测试失败。", "Floating moved the reading position off screen.") }
+        }
+        controller.setFloating(false)
+        controller.window?.contentView?.layoutSubtreeIfNeeded()
+        if let before = anchor?.point, let after = m.pdf.view.currentDestination?.point {
+            guard abs(before.y-after.y) < 12 else { throw ReaderError("测试失败。", "Docking moved the reading position off screen.") }
+        }
         m.selected = selected.text
         m.answer = "离线界面测试示例：此处 bank 指银行，因为它批准了贷款。\n\nOffline UI fixture: bank means a financial institution here, because it approved a loan."
         m.tab = 0; m.status = "Offline validation — no network requests or real API keys."

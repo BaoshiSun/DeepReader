@@ -12,8 +12,21 @@ public struct SelectedText {
     public let marker: String
 }
 
+@MainActor public final class ReaderPDFView: PDFView {
+    public override func setFrameSize(_ newSize: NSSize) {
+        // PDFKit rescales the page but preserves the old scroll-view offset when its
+        // viewport grows. Keep the PDF-space reading position through that resize.
+        let previous = window != nil && frame.size != newSize ? currentDestination : nil
+        let position = previous.flatMap { destination in
+            destination.page.map { PDFDestination(page: $0, at: destination.point) }
+        }
+        super.setFrameSize(newSize)
+        if let position = position { layoutDocumentView(); go(to: position) }
+    }
+}
+
 @MainActor public final class PDFReader {
-    public let view = PDFView()
+    public let view = ReaderPDFView()
     public private(set) var url: URL?
     public private(set) var dirty = false
     private var openedModification: Date?

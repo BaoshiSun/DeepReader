@@ -6,6 +6,24 @@ import PDFKit
 @testable import DeepReaderDesktop
 
 final class PDFTests: XCTestCase {
+    @MainActor func testResizePreservesReadingPosition() throws {
+        _ = NSApplication.shared
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-resize-tests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("test.pdf"); try SmokeTest.makePDF(at: url)
+        let reader = PDFReader()
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 420, height: 550), styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false; window.contentView = reader.view; window.orderFront(nil)
+        defer { window.orderOut(nil) }
+        try reader.open(url); reader.view.layoutDocumentView()
+        let anchor = reader.view.currentDestination!.point, scale = reader.view.scaleFactor
+        window.setContentSize(NSSize(width: 900, height: 550)); reader.view.layoutDocumentView()
+        XCTAssertGreaterThan(reader.view.scaleFactor, scale)
+        XCTAssertEqual(reader.view.currentDestination!.point.y, anchor.y, accuracy: 12)
+        window.setContentSize(NSSize(width: 420, height: 550)); reader.view.layoutDocumentView()
+        XCTAssertEqual(reader.view.currentDestination!.point.y, anchor.y, accuracy: 12)
+    }
     @MainActor func testExactContextAndPersistentHighlight() throws {
         _ = NSApplication.shared
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-PDF-tests-\(UUID().uuidString)")
