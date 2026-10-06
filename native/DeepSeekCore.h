@@ -14,6 +14,7 @@ struct Config {
     bool onboardingSeen = false;
     int lookupSplit = 50;
     PanelPlacement panel;
+    std::wstring archiveFolder;
     std::string keys[ProviderCount];
     std::string models[ProviderCount] = {"openrouter/free", "deepseek-flash", "gemini-3.8-flash"};
 };

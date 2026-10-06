@@ -3,7 +3,9 @@
 #include "utils/JsonParser.h"
 #include "DeepSeekCore.h"
 #include "ReadingLibrary.h"
+#include "BookLibrary.h"
 #include <string>
+#include <filesystem>
 static int failures=0;
 void _uploadDebugReport(const char*,bool,bool) { fprintf(stderr,"FAIL: unexpected native assertion\n"); exit(1); }
 static void Check(bool ok,const char* label) { printf("%s: %s\n",ok?"PASS":"FAIL",label); if (!ok) ++failures; }
@@ -142,11 +144,13 @@ int wmain(int argc,WCHAR** argv) {
         original.onboardingSeen=true; original.lookupSplit=65;
         original.panel.width=520; original.panel.floating=true;
         original.panel.floatingWidth=640; original.panel.floatingHeight=820;
+        original.archiveFolder=L"D:\\阅读归档";
         Check(SaveConfig(path,original),"multi-provider settings written atomically");
         Config restored;
         Check(ReadConfig(path,restored) && restored.english && restored.provider==OpenRouter &&
             Unprotect(restored.keys[DeepSeek])=="synthetic-test-key" && Unprotect(restored.keys[OpenRouter])=="other-synthetic-key","explicit OpenRouter choice, provider credentials and language survive reload without mixing");
         Check(restored.onboardingSeen && restored.lookupSplit==65,"guide completion and selected/explanation ratio survive restart");
+        Check(restored.archiveFolder==original.archiveFolder,"Unicode archive folder survives settings reload without changing keys");
         Check(restored.panel.width==520 && restored.panel.floating && restored.panel.floatingWidth==640 && restored.panel.floatingHeight==820,
             "sidebar width, floating mode and independent floating dimensions survive restart alongside encrypted provider settings");
         Check(!Config().onboardingSeen && Config().lookupSplit==50,"new profiles start with one-time guide and equal reading panes");
@@ -180,6 +184,70 @@ int wmain(int argc,WCHAR** argv) {
         DeleteFileW((dir+L"\\broken.json").c_str());
         Check(DeleteRecord(dir,a.id),"delete targets only the selected valid record ID");
         RemoveDirectoryW(dir.c_str());
+        auto work=path+L".books-"+std::to_wstring(GetTickCount64());
+        Check(CreateDirectoryW(work.c_str(),nullptr)!=0,"isolated book test directory created");
+        auto library=work+L"\\BookLibrary",originalPdf=work+L"\\阅读 测试.pdf",archive=work+L"\\归档";
+        const std::string pdfBytes="%PDF-1.4\nSynthetic book bytes\n%%EOF\n";
+        WriteFileAtomic(originalPdf,pdfBytes);
+        Book book;
+        Check(FindBook(library,originalPdf,book,true) && book.rating==0 && !book.finished && book.finishedAt.empty(),
+            "opening a new PDF creates an unrated reading entry without claiming completion");
+        auto bookId=book.id;
+        Book same;
+        Check(FindBook(library,originalPdf,same,true) && same.id==bookId &&
+            SameBookPath(originalPdf,work+L"/阅读 测试.pdf"),"reopening and Windows path separators retain book identity");
+        std::atomic<bool> stopped{false};
+        Check(!ArchiveBook(library,book,originalPdf,archive,stopped).ok,"unrated books cannot be silently archived under an arbitrary score");
+        bool scores=true;
+        for (int score=1;score<=5;++score) scores=scores && UpdateBook(library,book,score,-1) &&
+            FindBook(library,originalPdf,same,false) && same.rating==score;
+        Check(scores,"all five star ratings can be changed and reloaded");
+        Check(UpdateBook(library,book,0,1) && book.finished && ValidDate(book.finishedAt.substr(0,10)),"finishing a book saves its completion date");
+        auto completion=book.finishedAt;
+        Check(UpdateBook(library,book,4,1) && book.finishedAt==completion,"rating changes and repeated Finished state retain the completion date");
+        Check(UpdateBook(library,book,0,0) && !book.finished && book.finishedAt.empty(),"returning to Reading removes the obsolete completion date");
+        UpdateBook(library,book,5,1);
+        auto archived=ArchiveBook(library,book,originalPdf,archive,stopped);
+        std::string originalData,copyData;
+        Check(archived.ok && archived.path==archive+L"\\5星\\阅读 测试.pdf" && ReadFileText(originalPdf,originalData) &&
+            ReadFileText(archived.path,copyData) && originalData==pdfBytes && copyData==originalData,
+            "archive makes a byte-identical Unicode PDF copy in its star folder and preserves the source");
+        Check(FindBook(library,archived.path,same,true) && same.id==bookId && same.finished && same.rating==5,
+            "opening an archived copy retains the original rating and reading status without duplicating books");
+        book=same;
+        auto repeatedCopy=ArchiveBook(library,book,originalPdf,archive,stopped);
+        Check(repeatedCopy.ok && repeatedCopy.path==archived.path,"repeated archive of unchanged bytes reuses the existing copy");
+        WriteFileAtomic(originalPdf,pdfBytes+"%changed\n");
+        auto changedCopy=ArchiveBook(library,book,originalPdf,archive,stopped);
+        Check(changedCopy.ok && changedCopy.path!=archived.path && ReadFileText(archived.path,copyData) && copyData==pdfBytes,
+            "changed source gets a new archive filename without overwriting the earlier PDF");
+        FindBook(library,originalPdf,book,false); UpdateBook(library,book,2,-1);
+        auto rerated=ArchiveBook(library,book,originalPdf,archive,stopped);
+        Check(rerated.ok && rerated.path.find(L"\\2星\\")!=std::wstring::npos && FindBook(library,archived.path,same,false) && same.id==bookId,
+            "re-archiving after a rating change uses the new star folder and recognizes earlier copies");
+        stopped=true;
+        Check(!ArchiveBook(library,same,originalPdf,work+L"\\cancelled",stopped).ok &&
+            GetFileAttributesW((work+L"\\cancelled").c_str())==INVALID_FILE_ATTRIBUTES,"cancelled archive leaves the source and destination untouched");
+        stopped=false;
+        auto obstruction=work+L"\\blocked"; WriteFileAtomic(obstruction,"keep existing file");
+        Check(!ArchiveBook(library,same,originalPdf,obstruction,stopped).ok && ReadFileText(obstruction,copyData) && copyData=="keep existing file",
+            "invalid archive destination never replaces an existing file");
+        std::vector<Book> books;
+        Check(LoadBooks(library,books,bad) && !bad && books.size()==1 && books[0].rating==2 && books[0].finished,
+            "book library persists independently of query history across all archive operations");
+        Check(BookOverview(books,true).find(L"Finished: 1")!=std::wstring::npos && BookOverview(books,false).find(L"平均 2.0")!=std::wstring::npos &&
+            BookMatches(books[0],L"测试",2) && !BookMatches(books[0],L"",1),"bilingual book totals, average and reading-state filters use persisted metadata");
+        Record summary=doc; summary.file=archived.path; summary.answer=L"Archived book summary";
+        Check(BookText(books[0],{summary},true).find(summary.answer)!=std::wstring::npos &&
+            BookListText(books,{summary},false).find(L"完成日期")!=std::wstring::npos,"book detail and exported reading list include saved summaries from archive aliases");
+        DeleteFileW(originalPdf.c_str());
+        Check(BookOpenPath(books[0])==rerated.path,"reading list falls back to the archived PDF when the original is missing");
+        Check(!ArchiveBook(library,books[0],originalPdf,archive,stopped).ok,"missing source never reports a successful archive");
+        Book invalidBook=books[0]; invalidBook.id=L"..\\outside";
+        Check(!SaveBook(library,invalidBook),"book IDs cannot escape the private metadata directory");
+        WriteFileAtomic(library+L"\\broken.json","bad json");
+        Check(LoadBooks(library,books,bad) && bad==1 && books.size()==1,"corrupt book metadata is reported while valid books remain readable");
+        std::filesystem::remove_all(work); // Only the unique test directory created above.
         DeleteFileW(path.c_str()); // Synthetic encrypted credentials must not survive a test run.
     }
     if (argc>2) {

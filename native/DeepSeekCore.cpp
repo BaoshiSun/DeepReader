@@ -226,6 +226,7 @@ struct ConfigVisitor : json::ValueVisitor {
             }
         }
         if (type != json::Type::String) return true;
+        if (!strcmp(path, "/ArchiveFolder")) config.archiveFolder=Wide(value);
         if (!strcmp(path, "/Provider")) {
             config.provider = -1;
             for (int i=0; i<ProviderCount; ++i) if (!strcmp(value, ProviderName(i))) config.provider = i;
@@ -246,15 +247,16 @@ bool ReadConfig(const std::wstring& path, Config& config) {
     std::string data;
     if (!ReadFileText(path, data, 65536)) return false;
     ConfigVisitor v;
-    if (!json::Parse(data.c_str(), &v) || !v.valid) return false;
+    if (!json::Parse(data.c_str(), &v) || !v.valid || v.config.archiveFolder.size()>4096) return false;
     for (int i=0; i<ProviderCount; ++i) if (!ValidModel(v.config.models[i]) || v.config.keys[i].size() > 8192) return false;
     config = v.config;
     return true;
 }
 bool SaveConfig(const std::wstring& path, const Config& c) {
-    if (c.provider < 0 || c.provider >= ProviderCount) return false;
+    if (c.provider < 0 || c.provider >= ProviderCount || c.archiveFolder.size()>4096) return false;
     std::string data = "{\"Schema\":3,\"Provider\":" + JsonString(ProviderName(c.provider)) +
         ",\"Language\":" + JsonString(c.english ? "en" : "zh") +
+        ",\"ArchiveFolder\":" + JsonString(Utf8(c.archiveFolder)) +
         ",\"OnboardingSeen\":" + (c.onboardingSeen ? "true" : "false") +
         ",\"LookupSplit\":" + std::to_string(std::max(20,std::min(80,c.lookupSplit))) +
         ",\"PanelWidth\":" + std::to_string(std::max(360,std::min(1200,c.panel.width))) +

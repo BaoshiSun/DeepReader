@@ -19,9 +19,11 @@
 #include "DeepSeekPanel.h"
 #include "DeepSeekCore.h"
 #include "ReadingLibrary.h"
+#include "BookLibrary.h"
 #include "ReaderHighlights.h"
 #include <winhttp.h>
 #include <commdlg.h>
+#include <shobjidl.h>
 #include <atomic>
 #include <memory>
 #include <string>
@@ -43,8 +45,11 @@ enum { Close = 9100, Selected, Answer, Status, ContextView, ContextToggle, Retry
        HistorySearch, HistoryList, HistoryDetail, HistoryExport, HistoryDelete, HistoryInfo,
        SummaryScope, SummaryDate, SummaryLabel, SummaryInfo, SummaryPrepare, SummaryRun, SummaryAnswer,
        SummaryExport, Intro, Configure, DismissIntro, LookupSplitter, ShowGuide, SaveHighlights, SummaryStats, AnswerLabel,
-       FollowupInput, FollowupSend, FollowupLabel, FloatToggle, DockGrip };
-enum class View { Lookup, History, Summary, Preferences };
+       FollowupInput, FollowupSend, FollowupLabel, FloatToggle, DockGrip,
+       BooksTab, Star1, Star2, Star3, Star4, Star5, ReadState, Archive, BookNotice,
+       BooksSearch, BooksFilter, BooksStats, BooksList, BooksDetail, BookOpen, BooksExport,
+       ArchiveLabel, ArchiveFolder, ArchiveBrowse };
+enum class View { Lookup, History, Summary, Books, Preferences };
 struct Job {
     std::atomic<bool> stopped{false}, done{false};
     std::atomic<int> completed{0};
@@ -56,6 +61,12 @@ struct Job {
     std::vector<std::wstring> parts;
     Result result;
     Record record;
+};
+struct ArchiveJob {
+    std::atomic<bool> stopped{false}, done{false};
+    Book book;
+    std::wstring dir, source, root;
+    ArchiveResult result;
 };
 struct Panel {
     MainWindow* win = nullptr;
@@ -79,6 +90,13 @@ struct Panel {
     std::wstring summaryResult, summaryStats, preparedStats;
     std::vector<HighlightPart> highlightParts;
     std::string highlightId;
+    std::wstring bookDir, bookMessage;
+    Book book;
+    std::vector<Book> books;
+    std::vector<size_t> shownBooks;
+    std::vector<Record> bookRecords;
+    std::shared_ptr<ArchiveJob> archiveJob;
+    bool booksUnreadable = false;
 };
 Panel* Get(MainWindow* win) { return (Panel*)GetPropW(win->hwndFrame, kPanelProperty); }
 HWND Item(Panel* p, int id) { return GetDlgItem(p->hwnd, id); }
@@ -106,13 +124,16 @@ void Layout(Panel* p);
 void Labels(Panel* p);
 void HistoryView(Panel* p);
 void SettingsView(Panel* p, bool show);
+void RefreshBook(Panel* p);
+void BooksView(Panel* p);
+void BookUI(Panel* p);
 void UpdateFonts(Panel* p) {
     int dpi=DpiGet(p->hwnd);
     if (p->font && p->fontDpi==dpi) return;
     auto font=CreateFontW(-MulDiv(14,dpi,96),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
     auto title=CreateFontW(-MulDiv(18,dpi,96),0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
     if (!font || !title) { DeleteObject(font); DeleteObject(title); return; }
-    for (int id=Close;id<=FloatToggle;++id) SendMessageW(Item(p,id),WM_SETFONT,(WPARAM)(id==Title?title:font),TRUE);
+    for (int id=Close;id<=ArchiveBrowse;++id) SendMessageW(Item(p,id),WM_SETFONT,(WPARAM)(id==Title?title:font),TRUE);
     DeleteObject(p->font); DeleteObject(p->titleFont);
     p->font=font; p->titleFont=title; p->fontDpi=dpi;
 }
@@ -358,7 +379,7 @@ Result Call(const std::shared_ptr<Job>& job, Task task, const std::wstring& sour
         metadata=L"[Requested scope: "+Wide(job->record.kind)+L"; "+job->record.title+L"; "+job->record.context+L"]\n";
     std::string body=RequestBody(job->config,task,metadata+source,LookupTask(task)?job->selected:L"",job->record.answer,job->question);
     if (body.empty()) return failure;
-    Internet session(WinHttpOpen(L"DeepReader/1.1.0",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
+    Internet session(WinHttpOpen(L"DeepReader/1.2.0",WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
         WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS,0));
     if (!session.handle || job->stopped) return failure;
     WinHttpSetTimeouts(session.handle,8000,10000,30000,60000);
@@ -462,6 +483,7 @@ bool StageSettings(Panel* p) {
         p->editing.keys[p->editing.provider]=encrypted;
     }
     p->editing.models[p->editing.provider]=model;
+    p->editing.archiveFolder=Text(Item(p,ArchiveFolder));
     return true;
 }
 void SettingsView(Panel* p,bool show) {
@@ -471,6 +493,7 @@ void SettingsView(Panel* p,bool show) {
         ReadConfig(p->configPath,p->config);
         p->config.panel=p->placement;
         p->editing=p->config;
+        Text(p,ArchiveFolder,p->editing.archiveFolder);
         p->view=View::Preferences;
         FillProvider(p);
     } else p->view=p->returnView;
@@ -734,32 +757,191 @@ void Tick(Panel* p) {
     if (following && p->view==View::Lookup) SetFocus(Item(p,FollowupInput));
     if (p->view==View::History) HistoryView(p);
 }
+void BookUI(Panel* p) {
+    bool ready=!p->book.id.empty(), busy=p->archiveJob!=nullptr;
+    for (int id=Star1;id<=Star5;++id) {
+        Text(p,id,std::to_wstring(id-Star1+1)+L(p,L" 星",L" stars"));
+        EnableWindow(Item(p,id),ready && !busy); InvalidateRect(Item(p,id),nullptr,TRUE);
+    }
+    EnableWindow(Item(p,ReadState),ready && !busy);
+    SendMessageW(Item(p,ReadState),CB_SETCURSEL,p->book.finished?1:0,0);
+    EnableWindow(Item(p,Archive),ready && !busy);
+    Text(p,Archive,busy?L(p,L"归档中…",L"Copying…"):L(p,L"归档",L"Archive"));
+    std::wstring notice=ready ? L(p,L"当前：",L"Current: ")+p->book.title : L(p,L"打开 PDF 后可评分、标记阅读状态和归档。",L"Open a PDF to rate, track reading and archive it.");
+    if (!p->bookMessage.empty()) notice=p->bookMessage;
+    else if (ready) notice+=p->book.rating?L" · "+std::to_wstring(p->book.rating)+L(p,L" 星",L" stars"):L(p,L" · 未评分",L" · Unrated");
+    Text(p,BookNotice,notice);
+}
+void BookSelection(Panel* p) {
+    int i=(int)SendMessageW(Item(p,BooksList),LB_GETCURSEL,0,0);
+    bool valid=i>=0 && (size_t)i<p->shownBooks.size();
+    Text(p,BooksDetail,valid?BookText(p->books[p->shownBooks[i]],p->bookRecords,p->config.english):
+        L(p,L"书单会自动收录你打开的 PDF。可按阅读状态筛选，查看评分与已保存的全文总结。",L"Opened PDFs appear here automatically. Filter by reading state to see ratings and saved document summaries."));
+    EnableWindow(Item(p,BookOpen),valid);
+    EnableWindow(Item(p,BooksExport),!p->shownBooks.empty());
+}
+void FilterBooks(Panel* p) {
+    std::wstring selectedId;
+    int previous=(int)SendMessageW(Item(p,BooksList),LB_GETCURSEL,0,0);
+    if (previous>=0 && (size_t)previous<p->shownBooks.size() && p->shownBooks[previous]<p->books.size()) selectedId=p->books[p->shownBooks[previous]].id;
+    SendMessageW(Item(p,BooksList),LB_RESETCONTENT,0,0); p->shownBooks.clear();
+    auto query=Text(Item(p,BooksSearch)); int filter=Choice(p,BooksFilter),select=0;
+    for (size_t i=0;i<p->books.size();++i) {
+        const auto& b=p->books[i]; if (!BookMatches(b,query,filter)) continue;
+        std::wstring label=(b.rating?std::wstring(b.rating,L'★'):L"☆")+L" · "+
+            (b.finished?L(p,L"读完",L"Finished"):L(p,L"阅读中",L"Reading"))+L" · "+b.title;
+        if (b.id==selectedId) select=(int)p->shownBooks.size();
+        SendMessageW(Item(p,BooksList),LB_ADDSTRING,0,(LPARAM)label.c_str()); p->shownBooks.push_back(i);
+    }
+    if (!p->shownBooks.empty()) SendMessageW(Item(p,BooksList),LB_SETCURSEL,select,0);
+    std::wstring stats=BookOverview(p->books,p->config.english)+L"\r\n"+
+        L(p,L"当前显示 ",L"Showing ")+std::to_wstring(p->shownBooks.size())+L(p,L" 本",L" books");
+    if (p->booksUnreadable) stats+=L(p,L" · 部分记录无法读取",L" · Some records could not be read");
+    Text(p,BooksStats,stats); BookSelection(p);
+}
+void BooksView(Panel* p) {
+    p->view=View::Books; p->scrollY=0;
+    // Clear list indices before replacing the backing vector.
+    p->shownBooks.clear();
+    int bad=0,historyBad=0;
+    bool ok=LoadBooks(p->bookDir,p->books,bad),historyOk=LoadRecords(p->historyDir,p->bookRecords,historyBad);
+    p->booksUnreadable=!ok || !historyOk || bad || historyBad;
+    // Existing successful reading records can seed the list after an upgrade.
+    // They establish a book was opened, never that it was finished or rated.
+    if (ok && HasPermission(Perm::SavePreferences) && HasPermission(Perm::DiskAccess)) {
+        for (const auto& record:p->bookRecords) {
+            if ((record.kind!="explain" && record.kind!="file") || record.file.size()<4 ||
+                _wcsicmp(record.file.c_str()+record.file.size()-4,L".pdf")) continue;
+            bool known=false; for (const auto& b:p->books) if (BookHasPath(b,record.file)) { known=true; break; }
+            if (!known) {
+                Book b;
+                if (FindBook(p->bookDir,record.file,b,true)) p->books.push_back(b);
+                else p->booksUnreadable=true;
+            }
+        }
+    }
+    Labels(p); FilterBooks(p); Layout(p);
+}
+void RefreshBook(Panel* p) {
+    auto file=CurrentFile(p); p->book=Book(); p->bookMessage.clear();
+    auto dm=p->win->AsFixed();
+    if (dm && file.size()>4 && _wcsicmp(file.c_str()+file.size()-4,L".pdf")==0 &&
+        HasPermission(Perm::DiskAccess) && HasPermission(Perm::SavePreferences)) {
+        if (!FindBook(p->bookDir,file,p->book,true))
+            p->bookMessage=L(p,L"书单保存失败，请检查数据文件夹权限。",L"Could not save the reading list. Check data folder access.");
+    }
+    BookUI(p);
+    if (p->view==View::Books) BooksView(p);
+    Layout(p);
+}
+void ChangeBook(Panel* p,int rating,int state) {
+    if (p->archiveJob || p->book.id.empty() || !HasPermission(Perm::SavePreferences) || !HasPermission(Perm::DiskAccess)) return;
+    if (UpdateBook(p->bookDir,p->book,rating,state)) p->bookMessage.clear();
+    else p->bookMessage=L(p,L"修改未保存，请检查数据文件夹权限。",L"Changes were not saved. Check data folder access.");
+    BookUI(p); if (p->view==View::Books) BooksView(p);
+}
+std::wstring PickArchiveFolder(Panel* p,const std::wstring& current) {
+    IFileOpenDialog* dialog=nullptr; std::wstring result;
+    if (FAILED(CoCreateInstance(CLSID_FileOpenDialog,nullptr,CLSCTX_INPROC_SERVER,IID_PPV_ARGS(&dialog)))) return result;
+    DWORD options=0; dialog->GetOptions(&options);
+    dialog->SetOptions(options|FOS_PICKFOLDERS|FOS_FORCEFILESYSTEM|FOS_PATHMUSTEXIST|FOS_NOCHANGEDIR);
+    dialog->SetTitle(L(p,L"选择归档文件夹（按 1–5 星建立子文件夹）",L"Choose archive folder (subfolders for 1–5 stars)"));
+    IShellItem* folder=nullptr;
+    if (!current.empty() && SUCCEEDED(SHCreateItemFromParsingName(current.c_str(),nullptr,IID_PPV_ARGS(&folder)))) {
+        dialog->SetFolder(folder); folder->Release();
+    }
+    if (SUCCEEDED(dialog->Show(p->hwnd))) {
+        IShellItem* item=nullptr;
+        if (SUCCEEDED(dialog->GetResult(&item))) {
+            PWSTR path=nullptr;
+            if (SUCCEEDED(item->GetDisplayName(SIGDN_FILESYSPATH,&path))) { result=path; CoTaskMemFree(path); }
+            item->Release();
+        }
+    }
+    dialog->Release(); return result;
+}
+DWORD WINAPI ArchiveThread(void* data) {
+    std::unique_ptr<std::shared_ptr<ArchiveJob>> holder((std::shared_ptr<ArchiveJob>*)data);
+    auto job=*holder;
+    job->result=ArchiveBook(job->dir,job->book,job->source,job->root,job->stopped);
+    job->done=true; return 0;
+}
+void StartArchive(Panel* p) {
+    if (p->archiveJob || p->book.id.empty() || !HasPermission(Perm::DiskAccess) || !HasPermission(Perm::SavePreferences)) return;
+    if (!p->book.rating) {
+        p->bookMessage=L(p,L"请先点选 1–5 颗星，再归档。",L"Choose a rating from 1–5 stars before archiving."); BookUI(p); return;
+    }
+    auto dm=p->win->AsFixed();
+    if (!dm) return;
+    if (EngineHasUnsavedAnnotations(dm->GetEngine())) {
+        p->bookMessage=L(p,L"请先点击“保存批注”，再归档最新的 PDF。",L"Click Save PDF first to archive your latest annotations."); BookUI(p); return;
+    }
+    Config next=p->config; ReadConfig(p->configPath,next);
+    if (next.archiveFolder.empty()) {
+        next.archiveFolder=PickArchiveFolder(p,L"");
+        if (next.archiveFolder.empty()) return;
+        if (!SaveConfig(p->configPath,next)) {
+            p->bookMessage=L(p,L"归档目录未能保存，请检查设置文件权限。",L"Could not save the archive folder setting."); BookUI(p); return;
+        }
+    }
+    p->config.archiveFolder=next.archiveFolder;
+    auto job=std::make_shared<ArchiveJob>();
+    job->book=p->book; job->dir=p->bookDir; job->root=next.archiveFolder; job->source=CurrentFile(p);
+    auto holder=new std::shared_ptr<ArchiveJob>(job);
+    HANDLE thread=CreateThread(nullptr,0,ArchiveThread,holder,0,nullptr);
+    if (!thread) { delete holder; p->bookMessage=L(p,L"无法启动归档，请重试。",L"Could not start archiving. Please retry."); }
+    else { CloseHandle(thread); p->archiveJob=job; p->bookMessage=L(p,L"正在复制 PDF，原文件会保留。",L"Copying PDF; the original will be kept."); SetTimer(p->hwnd,3,100,nullptr); }
+    BookUI(p);
+}
+void ArchiveTick(Panel* p) {
+    auto job=p->archiveJob; if (!job || !job->done) return;
+    KillTimer(p->hwnd,3); p->archiveJob.reset();
+    RefreshBook(p);
+    p->bookMessage=job->result.ok ? L(p,L"已归档：",L"Archived: ")+FileName(job->result.path)+L" · "+std::to_wstring(job->book.rating)+L(p,L" 星（原文件已保留）",L" stars (original kept)") :
+        L(p,L"归档失败，原文件未改变。请检查目录或磁盘空间。错误：",L"Archive failed; original unchanged. Check folder access or disk space. Error: ")+std::to_wstring(job->result.error);
+    BookUI(p);
+}
+void OpenBook(Panel* p) {
+    int index=(int)SendMessageW(Item(p,BooksList),LB_GETCURSEL,0,0);
+    if (index<0 || (size_t)index>=p->shownBooks.size() || !HasPermission(Perm::DiskAccess)) return;
+    auto path=BookOpenPath(p->books[p->shownBooks[index]]);
+    if (path.empty()) { Text(p,BooksDetail,L(p,L"原文件和归档副本都找不到，请检查文件是否已移动。",L"Neither the original nor an archived copy was found. Check whether the file was moved.")); return; }
+    LoadArgs args(Utf8(path).c_str(),p->win); args.activateExisting=true; StartLoadDocument(&args);
+}
 void Layout(Panel* p) {
     if (p->layingOut) return;
     p->layingOut=true;
     RECT r{}; GetClientRect(p->hwnd,&r);
     int dpi=DpiGet(p->hwnd); auto d=[dpi](int x){return MulDiv(x,dpi,96);};
-    int minimum=d(p->view==View::Preferences?572:(p->view==View::Summary?570:520));
-    int viewport=r.bottom,h=std::max(viewport,minimum);
-    ShowScrollBar(p->hwnd,SB_VERT,h>viewport);
+    int bodyOffset=p->view==View::Preferences?0:d(80);
+    int minimum=d(p->view==View::Preferences?668:(p->view==View::Summary?570:560))+bodyOffset;
+    int viewport=r.bottom,total=std::max(viewport,minimum),h=total-bodyOffset;
+    ShowScrollBar(p->hwnd,SB_VERT,total>viewport);
     GetClientRect(p->hwnd,&r);
-    p->scrollY=std::max(0,std::min(p->scrollY,h-viewport));
-    SCROLLINFO scroll{sizeof(scroll),SIF_RANGE|SIF_PAGE|SIF_POS,0,h-1,(UINT)viewport,p->scrollY,0};
+    p->scrollY=std::max(0,std::min(p->scrollY,total-viewport));
+    SCROLLINFO scroll{sizeof(scroll),SIF_RANGE|SIF_PAGE|SIF_POS,0,total-1,(UINT)viewport,p->scrollY,0};
     SetScrollInfo(p->hwnd,SB_VERT,&scroll,TRUE);
     int w=r.right,m=d(16),inner=w-2*m;
-    auto place=[&](int id,int x,int y,int width,int height) {
+    auto fixed=[&](int id,int x,int y,int width,int height) {
         auto child=Item(p,id); ShowWindow(child,SW_SHOW); MoveWindow(child,x,y-p->scrollY,std::max(1,width),std::max(1,height),TRUE);
     };
-    for (int id=Close;id<=FloatToggle;++id)
+    auto place=[&](int id,int x,int y,int width,int height) { fixed(id,x,y+bodyOffset,width,height); };
+    for (int id=Close;id<=ArchiveBrowse;++id)
         if (id!=LookupSplitter || !p->dragging) ShowWindow(Item(p,id),SW_HIDE);
-    place(Title,m,d(13),inner-d(204),d(29));
-    place(FloatToggle,w-m-d(198),d(10),d(62),d(30));
-    place(Language,w-m-d(130),d(10),d(62),d(30));
-    place(Close,w-m-d(62),d(10),d(62),d(30));
-    int tabs[]={LookupTab,HistoryTab,SummaryTab,Settings};
-    for (int i=0;i<4;++i) {
-        place(tabs[i],m+i*inner/4,d(56),inner/4-d(3),d(32));
+    fixed(Title,m,d(13),inner-d(204),d(29));
+    fixed(FloatToggle,w-m-d(198),d(10),d(62),d(30));
+    fixed(Language,w-m-d(130),d(10),d(62),d(30));
+    fixed(Close,w-m-d(62),d(10),d(62),d(30));
+    int tabs[]={LookupTab,HistoryTab,SummaryTab,BooksTab,Settings};
+    for (int i=0;i<5;++i) {
+        fixed(tabs[i],m+i*inner/5,d(56),inner/5-d(3),d(32));
         SendMessageW(Item(p,tabs[i]),BM_SETCHECK,(int)p->view==i?BST_CHECKED:BST_UNCHECKED,0);
+    }
+    if (bodyOffset) {
+        for (int i=0;i<5;++i) fixed(Star1+i,m+i*d(24),d(101),d(24),d(30));
+        fixed(ReadState,m+d(128),d(101),inner-d(212),d(130));
+        fixed(Archive,w-m-d(76),d(100),d(76),d(32));
+        fixed(BookNotice,m,d(137),inner,d(39));
     }
     if (p->view==View::Preferences) {
         place(ProviderLabel,m,d(103),inner,d(22));
@@ -768,8 +950,20 @@ void Layout(Panel* p) {
         place(ModelLabel,m,d(239),inner,d(22)); place(ModelInput,m,d(263),inner,d(250));
         place(ModelHint,m,d(306),inner,d(56)); place(Privacy,m,d(373),inner,d(56));
         place(KeyLink,m,d(435),inner,d(29));
-        place(Save,m,d(478),inner-d(96),d(32)); place(Back,w-m-d(86),d(478),d(86),d(32));
-        place(ShowGuide,m,d(527),inner,d(29));
+        place(ArchiveLabel,m,d(478),inner,d(22));
+        place(ArchiveFolder,m,d(506),inner-d(82),d(30));
+        place(ArchiveBrowse,w-m-d(74),d(506),d(74),d(30));
+        place(Save,m,d(572),inner-d(96),d(32)); place(Back,w-m-d(86),d(572),d(86),d(32));
+        place(ShowGuide,m,d(623),inner,d(29));
+    } else if (p->view==View::Books) {
+        place(BooksSearch,m,d(104),inner-d(110),d(31));
+        place(BooksFilter,w-m-d(102),d(104),d(102),d(150));
+        place(BooksStats,m,d(147),inner,d(72));
+        int listHeight=std::min(d(190),std::max(d(100),h/4));
+        place(BooksList,m,d(228),inner,listHeight);
+        place(BooksDetail,m,d(239)+listHeight,inner,std::max(d(80),h-d(297)-listHeight));
+        place(BookOpen,m,h-d(44),inner/2-d(4),d(31));
+        place(BooksExport,m+inner/2+d(4),h-d(44),inner/2-d(4),d(31));
     } else if (p->view==View::History) {
         place(HistorySearch,m,d(104),inner,d(31)); place(HistoryInfo,m,d(145),inner,d(25));
         int listHeight=std::min(d(160),std::max(d(85),h/4));
@@ -796,10 +990,10 @@ void Layout(Panel* p) {
     } else {
         place(Status,m,d(101),inner,d(42));
         place(SelectedLabel,m,d(151),inner,d(24));
-        p->splitTop=d(179); p->splitAvailable=h-d(383);
+        p->splitTop=d(179)+bodyOffset; p->splitAvailable=h-d(383);
         int selectedHeight=std::max(d(60),std::min(p->splitAvailable-d(60),p->splitAvailable*p->config.lookupSplit/100));
-        place(Selected,m,p->splitTop,inner,selectedHeight);
-        place(LookupSplitter,m,p->splitTop+selectedHeight,inner,d(22));
+        place(Selected,m,d(179),inner,selectedHeight);
+        place(LookupSplitter,m,d(179)+selectedHeight,inner,d(22));
         place(AnswerLabel,m,d(201)+selectedHeight,inner,d(22));
         place(Answer,m,d(223)+selectedHeight,inner,p->splitAvailable-selectedHeight);
         place(FollowupLabel,m,h-d(150),inner,d(20));
@@ -818,6 +1012,22 @@ void Labels(Panel* p) {
     Text(p,Language,L(p,L"English",L"中文")); Text(p,Close,L(p,L"收起",L"Hide"));
     Text(p,LookupTab,L(p,L"解释",L"Lookup")); Text(p,HistoryTab,L(p,L"历史",L"History"));
     Text(p,SummaryTab,L(p,L"总结",L"Summary")); Text(p,Settings,L(p,L"设置",L"Settings"));
+    Text(p,BooksTab,L(p,L"书单",L"Books"));
+    Text(p,BookOpen,L(p,L"打开本书",L"Open book"));
+    Text(p,BooksExport,L(p,L"导出当前书单",L"Export list"));
+    Text(p,ArchiveLabel,L(p,L"归档目录（复制 PDF，按星级分类）",L"Archive folder (copy PDFs into star folders)"));
+    Text(p,ArchiveBrowse,L(p,L"选择…",L"Browse…"));
+    SendMessageW(Item(p,ArchiveFolder),EM_SETCUEBANNER,TRUE,(LPARAM)L(p,L"首次归档时选择，之后可在这里更改",L"Choose on first archive, or change it here"));
+    SendMessageW(Item(p,BooksSearch),EM_SETCUEBANNER,TRUE,(LPARAM)L(p,L"搜索书名、文件或完成日期",L"Search title, file or completion date"));
+    int filter=std::max(0,Choice(p,BooksFilter));
+    SendMessageW(Item(p,BooksFilter),CB_RESETCONTENT,0,0);
+    for (const auto text:{L(p,L"全部",L"All"),L(p,L"阅读中",L"Reading"),L(p,L"读完",L"Finished")})
+        SendMessageW(Item(p,BooksFilter),CB_ADDSTRING,0,(LPARAM)text);
+    SendMessageW(Item(p,BooksFilter),CB_SETCURSEL,filter,0);
+    SendMessageW(Item(p,ReadState),CB_RESETCONTENT,0,0);
+    for (const auto text:{L(p,L"阅读中",L"Reading"),L(p,L"读完",L"Finished")})
+        SendMessageW(Item(p,ReadState),CB_ADDSTRING,0,(LPARAM)text);
+    BookUI(p);
     Text(p,Configure,L(p,L"配置 API",L"Configure API"));
     Text(p,DismissIntro,L(p,L"开始阅读",L"Start reading"));
     Text(p,ShowGuide,L(p,L"查看使用引导",L"Show getting-started guide"));
@@ -883,7 +1093,7 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
     if (msg==WM_NCCREATE) { p=(Panel*)((CREATESTRUCTW*)lp)->lpCreateParams; p->hwnd=hwnd; SetWindowLongPtrW(hwnd,GWLP_USERDATA,(LONG_PTR)p); }
     if (!p) return DefWindowProcW(hwnd,msg,wp,lp);
     switch (msg) {
-        case kRefreshDocument: RefreshStats(p); HighlightUI(p); return 0;
+        case kRefreshDocument: RefreshStats(p); HighlightUI(p); RefreshBook(p); return 0;
         case WM_SIZE: UpdateFonts(p); Layout(p); return 0;
         case WM_DPICHANGED_AFTERPARENT: UpdateFonts(p); Layout(p); return 0;
         case WM_VSCROLL: {
@@ -912,12 +1122,31 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
         case WM_CTLCOLOREDIT:
             SetTextColor((HDC)wp,RGB(35,43,54)); SetBkColor((HDC)wp,RGB(255,255,255));
             SetDCBrushColor((HDC)wp,RGB(255,255,255)); return (LRESULT)GetStockObject(DC_BRUSH);
+        case WM_DRAWITEM: {
+            auto draw=(DRAWITEMSTRUCT*)lp;
+            if (!draw || draw->CtlID<Star1 || draw->CtlID>Star5) break;
+            bool filled=(int)draw->CtlID-Star1<p->book.rating,disabled=(draw->itemState&ODS_DISABLED)!=0;
+            FillRect(draw->hDC,&draw->rcItem,(HBRUSH)(COLOR_WINDOW+1));
+            SetBkMode(draw->hDC,TRANSPARENT);
+            SetTextColor(draw->hDC,disabled?RGB(180,186,183):(filled?RGB(30,135,84):RGB(129,149,138)));
+            auto font=SelectObject(draw->hDC,p->titleFont);
+            RECT r=draw->rcItem; DrawTextW(draw->hDC,filled?L"★":L"☆",1,&r,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+            SelectObject(draw->hDC,font);
+            if ((draw->itemState&ODS_FOCUS) && !(draw->itemState&ODS_NOFOCUSRECT)) DrawFocusRect(draw->hDC,&r);
+            return TRUE;
+        }
         case WM_TIMER:
             if (wp==1) Tick(p);
             else if (wp==2 && p->extracting) ExtractionStep(p);
+            else if (wp==3) ArchiveTick(p);
             return 0;
         case WM_COMMAND: {
             int id=LOWORD(wp),event=HIWORD(wp);
+            if (id==BooksSearch && event==EN_CHANGE) { FilterBooks(p); return 0; }
+            if (id==BooksFilter && event==CBN_SELCHANGE) { FilterBooks(p); return 0; }
+            if (id==BooksList && event==LBN_SELCHANGE) { BookSelection(p); return 0; }
+            if (id==BooksList && event==LBN_DBLCLK) { OpenBook(p); return 0; }
+            if (id==ReadState && event==CBN_SELCHANGE) { ChangeBook(p,0,Choice(p,ReadState)); return 0; }
             if (id==ProviderInput && event==CBN_SELCHANGE) {
                 int next=Choice(p,ProviderInput);
                 if (next>=0 && next<ProviderCount && StageSettings(p)) { p->editing.provider=next; FillProvider(p); }
@@ -939,7 +1168,21 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
                 InvalidateSummary(p); Layout(p); return 0;
             }
             if (event!=BN_CLICKED) break;
+            if (id>=Star1 && id<=Star5) { ChangeBook(p,id-Star1+1,-1); return 0; }
             switch (id) {
+                case BooksTab: BooksView(p); return 0;
+                case Archive: StartArchive(p); return 0;
+                case BookOpen: OpenBook(p); return 0;
+                case BooksExport: {
+                    std::vector<Book> shown;
+                    for (auto index:p->shownBooks) shown.push_back(p->books[index]);
+                    Export(p,BookListText(shown,p->bookRecords,p->config.english)); return 0;
+                }
+                case ArchiveBrowse: {
+                    auto folder=PickArchiveFolder(p,Text(Item(p,ArchiveFolder)));
+                    if (!folder.empty()) Text(p,ArchiveFolder,folder);
+                    return 0;
+                }
                 case Close: DeepSeekToggle(p->win); return 0;
                 case FloatToggle:
                     if (!SetFloating(p,!p->floating)) Text(p,Status,L(p,L"无法切换侧栏显示方式。",L"Could not change the sidebar mode."));
@@ -961,6 +1204,8 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
                         Cancel(panel); panel->config=next; panel->editing.english=next.english;
                         Labels(panel); InvalidateSummary(panel);
                         if (panel->view==View::History) HistoryView(panel);
+                        panel->bookMessage.clear(); BookUI(panel);
+                        if (panel->view==View::Books) BooksView(panel);
                         if (panel->view==View::Preferences) {
                             // Changing language must not discard a key or model being edited.
                             ModelNotice(panel);
@@ -1020,6 +1265,7 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
         }
         case WM_NCDESTROY:
             Cancel(p); RemovePropW(p->win->hwndFrame,kPanelProperty);
+            if (p->archiveJob) p->archiveJob->stopped=true;
             if (p->grip) { SetWindowLongPtrW(p->grip,GWLP_USERDATA,0); DestroyWindow(p->grip); }
             if (p->floatingHost) {
                 // The owner can destroy us before DeleteMainWindow is reached.
@@ -1046,6 +1292,7 @@ Panel* Ensure(MainWindow* win) {
     RegisterClassW(&grip);
     p=new Panel(); p->win=win; p->configPath=Wide(GetPathInAppDataDirTemp("AIReader.json"));
     p->historyDir=Wide(GetPathInAppDataDirTemp("AIHistory"));
+    p->bookDir=Wide(GetPathInAppDataDirTemp("BookLibrary"));
     auto legacyPath=Wide(GetPathInAppDataDirTemp("DeepSeek.json"));
     bool loaded=ReadConfig(p->configPath,p->config);
     if (!loaded) loaded=ReadConfig(legacyPath,p->config);
@@ -1065,11 +1312,12 @@ Panel* Ensure(MainWindow* win) {
         HWND control=CreateWindowExW(0,type,L"",WS_CHILD|style,0,0,1,1,hwnd,(HMENU)(INT_PTR)id,cls.hInstance,nullptr);
         SendMessageW(control,WM_SETFONT,(WPARAM)(id==Title?p->titleFont:p->font),TRUE); return control;
     };
-    for (int id:{Title,SelectedLabel,Status,KeyLabel,ModelLabel,Privacy,ProviderLabel,ModelHint,HistoryInfo,SummaryLabel,SummaryInfo,AnswerLabel,FollowupLabel}) make(id,L"STATIC");
-    for (int id:{Close,Language,ContextToggle,Retry,Save,Back,KeyLink,HistoryExport,HistoryDelete,SummaryPrepare,SummaryRun,SummaryExport,Configure,DismissIntro,ShowGuide,SaveHighlights,FollowupSend,FloatToggle}) make(id,L"BUTTON",WS_TABSTOP);
-    for (int id:{LookupTab,HistoryTab,SummaryTab,Settings}) make(id,L"BUTTON",WS_TABSTOP|BS_AUTOCHECKBOX|BS_PUSHLIKE);
+    for (int id:{Title,SelectedLabel,Status,KeyLabel,ModelLabel,Privacy,ProviderLabel,ModelHint,HistoryInfo,SummaryLabel,SummaryInfo,AnswerLabel,FollowupLabel,BookNotice,BooksStats,ArchiveLabel}) make(id,L"STATIC");
+    for (int id:{Close,Language,ContextToggle,Retry,Save,Back,KeyLink,HistoryExport,HistoryDelete,SummaryPrepare,SummaryRun,SummaryExport,Configure,DismissIntro,ShowGuide,SaveHighlights,FollowupSend,FloatToggle,Archive,BookOpen,BooksExport,ArchiveBrowse}) make(id,L"BUTTON",WS_TABSTOP);
+    for (int id=Star1;id<=Star5;++id) make(id,L"BUTTON",WS_TABSTOP|BS_OWNERDRAW);
+    for (int id:{LookupTab,HistoryTab,SummaryTab,BooksTab,Settings}) make(id,L"BUTTON",WS_TABSTOP|BS_AUTOCHECKBOX|BS_PUSHLIKE);
     DWORD readOnly=ES_MULTILINE|ES_AUTOVSCROLL|ES_READONLY|WS_VSCROLL|WS_TABSTOP;
-    for (int id:{Selected,Answer,ContextView,HistoryDetail,SummaryAnswer,Intro,SummaryStats}) { make(id,L"EDIT",readOnly); SendMessageW(Item(p,id),EM_SETLIMITTEXT,100000,0); }
+    for (int id:{Selected,Answer,ContextView,HistoryDetail,SummaryAnswer,Intro,SummaryStats,BooksDetail}) { make(id,L"EDIT",readOnly); SendMessageW(Item(p,id),EM_SETLIMITTEXT,100000,0); }
     CreateWindowExW(0,divider.lpszClassName,L"",WS_CHILD|WS_TABSTOP,0,0,1,1,hwnd,(HMENU)(INT_PTR)LookupSplitter,cls.hInstance,p);
     make(KeyInput,L"EDIT",ES_PASSWORD|ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP);
     make(FollowupInput,L"EDIT",ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN|WS_VSCROLL|WS_BORDER|WS_TABSTOP);
@@ -1082,6 +1330,11 @@ Panel* Ensure(MainWindow* win) {
     }
     make(HistorySearch,L"EDIT",ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP);
     make(HistoryList,L"LISTBOX",LBS_NOTIFY|LBS_NOINTEGRALHEIGHT|WS_VSCROLL|WS_BORDER|WS_TABSTOP);
+    for (int id:{BooksFilter,ReadState}) make(id,L"COMBOBOX",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP);
+    for (int id:{BooksSearch,ArchiveFolder}) make(id,L"EDIT",ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP);
+    make(BooksList,L"LISTBOX",LBS_NOTIFY|LBS_NOINTEGRALHEIGHT|WS_VSCROLL|WS_BORDER|WS_TABSTOP);
+    SendMessageW(Item(p,BooksSearch),EM_SETLIMITTEXT,200,0);
+    SendMessageW(Item(p,ArchiveFolder),EM_SETLIMITTEXT,4096,0);
     make(SummaryScope,L"COMBOBOX",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP);
     make(SummaryDate,L"EDIT",ES_AUTOHSCROLL|WS_BORDER|WS_TABSTOP);
     SendMessageW(Item(p,KeyInput),EM_SETLIMITTEXT,512,0);
@@ -1089,7 +1342,7 @@ Panel* Ensure(MainWindow* win) {
     SendMessageW(Item(p,SummaryDate),EM_SETLIMITTEXT,10,0);
     SendMessageW(Item(p,HistorySearch),EM_SETLIMITTEXT,200,0);
     Text(p,SummaryDate,LocalStamp().substr(0,10));
-    Labels(p); InvalidateSummary(p);
+    Labels(p); InvalidateSummary(p); RefreshBook(p);
     Text(p,Status,L(p,L"在正文中选中文字，按 Ctrl + Alt + D。",L"Select document text, then press Ctrl + Alt + D."));
     if (p->showIntro && HasPermission(Perm::SavePreferences)) SaveConfig(p->configPath,p->config);
     Layout(p);

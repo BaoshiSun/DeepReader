@@ -4,7 +4,7 @@
 
 项目地址：[BaoshiSun/DeepReader](https://github.com/BaoshiSun/DeepReader)。**1.0.0 是首个公开发行版本。**
 
-这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.1.0**；[下载 Windows 便携版](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.1.0)。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
+这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.2.0**；[下载 Windows 便携版](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.0)。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
 
 ## AI 制作与维护声明
 
@@ -14,6 +14,8 @@ DeepReader 的新增功能与项目文档主要由 AI 制作。项目日常开�
 
 - 在同一阅读器窗口中解释单词、短语或句子，按原生文字位置提取语境，不使用剪贴板取词。
 - 中英文界面和 AI 回答切换。
+- 当前 PDF 可评 1–5 星、标记“阅读中 / 读完”；按星级复制归档到指定目录，保留原文件。
+- 书单汇总在读、读完本数和平均评分，可搜索、筛选、继续打开、查看已保存的全文总结并导出。
 - 拖动侧栏左侧边界调整宽度；点击“悬浮”后可拖动标题栏移动、拖动边框缩放，再点击“停靠”回到阅读器。切换保留当前内容，宽度、悬浮状态和悬浮窗口大小自动记住。
 - 解释区下方支持连续追问：输入问题后点击“发送”或按 Ctrl + Enter，沿用当前选文、语境和对话，并保存到同一条历史。
 - 查询与总结成功后自动保存，可搜索、查看语境、导出和删除。
@@ -24,18 +26,24 @@ DeepReader 的新增功能与项目文档主要由 AI 制作。项目日常开�
 
 ## 快速开始
 
-1. 从 [v1.1.0 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.1.0)下载 `DeepReader-v1.1.0-win64.zip`，完整解压到可写文件夹。
+1. 从 [v1.2.0 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.0)下载 `DeepReader-v1.2.0-win64.zip`，完整解压到可写文件夹。
 2. 运行其中的 `DeepReader.exe`；右侧栏默认展开，简短引导仅在新配置首次启动时显示。之后可从“设置 → 查看使用引导”重新打开。
 3. 点击“配置 API”或“设置”，完成下方的 DeepSeek API 配置，再打开具有文字层的 PDF。
 4. 拖选文字，按 **Ctrl + Alt + D**。使用“English / 中文”切换语言，使用“收起”恢复阅读区域。
 
-**1.1.0 新增**侧栏宽度调整和悬浮窗口，并将选文与解释之间的拖动条改为细线和短手柄。悬浮窗口随阅读器最小化、退出；点击浮窗的关闭按钮只收起侧栏，可从“查看 → AI 阅读侧栏”重新打开。
+**1.2.0 新增**星级评分、阅读状态、按评分归档和书单。1.1.0 提供的侧栏宽度调整、悬浮窗口和细分隔条继续保留；点击浮窗的关闭按钮只收起侧栏，可从“查看 → AI 阅读侧栏”重新打开。
 
-从 1.0.0 升级：关闭阅读器，将新版便携包完整解压到原文件夹并覆盖程序、说明和源码文件。已有 `AIReader.json`、`AIHistory/` 等个人文件请保留；如果提示覆盖 `SumatraPDF-settings.txt`，选择保留原文件，以保留阅读器偏好。也可先解压到新文件夹试用。
+从 1.0.0 / 1.1.0 升级：关闭阅读器，将新版便携包完整解压到原文件夹并覆盖程序、说明和源码文件。已有 `AIReader.json`、`AIHistory/`、`BookLibrary/` 等个人文件请保留；如果提示覆盖 `SumatraPDF-settings.txt`，选择保留原文件，以保留阅读器偏好。也可先解压到新文件夹试用。
 
 运行原生阅读器不需要 Python、.NET 或外部悬浮助手。扫描 PDF 需要先 OCR；已经做过的高亮批注需要重新拖选文字。
 
 为避免 UnRAR 的用途限制与 GPL 组合，本版使用开源 unarr，移除了 UnRAR 备用解压路径；部分 RAR / CBR 漫画可能不受支持。PDF 阅读和 AI 功能不受影响。
+
+## 1.2.0：评分、归档与书单
+
+侧栏上方点选星级，选择“阅读中 / 读完”。点击“归档”，首次选择目标文件夹后，程序按评分将 PDF 复制到 `1星` 至 `5星` 子文件夹，保留原文件。同名不同内容自动加编号，不覆盖已有副本。含未保存批注时，先点击“保存批注”。归档目录可在设置中更改。
+
+“书单”页集中显示 PDF 的评分、状态、完成日期、已保存全文总结及阅读数量；支持筛选、搜索、打开和导出。书单与归档无需 API。书单会收录新打开的 PDF 和旧查询历史中的 PDF；是否读完由用户标记。信息保存在本地 `BookLibrary/`，升级时请和 `AIHistory/` 一并保留。详见 [评分、归档与书单说明](native/README.md#评分阅读状态与归档)。
 
 ## 默认 DeepSeek 怎么配置
 
@@ -94,7 +102,9 @@ DeepReader's added features and project documentation are primarily created by A
 
 An independent Windows x64 build of SumatraPDF with a native, collapsible AI sidebar. Select text and press **Ctrl + Alt + D** for a concise contextual explanation. Supports Chinese / English, saved lookups, multiple providers, full-document summaries, and daily / weekly / monthly reviews based on saved records.
 
-Version 1.1.0 adds a resizable sidebar and Float / Dock switching. Drag the sidebar's left edge to change its width, or move and resize its floating window using the title bar and borders. Current content and drafts survive switching; mode and sizes are saved. A thin divider and centered grip replace the colored instruction bar between the reading panes. The floating window follows its reader when minimized or closed. Closing the floating window hides the panel; reopen it from View → AI reader sidebar. [Download 1.1.0](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.1.0).
+Version 1.2.0 adds 1–5 star PDF ratings, Reading / Finished status with completion dates, archive copies organized into rating folders, and a searchable reading list with local totals, saved document summaries and export. Archive copies preserve the original PDF and existing destination files. These features work without an API key. [Download 1.2.0](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.0).
+
+The resizable sidebar and Float / Dock switching introduced in 1.1.0 remain available. Drag the sidebar's left edge to change its width, or move and resize its floating window using the title bar and borders. Current content and drafts survive switching; mode and sizes are saved. The floating window follows its reader when minimized or closed. Closing the floating window hides the panel; reopen it from View → AI reader sidebar.
 
 After an explanation, use the follow-up field and Send or Ctrl + Enter to ask another question; Enter inserts a line break. Each question carries the selected passage, nearby context and the current conversation. Successful turns are appended to the original history record. Failed or canceled requests keep your question and prior answers. New selections and document changes reset the conversation.
 

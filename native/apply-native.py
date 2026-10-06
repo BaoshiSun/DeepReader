@@ -84,7 +84,7 @@ edit('src/Menu.cpp', '            title = trans::GetTranslation(md.title);\n    
      '        if (cmdId == CmdDeepSeekPanel) title = aiEnglish ? "AI reading sidebar" : "AI 阅读侧栏";\n'
      '        if (cmdId == CmdHelpAbout) title = aiEnglish ? "About DeepReader" : "关于 DeepReader";')
 edit('premake5.files.lua', 'function sumatrapdf_files()',
-     'function sumatrapdf_files()\n  files { "src/DeepSeekCore.cpp", "src/DeepSeekCore.h", "src/DeepSeekPanel.cpp", "src/DeepSeekPanel.h", "src/ReadingLibrary.cpp", "src/ReadingLibrary.h", "src/ReaderHighlights.cpp", "src/ReaderHighlights.h" }')
+     'function sumatrapdf_files()\n  files { "src/DeepSeekCore.cpp", "src/DeepSeekCore.h", "src/DeepSeekPanel.cpp", "src/DeepSeekPanel.h", "src/ReadingLibrary.cpp", "src/ReadingLibrary.h", "src/BookLibrary.cpp", "src/BookLibrary.h", "src/ReaderHighlights.cpp", "src/ReaderHighlights.h" }')
 # Apply UTF-8 consistently, including third-party comments on Chinese Windows.
 edit('premake5.lua', '  staticruntime  "On"', '  buildoptions { "/utf-8" }\n  staticruntime  "On"')
 edit('premake5.lua', '"version", "windowscodecs", "wininet",', '"winhttp", "version", "windowscodecs", "wininet",')
@@ -105,7 +105,7 @@ for name, value in changes.items():
     data = value.encode('utf-8')
     if not target.exists() or target.read_bytes() != data:
         target.write_bytes(data)
-for name in ['DeepSeekCore.cpp', 'DeepSeekCore.h', 'DeepSeekPanel.cpp', 'DeepSeekPanel.h', 'ReadingLibrary.cpp', 'ReadingLibrary.h', 'ReaderHighlights.cpp', 'ReaderHighlights.h']:
+for name in ['DeepSeekCore.cpp', 'DeepSeekCore.h', 'DeepSeekPanel.cpp', 'DeepSeekPanel.h', 'ReadingLibrary.cpp', 'ReadingLibrary.h', 'BookLibrary.cpp', 'BookLibrary.h', 'ReaderHighlights.cpp', 'ReaderHighlights.h']:
     src, target = ROOT / 'native' / name, SOURCE / 'src' / name
     if not target.exists() or target.read_bytes() != src.read_bytes():
         shutil.copy2(src, target)

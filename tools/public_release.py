@@ -8,7 +8,7 @@ import subprocess
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 PRODUCT = "DeepReader"
 PUBLIC_PATHS = tuple("""
 .gitignore
@@ -34,6 +34,8 @@ native/DeepSeekPanel.h
 native/DeepSeekPanel.cpp
 native/ReadingLibrary.h
 native/ReadingLibrary.cpp
+native/BookLibrary.h
+native/BookLibrary.cpp
 native/ReaderHighlights.h
 native/ReaderHighlights.cpp
 assets/DeepReader-green.png
@@ -113,7 +115,7 @@ def safe_name(name):
     path = PurePosixPath(name)
     if "\\" in name or path.is_absolute() or ".." in path.parts or ":" in name:
         raise ValueError("Unsafe archive path")
-    if any(p.lower() in {"aihistory", ".git", ".env"} for p in path.parts):
+    if any(p.lower() in {"aihistory", "booklibrary", ".git", ".env"} for p in path.parts):
         raise ValueError(f"Private directory in archive: {name}")
     if path.name.lower() in PRIVATE_NAMES or path.suffix.lower() in {".lnk", ".log", ".tmp", ".pem", ".key"}:
         raise ValueError(f"Private file in archive: {name}")

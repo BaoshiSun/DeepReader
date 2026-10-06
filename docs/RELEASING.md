@@ -11,7 +11,7 @@ python -m unittest discover -s tests -p test_release.py -v
 python tools/public_release.py --source-zip
 ```
 
-输出 `DeepReader-v1.1.0-source.zip`，包含 `tools/public_release.py` 明确列出的源文件及 SHA-256 清单。源码包很小；上游完整源码和编译工具按锁定 URL 与 SHA-256 下载。
+输出 `DeepReader-v1.2.0-source.zip`，包含 `tools/public_release.py` 明确列出的源文件及 SHA-256 清单。源码包很小；上游完整源码和编译工具按锁定 URL 与 SHA-256 下载。
 
 若将已有开发目录发布到 GitHub，建议解压该源码包到一个新的空目录，再初始化 Git。这样旧版本交付文件、个人配置、阅读历史、日志、快捷方式和本地 Git 辅助快照都不会进入公开提交。使用 GitHub 的 noreply 邮箱提交，可避免将私人邮箱写进公开提交记录。
 
@@ -25,16 +25,16 @@ python -m pip install -r requirements-build.txt
 python native/package-native.py
 ```
 
-输出 `DeepReader-v1.1.0-win64.zip`。打包脚本只接受明确列出的文件，使用干净阅读器设置，包含完整对应上游源码及许可。它不会复制旧 API Key；即使本机交付目录已有用户配置，ZIP 也不会包含这些文件。
+输出 `DeepReader-v1.2.0-win64.zip`。打包脚本只接受明确列出的文件，使用干净阅读器设置，包含完整对应上游源码及许可。它不会复制旧 API Key；即使本机交付目录已有用户配置，ZIP 也不会包含这些文件。
 
-发布新版本时，创建对应提交的版本标签和 Release，上传该版本生成的 ZIP 与 SHA-256 校验文件，并更新 README 下载入口。1.1.0 使用标签 `v1.1.0`；旧的 1.0.0 Release 保留。修改源码或本地打包不会自动更新 GitHub 上的附件。
+发布新版本时，创建对应提交的版本标签和 Release，上传该版本生成的 ZIP 与 SHA-256 校验文件，并更新 README 下载入口。1.2.0 使用标签 `v1.2.0`；保留旧版本 Release。修改源码或本地打包不会自动更新 GitHub 上的附件。
 
 公开下载应使用 GitHub Release 附件，避免将约 84 MB 的二进制及上游源码归档放入 Git 仓库。软件版本号位于 `tools/public_release.py`；发布新版本时同时更新使用说明与本文档。
 
 ## 发布前复核
 
 - 源码检查和相关原生测试通过，ZIP 通过完整性与密钥扫描。
-- 公开压缩包中没有 `AIReader.json`、`DeepSeek.json`、`config.json`、`AIHistory/` 或真实打开文件的设置。
+- 公开压缩包中没有 `AIReader.json`、`DeepSeek.json`、`config.json`、`AIHistory/`、`BookLibrary/`、归档 PDF 或真实打开文件的设置。
 - 说明默认 DeepSeek 官方 API 需要自己的 Key 并按量计费；可选 OpenRouter 免费路由也需要独立账号和 Key。没有预置共享 Key，也没有免注册服务。
 - 附带 AGPL 文本、上游作者、第三方许可、构建步骤和对应源码。
 - 保留 GPL 与 BSD 文本、图标作者署名、MODIFICATIONS.txt 与许可核对报告；“关于 DeepReader”须能显示修改日期及源码位置。

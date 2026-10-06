@@ -106,6 +106,68 @@ public static class NativeIntegration {
         }
     }
     static int Height(IntPtr panel,int id) { Rect r; GetWindowRect(GetDlgItem(panel,id),out r); return r.bottom-r.top; }
+    static Dictionary<string,object> BookData(string settings) {
+        var files=Directory.GetFiles(Path.Combine(settings,"BookLibrary"),"*.json");
+        Check(files.Length==1,"one PDF and its archives remain one book in the library");
+        return new JavaScriptSerializer().Deserialize<Dictionary<string,object>>(File.ReadAllText(files[0]));
+    }
+    static void WaitArchive(IntPtr panel) {
+        var wait=Stopwatch.StartNew();
+        while(!IsWindowEnabled(GetDlgItem(panel,9159)) && wait.ElapsedMilliseconds<15000) Pump(100);
+        Check(Read(panel,9160).Contains("Archived:"),"archive finishes in the sidebar without an API key");
+    }
+    static string CheckBooks(IntPtr panel,IntPtr frame,string settings,string pdf) {
+        Click(panel,9152);
+        Check(IsWindowVisible(GetDlgItem(panel,9164)) && Read(panel,9163).Contains("Finished: 1") && Read(panel,9165).Contains("★★★★"),
+            "Books tab shows the finished PDF, its four-star rating and local totals");
+        Choose(panel,9162,1);
+        Check(SendMessage(GetDlgItem(panel,9164),0x18B,IntPtr.Zero,IntPtr.Zero).ToInt32()==0 && !IsWindowEnabled(GetDlgItem(panel,9166)),
+            "Reading filter omits finished books without leaving an active stale selection");
+        Choose(panel,9162,2);
+        Check(Read(panel,9165).Contains("Completed:"),"Finished filter shows the saved completion date");
+        Edit(panel,9161,"no-such-book");
+        Check(SendMessage(GetDlgItem(panel,9164),0x18B,IntPtr.Zero,IntPtr.Zero).ToInt32()==0,"book search handles an empty result");
+        Edit(panel,9161,Path.GetFileNameWithoutExtension(pdf));
+        Check(Read(panel,9165).Contains(Path.GetFileName(pdf)),"book search matches Unicode filenames");
+        Edit(panel,9161,"");
+        uint readerPid; GetWindowThreadProcessId(frame,out readerPid);
+        PostMessage(GetDlgItem(panel,9159),0xF5,IntPtr.Zero,IntPtr.Zero);
+        var waitFolder=Stopwatch.StartNew(); IntPtr folderDialog=IntPtr.Zero;
+        while(folderDialog==IntPtr.Zero && waitFolder.ElapsedMilliseconds<7000) { Pump(100); folderDialog=Find((int)readerPid,"#32770"); }
+        Check(folderDialog!=IntPtr.Zero && WindowText(folderDialog).Contains("Choose archive folder"),
+            "first archive opens the native folder picker with a clear destination prompt");
+        SendMessage(folderDialog,0x10,IntPtr.Zero,IntPtr.Zero); Pump(200);
+        Check((string)BookData(settings)["archivePath"]=="", "cancelling the folder picker leaves the PDF and book unarchived");
+        Click(panel,9107);
+        string root=Path.Combine(settings,"阅读归档");
+        Edit(panel,9169,root); Click(panel,9110);
+        Check(IsWindowVisible(GetDlgItem(panel,9164)),"saving the archive folder returns to the Books tab");
+        Click(panel,9159); WaitArchive(panel);
+        var book=BookData(settings); string archived=(string)book["archivePath"];
+        Check(archived.StartsWith(Path.Combine(root,"4星")) && File.Exists(pdf) && File.Exists(archived) &&
+            Convert.ToBase64String(File.ReadAllBytes(pdf))==Convert.ToBase64String(File.ReadAllBytes(archived)),
+            "native archive preserves the original PDF and copies its saved annotations into the chosen star folder");
+        Click(panel,9159); WaitArchive(panel);
+        Check((string)BookData(settings)["archivePath"]==archived && Directory.GetFiles(root,"*.pdf",SearchOption.AllDirectories).Length==1,
+            "repeated archive clicks do not create duplicate unchanged copies");
+        Choose(panel,9158,0);
+        Check(!(bool)BookData(settings)["finished"] && (string)BookData(settings)["finishedAt"]=="", "Reading state clears the prior completion date on disk");
+        Choose(panel,9158,1);
+        var record=new Dictionary<string,object> {
+            {"Schema",1},{"id","22222222-2222-2222-2222-222222222222"},{"time",DateTime.Now.ToString("yyyy-MM-ddTHH:mm:sszzz")},
+            {"file",archived},{"title","Synthetic book summary"},{"selected",""},{"context",""},
+            {"answer","OFFLINE_BOOK_SUMMARY: 银行与河岸的区别。"},{"kind","file"},{"provider","Fixture"},{"model","offline-fixture"},{"language","zh"},{"page",0}
+        };
+        File.WriteAllText(Path.Combine(settings,"AIHistory",(string)record["id"]+".json"),new JavaScriptSerializer().Serialize(record),new UTF8Encoding(false));
+        Click(panel,9152);
+        Check(Read(panel,9165).Contains("OFFLINE_BOOK_SUMMARY"),"book detail reuses a saved AI document summary from its archived path");
+        Click(panel,9117);
+        Check(Read(panel,9152)=="书单" && Read(panel,9163).Contains("读完 1 本") && Read(panel,9158)=="读完", "ratings, reading state and book totals switch to Chinese");
+        Shot(frame,Path.GetFullPath("artifacts/native-book-list.png"));
+        Click(panel,9117);
+        Click(panel,9118);
+        return archived;
+    }
     [STAThread] public static int Main(string[] args) {
         Console.WriteLine("STEP: initialize isolated native reader test");
         SetProcessDpiAwarenessContext(new IntPtr(-4));
@@ -188,7 +250,7 @@ public static class NativeIntegration {
                 Check(IsWindowVisible(panel),"sidebar is visible on startup without a command");
                 var version=FileVersionInfo.GetVersionInfo(args[0]);
                 Check(WindowText(frame).Contains("DeepReader") && Read(panel,9112)=="DeepReader" &&
-                    version.ProductName=="DeepReader" && version.ProductVersion=="1.1.0","window, sidebar and executable metadata identify DeepReader 1.1.0");
+                    version.ProductName=="DeepReader" && version.ProductVersion=="1.2.0","window, sidebar and executable metadata identify DeepReader 1.2.0");
                 Check(IsWindowVisible(GetDlgItem(panel,9139)) && Read(panel,9139).Contains("欢迎使用 DeepReader") &&
                     Read(panel,9139).Contains("Ctrl + Alt + D") && Read(panel,9139).Contains("按量计费"),"new reader shows concise Chinese onboarding and pricing context");
                 Check(File.ReadAllText(aiConfig).Contains("\"OnboardingSeen\":true"),"first-use guide is marked seen without requiring an API key");
@@ -208,6 +270,14 @@ public static class NativeIntegration {
                 Check(IsWindowVisible(GetDlgItem(panel,9108)) && Read(panel,9121)=="DeepSeek","onboarding opens native API configuration");
                 Click(panel,9111);
                 Check(!IsWindowVisible(GetDlgItem(panel,9139)) && IsWindowVisible(GetDlgItem(panel,9142)),"leaving initial setup shows the regular reading panes");
+                Check(IsWindowEnabled(GetDlgItem(panel,9153)) && Read(panel,9158)=="阅读中" && Read(panel,9160).Contains("未评分"),
+                    "a newly opened PDF exposes unrated stars and Reading state in the native sidebar");
+                Click(panel,9159);
+                Check(Read(panel,9160).Contains("1–5"),"archive asks for a star rating before choosing a destination");
+                Click(panel,9156); Choose(panel,9158,1);
+                var initialBook=BookData(settings);
+                Check(Convert.ToInt32(initialBook["rating"])==4 && (bool)initialBook["finished"] && ((string)initialBook["finishedAt"]).Length>=10,
+                    "clicking four stars and Finished immediately persists this PDF's metadata");
                 Check(Math.Abs(Height(panel,9101)-Height(panel,9102))<=2,"selected text and explanation initially share the available space equally");
                 Shot(GetDlgItem(panel,9142),Path.GetFullPath("artifacts/native-divider.png"));
                 Check(IsWindowVisible(GetDlgItem(panel,9147)) && IsWindowVisible(GetDlgItem(panel,9148)) &&
@@ -319,6 +389,8 @@ public static class NativeIntegration {
                 Command(frame,"[Search(\""+pdf+"\",\"bank\")]");
                 Click(panel,9105);
                 Check(Read(panel,9105)=="取消高亮" && IsWindowEnabled(GetDlgItem(panel,9144)),"captured phrase becomes a PDF highlight and can be saved");
+                Click(panel,9159);
+                Check(Read(panel,9160).Contains("保存批注"),"archive refuses to silently omit unsaved PDF highlights");
                 Click(panel,9144); Pump(700);
                 Check(Read(panel,9103).Contains("已保存到 PDF") && Read(panel,9101)=="bank approved a loan" && Read(panel,9105)=="取消高亮",
                     "saving PDF annotations keeps the query and recognizes the reloaded highlight");
@@ -380,6 +452,7 @@ public static class NativeIntegration {
                 Click(panel,9136);
                 Check(IsWindowVisible(GetDlgItem(panel,9108)),"summary requires the selected provider's key within native settings");
                 Click(panel,9111); Click(panel,9118);
+                string archivedPdf=CheckBooks(panel,frame,settings,pdf);
                 Shot(frame,Path.GetFullPath("artifacts/native-sidebar.png"));
                 SetWindowPos(frame,IntPtr.Zero,20,20,1400,850,0x14); Pump(100);
                 Click(panel,9107);
@@ -405,6 +478,7 @@ public static class NativeIntegration {
                 Click(panel,9118);
                 Check(Read(panel,9101)=="" && Read(panel,9104)=="" && Read(panel,9102)=="","closing document clears its selection context and answer");
                 Check(Read(panel,9147)=="" && !IsWindowEnabled(GetDlgItem(panel,9147)),"closing the document resets and disables the follow-up input");
+                Check(!IsWindowEnabled(GetDlgItem(panel,9153)) && !IsWindowEnabled(GetDlgItem(panel,9159)),"closing a PDF disables current-book rating and archive actions");
                 Check(!IsWindowVisible(GetDlgItem(panel,9139)) && IsWindowVisible(GetDlgItem(panel,9101)),"closing a document does not show onboarding again");
                 Check(GetClipboardSequenceNumber()==clipboardSequence,"clipboard stays unchanged for the complete workflow");
                 // Open a second isolated reader to verify persisted settings and history are read from disk.
@@ -436,6 +510,14 @@ public static class NativeIntegration {
                         Shot(second,Path.GetFullPath("artifacts/deepreader-empty-start.png"));
                         Click(other,9119);
                         Check(Read(other,9127).Contains("银行"),"query history survives restart");
+                        Click(other,9152);
+                        Check(Read(other,9163).Contains("Finished: 1") && Read(other,9165).Contains("OFFLINE_BOOK_SUMMARY"),
+                            "book ratings, completion and saved summaries survive restarting the reader");
+                        Click(other,9166); Pump(500);
+                        Check(Read(other,9160).Contains(Path.GetFileName(pdf)),"Open book loads the selected book from the reading list");
+                        Command(second,"[Open(\""+archivedPdf+"\")]");
+                        Check(Read(other,9158)=="Finished" && Convert.ToInt32(BookData(settings)["rating"])==4,
+                            "opening the archive restores the same book state without a duplicate entry");
                         Command(second,"[Open(\""+pdf+"\")]");
                         Command(second,"[Search(\""+pdf+"\",\"bank approved a loan\")]");
                         Command(second,"[CmdDeepSeekExplain]"); Click(other,9111);
@@ -443,6 +525,16 @@ public static class NativeIntegration {
                         Click(other,9105); Click(other,9144); Pump(700);
                         Check(Read(other,9105)=="Highlight" && Read(other,9103).Contains("saved to the PDF"),"unhighlight can be saved back to the PDF");
                         File.Copy(pdf,Path.GetFullPath("artifacts/highlight-removed.pdf"),true);
+                        var oldHistory=new Dictionary<string,object> {
+                            {"Schema",1},{"id","33333333-3333-3333-3333-333333333333"},{"time",DateTime.Now.AddDays(-10).ToString("yyyy-MM-ddTHH:mm:sszzz")},
+                            {"file",Path.Combine(settings,"legacy-history-book.pdf")},{"title","Legacy synthetic reading record"},
+                            {"selected","earlier word"},{"context","earlier synthetic reading context"},{"answer","saved offline explanation"},
+                            {"kind","explain"},{"provider","Fixture"},{"model","offline-fixture"},{"language","en"},{"page",1}
+                        };
+                        File.WriteAllText(Path.Combine(settings,"AIHistory",(string)oldHistory["id"]+".json"),new JavaScriptSerializer().Serialize(oldHistory),new UTF8Encoding(false));
+                        Click(other,9152);
+                        Check(Read(other,9163).Contains("Books: 2") && Read(other,9163).Contains("Reading: 1") && Read(other,9163).Contains("Finished: 1"),
+                            "existing history seeds older PDFs into Books without inventing a finished state or rating");
                         Click(other,9150);
                         PostMessage(second,0x10,IntPtr.Zero,IntPtr.Zero);
                         Check(reopened.WaitForExit(4000) && reopened.ExitCode==0 && !IsWindow(otherHost),"closing the reader with a floating panel exits cleanly without an orphan window");

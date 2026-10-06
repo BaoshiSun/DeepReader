@@ -32,7 +32,7 @@ class ReleaseTests(unittest.TestCase):
 
     def test_private_data_paths_and_traversal_are_rejected(self):
         for name in ("AIReader.json", "a/DeepSeek.json", "a/config.json", "a/AIHistory/1.json",
-                     "a/.git/config", "a/.env", "a/.env.local", "a/read.lnk", "a/out.log",
+                     "a/BookLibrary/1.json", "a/.git/config", "a/.env", "a/.env.local", "a/read.lnk", "a/out.log",
                      "a/config.json.backup-old", "a/../file", "/absolute", "C:/file", "a\\file"):
             with self.subTest(name=name), self.assertRaises(ValueError):
                 release.safe_name(name)

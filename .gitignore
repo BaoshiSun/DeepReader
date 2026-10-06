@@ -13,6 +13,7 @@ config.json
 DeepSeek.json
 AIReader.json
 AIHistory/
+BookLibrary/
 /SumatraAIReader-*.zip
 /DeepReader-*.zip
 
