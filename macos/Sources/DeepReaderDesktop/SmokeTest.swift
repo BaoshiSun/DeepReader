@@ -50,4 +50,46 @@ import DeepReaderCore
         m.tab = 0; m.status = "Offline validation — no network requests or real API keys."
         guard try m.store.books().items.count == 1 else { throw ReaderError("测试失败。", "Duplicate book created.") }
     }
+    public static func runEBooks(controller: ReaderWindow, folder: URL) async throws {
+        let model = controller.model
+        let fixtures = URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent(".build/format-fixtures")
+        controller.window?.setContentSize(NSSize(width: 1180, height: 790))
+        for name in ["garden.epub", "garden.txt", "garden.md", "garden.mobi"] {
+            controller.open(fixtures.appendingPathComponent(name))
+            for _ in 0..<600 { if !model.opening && model.reader.ebook.ready { break }; try await Task.sleep(nanoseconds: 50000000) }
+            guard model.reader.url?.lastPathComponent == name, model.reader.ebook.ready,
+                  try model.reader.fullText().text.contains(sentence) else { throw ReaderError("测试失败。", "Packaged app did not read \(name).") }
+            try await model.reader.ebook.selectForTesting("The bank approved the loan.")
+            let selected = try await model.reader.selected()
+            guard selected.context.contains("⟦The bank approved the loan.⟧") else { throw ReaderError("测试失败。", "Ebook context mismatch.") }
+            if name == "garden.epub" {
+                model.highlight()
+                for _ in 0..<200 { if !model.busy { break }; try await Task.sleep(nanoseconds: 10000000) }
+                guard model.reader.ebook.marks.count == 1, let book = model.book,
+                      try model.store.highlights(bookID: book.id, fingerprint: model.reader.ebook.book!.fingerprint).count == 1 else { throw ReaderError("测试失败。", "Ebook highlight was not saved.") }
+                model.rate(5); model.finish(true)
+                let archived = try model.store.archive(book: model.book!, source: fixtures.appendingPathComponent(name), root: folder.appendingPathComponent("archive"))
+                guard archived.pathExtension == "epub" else { throw ReaderError("测试失败。", "Archive changed the file format.") }
+                model.selected = selected.text; model.answer = "Offline demonstration: bank is a financial institution here. The loan supplies the context.\n\n离线示例：bank 在这里指银行，因为它批准了贷款。"
+                model.status = "EPUB · Local highlights · Chapter navigation · No AI network requests"; model.tab = 0
+                try await Task.sleep(nanoseconds: 500000000)
+                let imagesLoaded = try await model.reader.ebook.javascript("return [...document.images].every(i => i.complete && i.naturalWidth > 0);") as? Bool
+                guard imagesLoaded == true else { throw ReaderError("测试失败。", "EPUB images did not load.") }
+                try controller.snapshot(to: folder.appendingPathComponent("macos-epub.png"))
+                controller.setFloating(true); try await Task.sleep(nanoseconds: 300000000)
+                try controller.snapshot(to: folder.appendingPathComponent("macos-epub-floating.png"))
+                controller.setFloating(false)
+                controller.nextPage()
+                for _ in 0..<200 { if model.reader.ebook.ready { break }; try await Task.sleep(nanoseconds: 50000000) }
+                guard model.reader.ebook.chapter == 1 else { throw ReaderError("测试失败。", "Chapter navigation failed.") }
+            }
+        }
+        let kindle = fixtures.appendingPathComponent("sample-kf8.azw3")
+        if FileManager.default.fileExists(atPath: kindle.path) {
+            controller.open(kindle)
+            for _ in 0..<600 { if !model.opening && model.reader.ebook.ready { break }; try await Task.sleep(nanoseconds: 50000000) }
+            guard model.reader.url == kindle, model.reader.ebook.ready, try model.reader.fullText().text.count > 1000 else { throw ReaderError("测试失败。", "Packaged app did not open KF8/AZW3.") }
+            try controller.snapshot(to: folder.appendingPathComponent("macos-azw3.png"))
+        }
+    }
 }

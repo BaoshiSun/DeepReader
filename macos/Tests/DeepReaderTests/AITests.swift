@@ -81,4 +81,33 @@ final class AITests: XCTestCase {
         for _ in 0..<500 { if !model.busy { return }; try await Task.sleep(nanoseconds: 10000000) }
         model.stop(); XCTFail("AI task did not finish")
     }
+    @MainActor func testEbookLookupFollowupAndFullDocumentSummary() async throws {
+        _ = NSApplication.shared
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-Ebook-AI-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client())
+        let book = try EBookDocument.load(EBookTests.fixtures.appendingPathComponent("garden.epub"))
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 850, height: 700), styleMask: [.titled], backing: .buffered, defer: false)
+        window.contentView = model.reader.view; window.orderFront(nil); defer { window.orderOut(nil) }
+        model.reader.openEBook(book, marks: []); try model.didOpen()
+        for _ in 0..<600 { if model.reader.ebook.ready { break }; try await Task.sleep(nanoseconds: 50000000) }
+        XCTAssertTrue(model.reader.ebook.ready)
+        try await model.reader.ebook.selectForTesting("The bank approved the loan.")
+        MockProtocol.use { request in
+            let body = request.request.httpBody.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+            if !body.isEmpty { XCTAssertTrue(body.contains("river bank")) }
+            request.respond("银行：这里是批准贷款的金融机构。")
+        }
+        model.explain(); try await waitUntilIdle(model)
+        XCTAssertEqual(model.records.count, 1); XCTAssertEqual(model.records.first?.file, book.url.path)
+        XCTAssertTrue(model.records.first?.context.contains("⟦The bank approved the loan.⟧") == true)
+        model.followup = "Explain briefly in English"; model.language()
+        MockProtocol.use { $0.respond("The loan shows that bank means a financial institution.") }
+        model.ask(); try await waitUntilIdle(model); XCTAssertEqual(ReadingStats(model.records).lookups, 1)
+        model.prepareSummary(); XCTAssertTrue(model.canSummarize)
+        MockProtocol.use { $0.respond("The reading garden illustrates context and saved reading progress.") }
+        model.summarize(); try await waitUntilIdle(model)
+        XCTAssertEqual(model.records.filter { $0.kind == "file" }.count, 1)
+        XCTAssertTrue(model.summaryAnswer.contains("reading garden"))
+    }
 }

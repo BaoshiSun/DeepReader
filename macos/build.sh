@@ -6,6 +6,7 @@ root="$(cd .. && pwd)"
 out="$root/macos/dist"
 version="$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' Info.plist)"
 mkdir -p "$out"
+python3 "$root/macos/Tests/make_format_fixtures.py"
 export MACOSX_DEPLOYMENT_TARGET=13.0
 for arch in arm64 x86_64; do
     swift build -c release --arch "$arch" --scratch-path ".build/$arch"

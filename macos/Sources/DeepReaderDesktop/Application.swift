@@ -52,7 +52,8 @@ import DeepReaderCore
                         }
                         try await Task.sleep(nanoseconds: 300000000)
                         try controller.snapshot(to: folder.appendingPathComponent("macos-minimum-en.png"))
-                        try "PASS: app launched; PDF selection, highlights, sidebar docking, books and archive verified.\n".write(to: folder.appendingPathComponent("smoke-result.txt"), atomically: true, encoding: .utf8)
+                        try await SmokeTest.runEBooks(controller: controller, folder: folder)
+                        try "PASS: packaged app opened PDF, EPUB, TXT, Markdown, MOBI and (when present) KF8/AZW3; contextual selection, persistent highlights, chapters, sidebar docking, books and archive verified.\n".write(to: folder.appendingPathComponent("smoke-result.txt"), atomically: true, encoding: .utf8)
                         model.cancel(); exit(0)
                     } catch {
                         try? "FAIL: \(error.localizedDescription)\n".write(to: folder.appendingPathComponent("smoke-result.txt"), atomically: true, encoding: .utf8)

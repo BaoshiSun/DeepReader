@@ -68,6 +68,8 @@ macos/Sources/DeepReaderDesktop/ReaderWindow.swift
 macos/Sources/DeepReaderDesktop/Application.swift
 macos/Sources/DeepReaderDesktop/SmokeTest.swift
 macos/Sources/DeepReader/DeepReader.swift
+macos/Tests/make_format_fixtures.py
+macos/Tests/DeepReaderTests/EBookTests.swift
 macos/Tests/DeepReaderTests/CoreTests.swift
 macos/Tests/DeepReaderTests/PDFTests.swift
 macos/Tests/DeepReaderTests/AITests.swift
