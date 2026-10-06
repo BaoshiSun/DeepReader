@@ -35,6 +35,18 @@ import DeepReaderCore
                         try SmokeTest.run(controller: controller, folder: folder)
                         try await Task.sleep(nanoseconds: 500000000)
                         try controller.snapshot(to: folder.appendingPathComponent("macos-window.png"))
+                        controller.setFloating(true)
+                        try await Task.sleep(nanoseconds: 300000000)
+                        try controller.snapshot(to: folder.appendingPathComponent("macos-floating.png"), floating: true)
+                        model.language(); model.tab = 4
+                        try await Task.sleep(nanoseconds: 300000000)
+                        try controller.snapshot(to: folder.appendingPathComponent("macos-settings-en.png"), floating: true)
+                        controller.setFloating(false); model.tab = 0
+                        if let window = controller.window {
+                            window.setFrame(NSRect(x: window.frame.minX, y: window.frame.minY, width: 850, height: 640), display: true)
+                        }
+                        try await Task.sleep(nanoseconds: 300000000)
+                        try controller.snapshot(to: folder.appendingPathComponent("macos-minimum-en.png"))
                         try "PASS: app launched; PDF selection, highlights, sidebar docking, books and archive verified.\n".write(to: folder.appendingPathComponent("smoke-result.txt"), atomically: true, encoding: .utf8)
                         model.cancel(); exit(0)
                     } catch {

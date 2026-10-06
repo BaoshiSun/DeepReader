@@ -196,8 +196,8 @@ import DeepReaderCore
         closingApproved = true; model.cancel(); panel?.orderOut(nil)
     }
     public func canTerminate() -> Bool { closingApproved || mayDiscard() }
-    public func snapshot(to url: URL) throws {
-        guard let content = window?.contentView, let bitmap = content.bitmapImageRepForCachingDisplay(in: content.bounds) else { throw ReaderError("无法截取窗口。", "Could not capture the window.") }
+    public func snapshot(to url: URL, floating: Bool = false) throws {
+        guard let content = (floating ? panel : window)?.contentView, let bitmap = content.bitmapImageRepForCachingDisplay(in: content.bounds) else { throw ReaderError("无法截取窗口。", "Could not capture the window.") }
         content.cacheDisplay(in: content.bounds, to: bitmap)
         guard let png = bitmap.representation(using: .png, properties: [:]) else { return }
         try png.write(to: url)

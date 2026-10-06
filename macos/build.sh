@@ -36,7 +36,7 @@ cp "$root/macos/README.md" "$app/Contents/Resources/README.md"
 printf '%s\n' "$(git -C "$root" rev-parse HEAD)" > "$app/Contents/Resources/SOURCE-COMMIT.txt"
 codesign --force --sign - "$app"
 codesign --verify --deep --strict --verbose=2 "$app"
-lipo -verify_arch arm64 x86_64 "$app/Contents/MacOS/DeepReader"
+lipo "$app/Contents/MacOS/DeepReader" -verify_arch arm64 x86_64
 lipo -info "$app/Contents/MacOS/DeepReader"
 ditto -c -k --sequesterRsrc --keepParent "$app" "$out/DeepReader-v1.2.0-macos-universal.zip"
 ln -s /Applications "$stage/Applications"
