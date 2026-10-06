@@ -16,6 +16,8 @@ macOS 13 Ventura 或更新版本，通用应用同时支持 Apple Silicon（M �
 
 ## 安装
 
+从 [macOS 1.2.1 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.1-macos)下载安装包；同页提供对应源码和 `SHA256SUMS.txt`。
+
 打开 `DeepReader-v1.2.1-macos-universal.dmg`，将 DeepReader 拖到 Applications，然后从 Applications 启动。也可以解压 universal ZIP，将其中的 DeepReader.app 拖到 Applications。不要从只读磁盘映像运行。更新时替换应用即可，现有设置、钥匙串密钥、历史和书单沿用。
 
 本测试版仅经过 ad-hoc 本地代码签名，**尚无 Apple Developer ID 签名或 Apple 公证**。从网络下载后，macOS 可能阻止首次打开。确认文件来自本项目并核对 SHA-256 后，尝试打开，再到“系统设置 → 隐私与安全性 → 仍要打开”按系统提示操作。受组织管理的 Mac 可能不允许此操作。不要全局关闭 Gatekeeper。正式的 Developer ID 签名和公证需要维护者提供 Apple 开发者凭据。

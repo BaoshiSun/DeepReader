@@ -31,6 +31,14 @@ python native/package-native.py
 
 公开下载应使用 GitHub Release 附件，避免将约 84 MB 的二进制及上游源码归档放入 Git 仓库。软件版本号位于 `tools/public_release.py`；发布新版本时同时更新使用说明与本文档。
 
+## macOS 测试版
+
+macOS 的版本号位于 `macos/Info.plist`；Windows 版本号独立保留。macOS 1.2.1 使用标签 `v1.2.1-macos`，发布为 Pre-release。
+
+在 Mac 上先运行 `python3 macos/Tests/make_format_fixtures.py --upstream`，再进入 `macos/` 执行 `swift test`。确认公开源码检查通过并提交源码后，在仓库根目录运行 `bash macos/build.sh`。构建会生成 Apple Silicon / Intel 通用应用并执行离线启动测试。
+
+将 `macos/dist/` 中的 DMG、universal ZIP、macos-source ZIP 和 `SHA256SUMS.txt` 上传到指向同一源码提交的 GitHub Release。检查应用内 `SOURCE-COMMIT.txt` 和 `Source.zip` 与标签一致。发布说明须标明最低 macOS 版本、实际测试平台，以及尚未进行 Developer ID 签名和 Apple 公证。不要将个人阅读数据或本地测试样本上传为发行附件。
+
 ## 发布前复核
 
 - 源码检查和相关原生测试通过，ZIP 通过完整性与密钥扫描。
