@@ -98,6 +98,7 @@ docs/legacy-helper.md
 docs/RELEASING.md
 docs/app-store/README.md
 docs/app-store/listing.json
+docs/app-store/support.md
 docs/app-store/privacy-policy.md
 docs/app-store/review-notes.md
 docs/app-store/readiness.md

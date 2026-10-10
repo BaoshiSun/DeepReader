@@ -5,11 +5,23 @@
   "primary_category_candidate": "Productivity",
   "secondary_category_candidate": "Education",
   "pricing": "free",
-  "territories": null,
+  "support_email": "baoshi.sun@icloud.com",
+  "territories": [
+    "CHN",
+    "HKG",
+    "MAC",
+    "TWN",
+    "SAU",
+    "ARE",
+    "QAT",
+    "KWT",
+    "BHR",
+    "OMN"
+  ],
   "age_rating": null,
   "seller_legal_name": null,
   "privacy_policy_url": null,
-  "support_url_candidate": "https://github.com/BaoshiSun/DeepReader/issues",
+  "support_url_candidate": "https://github.com/BaoshiSun/DeepReader/blob/codex/macos-native/docs/app-store/support.md",
   "localizations": {
     "zh-Hans": {
       "name": "DeepReader",
