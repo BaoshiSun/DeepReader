@@ -4,6 +4,12 @@ import Foundation
 public enum Provider: String, Codable, CaseIterable, Identifiable {
     case deepSeek = "DeepSeek", openRouter = "OpenRouter", gemini = "Gemini"
     public var id: String { rawValue }
+    public static var isAppStoreBuild: Bool {
+        Bundle.main.object(forInfoDictionaryKey: "DeepReaderAppStoreBuild") as? Bool == true
+    }
+    public static func available(appStore: Bool = isAppStoreBuild) -> [Self] {
+        appStore ? [.deepSeek, .openRouter] : allCases
+    }
     public var endpoint: URL {
         switch self {
         case .deepSeek: return URL(string: "https://api.deepseek.com/chat/completions")!

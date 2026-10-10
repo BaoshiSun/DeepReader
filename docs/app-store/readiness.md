@@ -1,6 +1,6 @@
 # Mac App Store readiness and acceptance
 
-Assessment updated: 2026-10-10. Unchecked items remain incomplete or require final signed-build verification. Implemented subset: native Xcode universal archive, sandbox entitlements/bookmarks, per-operation AI consent and file-metadata API reason declarations. See [build and validation details](../../macos/AppStore/README.md). A local sandbox EPUB opened, reopened after process restart, and archived successfully; synthetic PDF in-place highlight saving and Save Copy also succeeded; 27 offline tests passed. No Apple upload has occurred.
+Assessment updated: 2026-10-10. Unchecked items remain incomplete or require final signed-build verification. Implemented subset: native Xcode universal archive, sandbox entitlements/bookmarks, per-operation AI consent and file-metadata API reason declarations. See [build and validation details](../../macos/AppStore/README.md). A local sandbox EPUB opened, reopened after process restart, and archived successfully; synthetic PDF in-place highlight saving and Save Copy also succeeded; 27 offline tests passed. Build 1.2.1 (3) uploaded successfully on 2026-10-10; a replacement build 4 is being prepared. No App Review submission has occurred.
 
 ## Release channels
 

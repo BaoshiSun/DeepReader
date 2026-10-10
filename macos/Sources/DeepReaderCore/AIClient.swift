@@ -41,7 +41,11 @@ public final class AIClient: @unchecked Sendable {
     }
     deinit { session.invalidateAndCancel() }
 
-    public static func request(settings: Settings, key: String, task: AITask, source: String) throws -> URLRequest {
+    public static func request(settings: Settings, key: String, task: AITask, source: String,
+                               appStore: Bool = Provider.isAppStoreBuild) throws -> URLRequest {
+        guard Provider.available(appStore: appStore).contains(settings.provider) else {
+            throw ReaderError("此版本不支持该服务商，请在设置中选择 DeepSeek 或 OpenRouter。", "Choose DeepSeek or OpenRouter in Settings; this provider is unavailable in this edition.")
+        }
         _ = try settings.validated()
         guard Settings.validKey(key) else {
             throw ReaderError("请先在设置中填写所选服务的 API Key。", "Add an API key for the selected provider in Settings first.")

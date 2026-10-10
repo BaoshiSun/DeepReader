@@ -59,6 +59,7 @@ import DeepReaderCore
         self.fileAccess = FileAccessStore(root: store.root)
         self.confirmSharing = confirmSharing
         self.settings = (try? store.settings()) ?? Settings()
+        if !Provider.available().contains(settings.provider) { settings.provider = .deepSeek }
         modelDraft = settings.model
         do { _ = try store.settings(); try reload() }
         catch { show(error) }
@@ -90,6 +91,7 @@ import DeepReaderCore
     }
     public func language() { settings.english.toggle(); clearSummary(); persist(); languageAction?() }
     public func chooseProvider(_ provider: Provider) {
+        guard Provider.available().contains(provider) else { return }
         settings.provider = provider; modelDraft = settings.model; keyDraft = ""; clearSummary()
     }
     public func saveConfiguration() {

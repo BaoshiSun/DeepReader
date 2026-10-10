@@ -212,7 +212,7 @@ struct Sidebar: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text(m.t("AI 服务", "AI provider")).font(.headline)
                 Picker(m.t("服务商", "Provider"), selection: Binding(get: { m.settings.provider }, set: { m.chooseProvider($0) })) {
-                    ForEach(Provider.allCases) { provider in Text(provider.rawValue).tag(provider) }
+                    ForEach(Provider.available()) { provider in Text(provider.rawValue).tag(provider) }
                 }
                 Picker(m.t("常用模型", "Model preset"), selection: Binding(get: { m.settings.provider.models.contains(m.modelDraft) ? m.modelDraft : "custom" }, set: { if $0 != "custom" { m.modelDraft = $0 } })) {
                     ForEach(m.settings.provider.models, id: \.self) { Text($0).tag($0) }
@@ -236,6 +236,7 @@ struct Sidebar: View {
                 Text(m.t("• 打开文档或电子书，拖动选词，按 ⌘⇧D。\n• 解释下方可追问，⌘↩ 发送。\n• 拖动侧栏边缘及选文／解释分隔线调整大小。\n• 右上角窗口按钮切换悬浮和停靠。\n• PDF 高亮后按 ⌘S 保存；电子书高亮自动保存在本机。", "• Open a document or ebook, select text, press ⌘⇧D.\n• Ask follow-ups below; ⌘↩ sends.\n• Drag sidebar and selection/answer dividers to resize.\n• Use the window button to float or dock the panel.\n• Save PDF highlights with ⌘S; ebook highlights are saved locally.")).font(.callout)
                 Text(m.t("解释发送选文与附近上下文；全文总结发送提取的全文；周期总结发送该范围的历史记录。只在您点击 AI 操作时发送。", "Lookups send selected text and nearby context. Document summaries send extracted full text; period summaries send that period's records. Data is sent only when you request an AI action.")).font(.caption).foregroundStyle(.secondary)
                 Link(m.t("源代码与许可证", "Source and license"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader")!)
+                Link(m.t("隐私政策", "Privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/macos-native/docs/app-store/privacy-policy.md")!)
                 Text("DeepReader for macOS · \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development") · AGPL-3.0-or-later").font(.caption2).foregroundStyle(.secondary)
             }.padding(3).textFieldStyle(.roundedBorder).disabled(m.busy)
         }

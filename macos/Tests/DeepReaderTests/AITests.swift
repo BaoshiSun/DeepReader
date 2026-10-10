@@ -26,6 +26,19 @@ private final class MemoryCredentials: Credentials {
 }
 
 final class AITests: XCTestCase {
+    func testStoreEditionRejectsRestoredGeminiSettingsBeforeRequestCreation() throws {
+        var settings = Settings(); settings.provider = .gemini
+        XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
+                                                 source: "sample", appStore: true))
+        XCTAssertEqual(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
+                                           source: "sample", appStore: false).url?.host,
+                       "generativelanguage.googleapis.com")
+        for provider in Provider.available(appStore: true) {
+            settings.provider = provider
+            XCTAssertNotNil(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
+                                                source: "sample", appStore: true).url)
+        }
+    }
     @MainActor func testDeniedSharingNeverStartsNetworkAndConsentIsPerOperation() async throws {
         _ = NSApplication.shared
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-consent-\(UUID().uuidString)")
