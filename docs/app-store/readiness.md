@@ -8,7 +8,7 @@ Developer ID distribution retains the existing native app and adds Hardened Runt
 
 ## Engineering gates
 
-- [ ] Create the macOS app target/archive configuration in full Xcode, using the existing Swift and C sources without adding another runtime. Register the final App ID and use the approved team's signing/provisioning.
+- [x] Create the macOS app target/archive configuration in full Xcode, using the existing Swift and C sources without adding another runtime. Export with the approved team's Apple Distribution signing identity and a distribution provisioning profile. Local package/signature validation passed; server validation remains outstanding.
 - [ ] Enable App Sandbox with outgoing network and user-selected read/write access. Decide the bookmark scope and add only the entitlements the implementation uses.
 - [ ] Replace plain-path persistence with security-scoped access for reopened documents and archive destinations. Balance start/stop access during asynchronous work, recover stale bookmarks, and prompt for renewed access when needed.
 - [ ] Test PDF in-place saves, Save Copy, ebook extraction to temporary storage, exported history and rating-folder archive copies under sandbox restrictions. Preserve originals and handle same-name collisions.

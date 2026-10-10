@@ -18,6 +18,9 @@ For distribution, sign in to the approved Apple account in Xcode Settings → Ap
 
 ## Implemented and checked on 2026-10-10
 
+- After the owner's explicit authorization, all three signing identities were created in the local login Keychain: Apple Development, Apple Distribution and Mac Installer Distribution. The Apple WWDR G3 intermediate was retrieved from [Apple PKI](https://www.apple.com/certificateauthority/), verified against system trust and added as an intermediate, without changing trust overrides. No private keys were exported.
+- The source at commit `069a811` produced a signed universal archive and a successful local `app-store-connect` export. The exported `DeepReader.pkg` has a verified Mac Installer Distribution signature; its app has a verified Apple Distribution signature and an embedded provisioning profile. The local artifact is under `artifacts/app-store/export/`. This is not Apple server validation or an upload.
+- App Store Connect displays its initial Terms of Service (V100, 4 June 2018). Acceptance requires a separate owner confirmation and has not been performed.
 - Native Xcode archive succeeded with Xcode 26.3 on macOS 15.7.4; binary contains arm64 and x86_64. This does not establish behavior on macOS 13 or Apple's acceptance of the upload.
 - 27 offline XCTest cases passed, including denied consent for lookup, follow-up, full-document and history summaries, provider changes, bookmark recreation and corrupt bookmark recovery.
 - App sandbox grants: outgoing connections, user-selected read/write files, app-scoped bookmarks. No broad home-folder access or incoming server entitlement.
@@ -28,7 +31,7 @@ For distribution, sign in to the approved Apple account in Xcode Settings → Ap
 
 ## Still required before submission
 
-Actual Apple signing/provisioning and TestFlight; signed-identity Keychain checks; complete signed-build, export/cancellation and broader file-location tests; explicit old-profile import if migration is offered; approved public privacy policy and in-app link; actual provider smoke tests and private reviewer access; final screenshots, App Privacy and age-rating answers; pricing/territories/contact details; AGPL/LGPL App Store distribution compatibility review.
+Apple server validation, upload and TestFlight; signed-identity Keychain checks; complete signed-build, export/cancellation and broader file-location tests; explicit old-profile import if migration is offered; approved public privacy policy and in-app link; actual provider smoke tests and private reviewer access; final screenshots, App Privacy and age-rating answers; private reviewer contact details; AGPL/LGPL App Store distribution compatibility review. Free pricing, ten intended storefronts and the public support address have been confirmed in `docs/app-store/listing.json`.
 
 No license was changed. libmobi remains statically linked under LGPL-3.0-or-later; a source archive alone does not resolve all App Store licensing questions. See [readiness](../../docs/app-store/readiness.md).
 

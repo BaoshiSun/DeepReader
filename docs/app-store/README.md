@@ -1,6 +1,6 @@
 # DeepReader macOS 上架准备包
 
-更新日期：2026-10-10。维护者已告知个人开发者会员获批；本机 Xcode 已登录 Apple 账号，当前仍没有有效发布签名身份。证书创建入口已加载可用，正在等待创建持久签名凭据的明确授权。已增加商店构建工程并通过未签名通用归档，尚未上传 Apple。
+更新日期：2026-10-10。个人开发者账号已登录 Xcode；维护者明确授权后，Apple Development、Apple Distribution、Mac Installer Distribution 三类证书已创建并通过本机身份验证。签名归档和 App Store 安装包导出成功，包内应用与安装包签名均验证通过。尚未上传 Apple；App Store Connect 首次使用的服务条款正在等待维护者明确同意。
 
 **这是准备材料，不是已经符合商店要求的发行版。** 不在这里填写 Apple 密码、应用专用密码、证书私钥、API Key 或审核专用凭据。
 
@@ -15,7 +15,7 @@
 | [privacy-policy.md](privacy-policy.md) | 按实际代码编写的中英文隐私政策 | 草稿；运营者、私密联系渠道、服务商条款待确认 |
 | [review-notes.md](review-notes.md) | 英文审核说明、复现步骤和测试材料 | 提交模板；需补实际构建、联系人和审核访问方式 |
 | [readiness.md](readiness.md) | 沙盒、隐私、许可、截图及真机验收清单 | 有未完成的工程项目，不能仅等待账号开通 |
-| [../../macos/DISTRIBUTION.md](../../macos/DISTRIBUTION.md) | 工具安装、证书、公证和失败恢复 | 可执行流程；正式签名／公证待账号和证书 |
+| [../../macos/DISTRIBUTION.md](../../macos/DISTRIBUTION.md) | 工具安装、证书、公证和失败恢复 | 站外发行流程；Developer ID 证书及公证尚未执行 |
 | [../../macos/release_preflight.py](../../macos/release_preflight.py) | 本机环境和文案长度检查 | 只读检查，不读取密钥，不登录 Apple |
 | [../../macos/distribute.sh](../../macos/distribute.sh) | Developer ID 签名、DMG/ZIP、公证票据及校验 | 为站外发行准备，不用于商店提交 |
 
@@ -33,7 +33,7 @@ shellcheck macos/distribute.sh
 
 现已加入沙盒文件书签、逐次 AI 明确同意、原生 Xcode 应用目标及文件元数据用途声明。27 项离线测试通过，本机沙盒 EPUB 打开、重启恢复和归档已验证。仍需完成正式身份签名测试、公开政策和商店信息，并复核开源许可与商店条款。
 
-账号开通后：在本机 Xcode 登录个人开发者账号，核对 Team ID 和 Bundle ID，创建所需证书和描述文件。App Store 流程直接使用商店分发签名、TestFlight 和审核提交；Developer ID 公证是独立的站外发行流程，不是商店上架前置条件。正式的签名、公证、Apple 上传、付费设置和商店提交在本次准备工作中均未执行。
+账号开通后：在本机 Xcode 登录个人开发者账号，核对 Team ID 和 Bundle ID，创建所需证书和描述文件。App Store 流程直接使用商店分发签名、TestFlight 和审核提交；Developer ID 公证是独立的站外发行流程，不是商店上架前置条件。商店签名和本地包导出已完成；Developer ID 公证、Apple 上传和商店提交均未执行，应用免费。
 
 待维护者决定：
 

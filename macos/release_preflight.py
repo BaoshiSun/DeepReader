@@ -54,7 +54,11 @@ def report():
     add('Developer ID Application identity', '"Developer ID Application:' in identities,
         'Requires approved membership and a certificate with its private key')
     add('App Store distribution identity', any(x in identities for x in ('"Apple Distribution:', '"3rd Party Mac Developer Application:')),
-        'Required later for the separate App Store build')
+        'Used to sign the app inside the App Store package')
+    result = run('security', 'find-identity', '-v', '-p', 'basic')
+    installer_identities = result.stdout if result and result.returncode == 0 else ''
+    add('Mac Installer Distribution identity', '"3rd Party Mac Developer Installer:' in installer_identities,
+        'Used to sign the App Store installation package; not a Developer ID Installer certificate')
     with (ROOT / 'macos/Info.plist').open('rb') as f:
         info = plistlib.load(f)
     data = json.loads((ROOT / 'docs/app-store/listing.json').read_text())
@@ -67,7 +71,7 @@ def report():
         'Complete signed sandbox PDF/export/cancellation checks and decide profile migration; bookmark/EPUB/archive checks implemented',
         'Approve public privacy policy and in-app link; verify provider terms/retention; per-operation AI consent implemented',
         'Finalize privacy data declarations and App Privacy answers; file-metadata API reasons declared',
-        'Sign and validate Xcode App Store archive, provisioning and TestFlight build; unsigned universal archive implemented',
+        'Complete Apple server validation, upload and TestFlight; local signed archive and App Store package export verified',
         'Capture final screenshots and supply working private review access; test real provider calls',
     ]
     return {'bundle_id': info['CFBundleIdentifier'], 'version': info['CFBundleShortVersionString'],
