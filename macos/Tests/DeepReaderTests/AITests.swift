@@ -26,6 +26,34 @@ private final class MemoryCredentials: Credentials {
 }
 
 final class AITests: XCTestCase {
+    @MainActor func testDeniedSharingNeverStartsNetworkAndConsentIsPerOperation() async throws {
+        _ = NSApplication.shared
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-consent-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try LibraryStore(root: root)
+        var allowed = false, prompts: [(Provider, AISharingKind)] = []
+        let model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client()) { settings, kind in
+            prompts.append((settings.provider, kind)); return allowed
+        }
+        let url = root.appendingPathComponent("consent.pdf"); try SmokeTest.makePDF(at: url)
+        try model.pdf.open(url); try model.didOpen()
+        let page = model.pdf.view.document!.page(at: 0)!, text = page.string! as NSString
+        model.pdf.view.setCurrentSelection(page.selection(for: text.range(of: "bank", options: .backwards)), animate: false)
+        MockProtocol.use { _ in XCTFail("A denied action made a network request") }
+        model.explain(); try await waitUntilIdle(model)
+        XCTAssertTrue(model.records.isEmpty); XCTAssertEqual(prompts.last?.1, .selection)
+        model.prepareSummary(); model.summarize(); try await waitUntilIdle(model)
+        XCTAssertTrue(model.records.isEmpty); XCTAssertEqual(prompts.last?.1, .document)
+        allowed = true; MockProtocol.use { $0.respond("A bank lends money.") }
+        model.explain(); try await waitUntilIdle(model); XCTAssertEqual(model.records.count, 1)
+        allowed = false; MockProtocol.use { _ in XCTFail("Earlier consent authorized a later action") }
+        model.chooseProvider(.gemini); model.followup = "Why?"; model.ask(); try await waitUntilIdle(model)
+        XCTAssertEqual(prompts.last?.0, .gemini); XCTAssertEqual(prompts.last?.1, .followup)
+        XCTAssertEqual(model.records.count, 1); XCTAssertFalse(model.followup.isEmpty)
+        model.summaryScope = 1; model.prepareSummary(); XCTAssertTrue(model.canSummarize)
+        model.summarize(); try await waitUntilIdle(model)
+        XCTAssertEqual(prompts.last?.1, .history); XCTAssertEqual(model.records.count, 1)
+    }
     private func client() -> AIClient {
         let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [MockProtocol.self]; return AIClient(configuration: config)
     }
@@ -59,7 +87,7 @@ final class AITests: XCTestCase {
         _ = NSApplication.shared
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-AI-tests-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
-        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client())
+        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in true })
         let url = root.appendingPathComponent("example.pdf"); try SmokeTest.makePDF(at: url)
         try model.pdf.open(url); try model.didOpen()
         let page = model.pdf.view.document!.page(at: 0)!, source = page.string! as NSString
@@ -73,7 +101,7 @@ final class AITests: XCTestCase {
         XCTAssertEqual(model.records.count, 1); XCTAssertEqual(model.records.first?.id, id)
         XCTAssertTrue(model.answer.contains("The loan")); XCTAssertEqual(ReadingStats(model.records).lookups, 1)
         XCTAssertTrue(model.followup.isEmpty)
-        let reloaded = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client())
+        let reloaded = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in true })
         XCTAssertTrue(reloaded.settings.english); XCTAssertEqual(reloaded.records.count, 1)
         XCTAssertEqual(reloaded.tab, 0, "Onboarding must not repeat")
     }
@@ -85,7 +113,7 @@ final class AITests: XCTestCase {
         _ = NSApplication.shared
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-Ebook-AI-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
-        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client())
+        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in true })
         let book = try EBookDocument.load(EBookTests.fixtures.appendingPathComponent("garden.epub"))
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 850, height: 700), styleMask: [.titled], backing: .buffered, defer: false)
         window.contentView = model.reader.view; window.orderFront(nil); defer { window.orderOut(nil) }

@@ -15,6 +15,14 @@ PUBLIC_PATHS = tuple("""
 .github/workflows/release-checks.yml
 .github/workflows/macos-build.yml
 macos/Package.swift
+macos/Sources/DeepReaderCore/FileAccess.swift
+macos/Sources/DeepReaderDesktop/AISharing.swift
+macos/AppStore/DeepReader.entitlements
+macos/AppStore/README.md
+macos/AppStore/PrivacyInfo.xcprivacy
+macos/prepare_app_store.py
+macos/DeepReader.xcodeproj/project.pbxproj
+macos/DeepReader.xcodeproj/xcshareddata/xcschemes/DeepReaderStore.xcscheme
 macos/Sources/CArchive/module.modulemap
 macos/Sources/CArchive/shim.h
 macos/Sources/DeepReaderCore/BookArchive.swift

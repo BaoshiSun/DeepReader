@@ -5,10 +5,12 @@ import DeepReaderCore
 
 @MainActor public final class ReaderModel: ObservableObject {
     public let store: LibraryStore
+    public let fileAccess: FileAccessStore
     public let credentials: Credentials
     public let reader = DocumentReader()
     public var pdf: PDFReader { reader.pdf }
     public let ai: AIClient
+    private let confirmSharing: @MainActor (Settings, AISharingKind) -> Bool
     @Published public var settings: Settings
     @Published public var tab = 0
     @Published public var status = ""
@@ -51,8 +53,11 @@ import DeepReaderCore
     public var libraryBook: Book? { books.first { $0.id == bookID } }
     public var filteredBooks: [Book] { books.filter { $0.matches(bookSearch, filter: bookFilter) } }
 
-    public init(store: LibraryStore, credentials: Credentials = KeychainCredentials(), ai: AIClient = AIClient()) {
+    public init(store: LibraryStore, credentials: Credentials = KeychainCredentials(), ai: AIClient = AIClient(),
+                confirmSharing: @escaping @MainActor (Settings, AISharingKind) -> Bool = AISharingKind.confirm) {
         self.store = store; self.credentials = credentials; self.ai = ai
+        self.fileAccess = FileAccessStore(root: store.root)
+        self.confirmSharing = confirmSharing
         self.settings = (try? store.settings()) ?? Settings()
         modelDraft = settings.model
         do { _ = try store.settings(); try reload() }
@@ -106,7 +111,10 @@ import DeepReaderCore
     public func chooseArchiveFolder() {
         let panel = NSOpenPanel(); panel.canChooseFiles = false; panel.canChooseDirectories = true; panel.canCreateDirectories = true
         panel.message = t("选择归档根目录，文件将复制到对应星级子目录。", "Choose the archive folder. Files are copied into star-rating subfolders.")
-        if panel.runModal() == .OK, let url = panel.url { settings.archiveFolder = url.path; persist() }
+        if panel.runModal() == .OK, let url = panel.url {
+            do { let access = try fileAccess.acquire(url); settings.archiveFolder = access.url.path; persist() }
+            catch { show(error) }
+        }
     }
     private func begin(_ work: @escaping @MainActor (UUID) async throws -> Void) {
         cancel(); busy = true; let id = UUID(); job = id
@@ -131,6 +139,7 @@ import DeepReaderCore
                 guard let self = self else { return }
                 let selection = try await self.reader.selected()
                 try Task.checkCancellation(); guard self.job == id else { return }
+                guard self.allowSharing(configuration, .selection) else { return }
                 self.captured = selection; self.selected = selection.text; self.answer = ""; self.followup = ""; self.currentRecord = nil; self.tab = 0
                 let response = try await self.ai.complete(settings: configuration, key: key, task: .explain,
                     source: "Selected text:\n\(selection.text)\n\nSource context (⟦…⟧ marks the selection):\n\(selection.context)")
@@ -152,6 +161,7 @@ import DeepReaderCore
                 throw ReaderError("追问限 1200 字符；对话过长时请重新选词。", "Follow-ups allow 1,200 characters. Start a new lookup if the conversation is too long.")
             }
             let configuration = settings, key = try credentials.read(settings.provider)
+            guard allowSharing(configuration, .followup) else { return }
             begin { [weak self] id in
                 guard let self = self else { return }
                 let response = try await self.ai.complete(settings: configuration, key: key, task: .followup,
@@ -203,9 +213,20 @@ import DeepReaderCore
         guard book.rating > 0 else { status = t("请先为当前文件 评分。", "Rate the current file first."); return }
         if settings.archiveFolder.isEmpty { chooseArchiveFolder() }
         guard !settings.archiveFolder.isEmpty, beforeArchive?() ?? true else { return }
-        let destination = URL(fileURLWithPath: settings.archiveFolder, isDirectory: true), store = self.store
+        let archiveAccess: FileAccess, sourceAccess: FileAccess
+        do {
+            archiveAccess = try fileAccess.acquire(URL(fileURLWithPath: settings.archiveFolder, isDirectory: true), restoring: true)
+            sourceAccess = try fileAccess.acquire(source, restoring: true)
+        } catch { show(error); chooseArchiveFolder(); return }
+        let store = self.store, fileAccess = self.fileAccess
         begin { [weak self] id in
-            let worker = Task.detached { try store.archive(book: book, source: source, root: destination) }
+            let worker = Task.detached {
+                try withExtendedLifetime((archiveAccess, sourceAccess)) {
+                    let result = try store.archive(book: book, source: sourceAccess.url, root: archiveAccess.url)
+                    _ = try fileAccess.acquire(result)
+                    return result
+                }
+            }
             let result = try await withTaskCancellationHandler(operation: { try await worker.value }, onCancel: { worker.cancel() })
             guard let self = self, self.job == id else { return }
             try self.reload(); self.status = self.t("归档完成，原文件保留：", "Archived; original kept: ") + result.path
@@ -246,6 +267,7 @@ import DeepReaderCore
         do {
             let key = try credentials.read(snapshot.settings.provider)
             _ = try AIClient.request(settings: snapshot.settings, key: key, task: .part, source: "validate")
+            guard allowSharing(snapshot.settings, snapshot.scope == 0 ? .document : .history) else { return }
             begin { [weak self] id in
                 guard let self = self else { return }
                 let response = try await self.ai.summarize(settings: snapshot.settings, key: key, source: snapshot.source, review: snapshot.scope > 0) { [self] done, count in
@@ -261,19 +283,33 @@ import DeepReaderCore
             }
         } catch { show(error) }
     }
+    private func allowSharing(_ configuration: Settings, _ kind: AISharingKind) -> Bool {
+        guard confirmSharing(configuration, kind) else {
+            status = t("已取消，未发送给 AI 服务。", "Cancelled. Nothing was sent to the AI service.")
+            return false
+        }
+        return true
+    }
     public func export(_ text: String, name: String) {
         guard !text.isEmpty else { return }
         let panel = NSSavePanel(); panel.nameFieldStringValue = name + ".txt"; panel.canCreateDirectories = true
         if panel.runModal() == .OK, let url = panel.url {
-            do { try text.write(to: url, atomically: true, encoding: .utf8); status = t("已导出。", "Exported.") } catch { show(error) }
+            let access = FileAccess(url)
+            do { try withExtendedLifetime(access) { try text.write(to: url, atomically: true, encoding: .utf8) }; status = t("已导出。", "Exported.") } catch { show(error) }
         }
     }
     public func exportBooks() {
         export(Book.overview(filteredBooks, english: settings.english) + "\n\n" + filteredBooks.map { $0.text(records: records, english: settings.english) }.joined(separator: "\n\n────────\n\n"), name: "DeepReader-Books")
     }
     public func openBook(_ book: Book) {
-        guard let url = store.openPath(book) else { status = t("原文件和归档副本均不存在。", "Neither the original nor an archived copy exists."); return }
-        openURLAction?(url)
+        for path in [book.file, book.archivePath] + Array(book.copies.reversed()) where !path.isEmpty {
+            if let access = try? fileAccess.acquire(URL(fileURLWithPath: path), restoring: true) {
+                withExtendedLifetime(access) { openURLAction?(access.url) }
+                return
+            }
+        }
+        status = t("请重新选择书籍，恢复文件访问权限。", "Select the book again to restore file access.")
+        openAction?()
     }
     public func deleteHistory() {
         guard let record = history else { return }

@@ -39,3 +39,13 @@ SumatraPDF-settings.txt
 
 # Local ebook annotations
 BookHighlights/
+
+# Xcode per-user state and local file access grants
+xcuserdata/
+*.xcuserstate
+*.xcarchive/
+FileAccess/
+*.bookmark
+*.p12
+*.mobileprovision
+*.provisionprofile

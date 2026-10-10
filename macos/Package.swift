@@ -5,7 +5,8 @@ import PackageDescription
 let package = Package(
     name: "DeepReader",
     platforms: [.macOS(.v13)],
-    products: [.executable(name: "DeepReader", targets: ["DeepReader"])],
+    products: [.executable(name: "DeepReader", targets: ["DeepReader"]),
+               .library(name: "DeepReaderDesktop", targets: ["DeepReaderDesktop"])],
     targets: [
         .systemLibrary(name: "CArchive"),
         .target(name: "CMobi", path: "Vendor/libmobi", exclude: ["COPYING", "COPYING.GPL3", "AUTHORS", "README.md", "ORIGIN.json"],

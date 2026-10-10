@@ -3,6 +3,24 @@ import XCTest
 @testable import DeepReaderCore
 
 final class CoreTests: XCTestCase {
+    func testFileBookmarksRestoreAcrossStoreInstancesAndRejectCorruption() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-access-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("book.txt")
+        try "Local book".write(to: url, atomically: true, encoding: .utf8)
+        let access = try FileAccessStore(root: root).acquire(url)
+        XCTAssertEqual(try String(contentsOf: access.url), "Local book")
+        let restored = try FileAccessStore(root: root).acquire(url, restoring: true)
+        XCTAssertEqual(try String(contentsOf: restored.url), "Local book")
+        let files = try FileManager.default.contentsOfDirectory(at: root.appendingPathComponent("FileAccess"), includingPropertiesForKeys: nil)
+        XCTAssertEqual(files.count, 1)
+        try Data("invalid bookmark".utf8).write(to: files[0])
+        XCTAssertThrowsError(try FileAccessStore(root: root).acquire(url, restoring: true))
+        // A new explicit selection repairs a revoked/corrupt saved grant.
+        XCTAssertNoThrow(try FileAccessStore(root: root).acquire(url))
+        XCTAssertNoThrow(try FileAccessStore(root: root).acquire(url, restoring: true))
+    }
     func temporary() throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-tests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)

@@ -136,8 +136,12 @@ public struct SelectedText {
         guard values.contentModificationDate == openedModification, values.fileSize == openedSize else {
             throw ReaderError("磁盘上的 PDF 已被其他程序修改，请先保留改动副本。", "Another app changed this PDF on disk. Save your changes to a copy first.")
         }
-        let temporary = url.deletingLastPathComponent().appendingPathComponent(".deepreader-\(UUID().uuidString).pdf")
-        defer { try? FileManager.default.removeItem(at: temporary) }
+        // An open-panel grant covers the selected file, not arbitrary siblings.
+        // Request an OS-managed replacement directory on the destination volume.
+        let replacement = try FileManager.default.url(for: .itemReplacementDirectory, in: .userDomainMask,
+                                                       appropriateFor: url, create: true)
+        let temporary = replacement.appendingPathComponent("DeepReader.pdf")
+        defer { try? FileManager.default.removeItem(at: replacement) }
         guard document.write(to: temporary) else { throw ReaderError("保存 PDF 失败。", "Could not save the PDF.") }
         _ = try FileManager.default.replaceItemAt(url, withItemAt: temporary)
         dirty = false; rememberModification()

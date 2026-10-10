@@ -31,6 +31,13 @@ jobs:
       - name: Build universal app and run packaged smoke test
         if: matrix.os == 'macos-15'
         run: bash macos/build.sh
+      - name: Validate native App Store archive without signing
+        if: matrix.os == 'macos-15'
+        run: |
+          python3 macos/prepare_app_store.py
+          xcodebuild -project macos/DeepReader.xcodeproj -scheme DeepReaderStore -configuration Release \
+            -destination 'generic/platform=macOS' -archivePath artifacts/app-store/DeepReader-unsigned.xcarchive \
+            -derivedDataPath artifacts/app-store/DerivedData CODE_SIGNING_ALLOWED=NO archive
       - name: Keep universal installation packages
         if: matrix.os == 'macos-15'
         uses: actions/upload-artifact@v4

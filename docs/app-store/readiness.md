@@ -1,6 +1,6 @@
 # Mac App Store readiness and acceptance
 
-Assessment: 2026-10-07. This is a concrete gap list based on the current repository; unchecked items are not implemented or verified by the preparation work.
+Assessment updated: 2026-10-10. Unchecked items remain incomplete or require final signed-build verification. Implemented subset: native Xcode universal archive, sandbox entitlements/bookmarks, per-operation AI consent and file-metadata API reason declarations. See [build and validation details](../../macos/AppStore/README.md). A local sandbox EPUB opened, reopened after process restart, and archived successfully; synthetic PDF in-place highlight saving and Save Copy also succeeded; 27 offline tests passed. No Apple upload has occurred.
 
 ## Release channels
 

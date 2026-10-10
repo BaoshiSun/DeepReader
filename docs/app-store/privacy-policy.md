@@ -1,6 +1,6 @@
 # DeepReader for macOS 隐私政策草稿 / Draft Privacy Policy
 
-草稿日期 / Draft date: 2026-10-07。适用于当前 macOS 1.2.1 代码。**未正式发布：维护者须确认法定运营者、私密联系方式、服务商处理规则，并在商店版改造后重新核对本文。** 本文不声称尚未实现的同意或删除界面已经存在。
+草稿日期 / Draft date: 2026-10-10。适用于当前 macOS 1.2.1 代码。**未正式发布：维护者须确认法定运营者、私密联系方式、服务商处理规则，并在商店版改造后重新核对本文。** 本轮工程版增加了逐次发送同意；公开发布的旧版尚无此流程。
 
 ## 中文
 
@@ -10,13 +10,13 @@ DeepReader 是文档与电子书阅读器，不要求创建 DeepReader 账户。
 
 应用在本机保存设置、文档路径和标题、评分、阅读状态和日期、归档路径、电子书高亮，以及成功的解释、追问与总结。解释记录可能包含选文、语境、回答、时间、页码、服务商和模型名称。归档会在您指定的位置另存原格式文件；导出的记录可能含文件名和原文。
 
-当前站外版数据位于 `~/Library/Application Support/DeepReader/`。这些记录不由应用另行加密；操作系统账户权限及您启用的磁盘加密提供保护。系统备份、您选择的同步目录、手动导出和归档可能产生额外副本。
+商店沙盒工程版的数据位于系统分配的应用容器，另保存文件授权书签；不会自动导入站外版资料。当前站外版数据位于 `~/Library/Application Support/DeepReader/`。这些记录不由应用另行加密；操作系统账户权限及您启用的磁盘加密提供保护。系统备份、您选择的同步目录、手动导出和归档可能产生额外副本。
 
 API Key 单独保存在 macOS 钥匙串，不写入设置 JSON 或公开发行包。发起 AI 请求时，所选服务商会接收该服务的 Key 用于身份验证。
 
 ### 何时向 AI 服务发送数据
 
-只有主动触发相关 AI 操作时，应用才发送请求。数据直接由本机发送给所选服务的 API，而不是经过 DeepReader 自有服务器。
+本轮工程版在每次 AI 操作发送前显示接收方、模型及内容范围，只有点击“同意并发送”才发送；取消仍可离线阅读。旧的 1.2.1 GitHub 预览版仅在主动触发 AI 操作时发送，尚无新增的逐次同意弹窗。数据直接由本机发送给所选服务的 API，而不是经过 DeepReader 自有服务器。
 
 | 操作 | 发送内容 |
 | --- | --- |
@@ -51,11 +51,11 @@ DeepReader reads documents and ebooks without a DeepReader account. Reading, sea
 
 The app stores settings, document paths and titles, ratings, reading dates and status, archive paths, ebook highlights, and successful explanations, follow-ups and summaries locally. Lookup records may include selected text, context, answers, timestamps, page numbers, provider and model names. Archiving copies the original-format file to your chosen location. Exports can contain filenames and source text.
 
-The current direct-distribution build stores these records in `~/Library/Application Support/DeepReader/`. The app does not separately encrypt these files. OS account permissions and any disk encryption you enable provide protection. Backups, synced folders, exports and archives can create additional copies. Provider API keys are stored separately in macOS Keychain and are sent to the selected provider to authenticate requests; they are not stored in settings JSON or public release packages.
+The store sandbox engineering build stores data and file-access bookmarks in its system-assigned app container, without automatically importing the direct version’s data. The current direct-distribution build stores these records in `~/Library/Application Support/DeepReader/`. The app does not separately encrypt these files. OS account permissions and any disk encryption you enable provide protection. Backups, synced folders, exports and archives can create additional copies. Provider API keys are stored separately in macOS Keychain and are sent to the selected provider to authenticate requests; they are not stored in settings JSON or public release packages.
 
 ### AI requests and recipients
 
-An AI request is made when you actively invoke an AI feature. Requests go directly from your Mac to your selected provider, without a DeepReader-operated relay. Explanations send the selection and nearby context. Follow-ups add the question and conversation. Document summaries send extractable full text, with intermediate notes used to combine long sections. Period summaries send selected saved passages, answers, timestamps and record titles.
+The current engineering build asks for consent for each AI operation, naming the provider, model and content scope. Cancel keeps reading offline. The earlier 1.2.1 GitHub preview sends requests when an AI feature is invoked, without this new per-operation dialog. Requests go directly from your Mac to your selected provider, without a DeepReader-operated relay. Explanations send the selection and nearby context. Follow-ups add the question and conversation. Document summaries send extractable full text, with intermediate notes used to combine long sections. Period summaries send selected saved passages, answers, timestamps and record titles.
 
 The app does not upload document binaries or deliberately insert full local directory paths into prompts. Text can itself contain personal information, and period-summary titles may include filenames. Providers also receive network information such as your IP address and request time.
 

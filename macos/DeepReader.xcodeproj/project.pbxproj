@@ -1,0 +1,39 @@
+// !$*UTF8*$!
+{
+ archiveVersion = 1; classes = {}; objectVersion = 56;
+ objects = {
+		000000000000000000000001 = { isa = PBXProject; attributes = { LastUpgradeCheck = 2630; }; buildConfigurationList = 00000000000000000000000A; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; knownRegions = (en, "zh-Hans", Base); mainGroup = 000000000000000000000002; productRefGroup = 000000000000000000000003; projectDirPath = ""; projectRoot = ""; packageReferences = (00000000000000000000001E); targets = (000000000000000000000004); };
+		000000000000000000000002 = { isa = PBXGroup; children = (000000000000000000000005, 000000000000000000000003, 000000000000000000000064, 000000000000000000000065, 000000000000000000000066, 000000000000000000000067, 000000000000000000000068, 000000000000000000000069, 00000000000000000000006A); sourceTree = "<group>"; };
+		000000000000000000000003 = { isa = PBXGroup; children = (000000000000000000000006); name = Products; sourceTree = "<group>"; };
+		000000000000000000000004 = { isa = PBXNativeTarget; buildConfigurationList = 00000000000000000000000B; buildPhases = (000000000000000000000007, 000000000000000000000008, 000000000000000000000009); buildRules = (); dependencies = (); name = DeepReaderStore; packageProductDependencies = (00000000000000000000001F); productName = DeepReader; productReference = 000000000000000000000006; productType = "com.apple.product-type.application"; };
+		000000000000000000000005 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/DeepReader/DeepReader.swift; sourceTree = "<group>"; };
+		000000000000000000000006 = { isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeepReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000007 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000020); runOnlyForDeploymentPostprocessing = 0; };
+		000000000000000000000008 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000021); runOnlyForDeploymentPostprocessing = 0; };
+		000000000000000000000009 = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (0000000000000000000000C8, 0000000000000000000000C9, 0000000000000000000000CA, 0000000000000000000000CB, 0000000000000000000000CC, 0000000000000000000000CD, 0000000000000000000000CE); runOnlyForDeploymentPostprocessing = 0; };
+		00000000000000000000000A = { isa = XCConfigurationList; buildConfigurations = (00000000000000000000000C, 00000000000000000000000D); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		00000000000000000000000B = { isa = XCConfigurationList; buildConfigurations = (00000000000000000000000E, 00000000000000000000000F); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		00000000000000000000000C = { isa = XCBuildConfiguration; buildSettings = { CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 13.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; DEBUG_INFORMATION_FORMAT = dwarf; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; ONLY_ACTIVE_ARCH = YES; }; name = Debug; };
+		00000000000000000000000D = { isa = XCBuildConfiguration; buildSettings = { CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 13.0; SDKROOT = macosx; SWIFT_VERSION = 5.0; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_OPTIMIZATION_LEVEL = "-O"; ONLY_ACTIVE_ARCH = NO; ARCHS = "$(ARCHS_STANDARD)"; }; name = Release; };
+		00000000000000000000000E = { isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; CODE_SIGN_ENTITLEMENTS = AppStore/DeepReader.entitlements; ENABLE_APP_SANDBOX = YES; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ".build/app-store-resources/Info.plist"; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.macos; PRODUCT_NAME = DeepReader; SUPPORTED_PLATFORMS = macosx; SKIP_INSTALL = NO; COMBINE_HIDPI_IMAGES = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; }; name = Debug; };
+		00000000000000000000000F = { isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; CODE_SIGN_ENTITLEMENTS = AppStore/DeepReader.entitlements; ENABLE_APP_SANDBOX = YES; ENABLE_HARDENED_RUNTIME = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = ".build/app-store-resources/Info.plist"; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.macos; PRODUCT_NAME = DeepReader; SUPPORTED_PLATFORMS = macosx; SKIP_INSTALL = NO; COMBINE_HIDPI_IMAGES = YES; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; }; name = Release; };
+		00000000000000000000001E = { isa = XCLocalSwiftPackageReference; relativePath = .; };
+		00000000000000000000001F = { isa = XCSwiftPackageProductDependency; package = 00000000000000000000001E; productName = DeepReaderDesktop; };
+		000000000000000000000020 = { isa = PBXBuildFile; fileRef = 000000000000000000000005; };
+		000000000000000000000021 = { isa = PBXBuildFile; productRef = 00000000000000000000001F; };
+		000000000000000000000064 = { isa = PBXFileReference; lastKnownFileType = image.icns; path = ".build/app-store-resources/DeepReader.icns"; sourceTree = "<group>"; };
+		0000000000000000000000C8 = { isa = PBXBuildFile; fileRef = 000000000000000000000064; };
+		000000000000000000000065 = { isa = PBXFileReference; lastKnownFileType = archive.zip; path = ".build/app-store-resources/Source.zip"; sourceTree = "<group>"; };
+		0000000000000000000000C9 = { isa = PBXBuildFile; fileRef = 000000000000000000000065; };
+		000000000000000000000066 = { isa = PBXFileReference; lastKnownFileType = text; path = ".build/app-store-resources/LICENSE.txt"; sourceTree = "<group>"; };
+		0000000000000000000000CA = { isa = PBXBuildFile; fileRef = 000000000000000000000066; };
+		000000000000000000000067 = { isa = PBXFileReference; lastKnownFileType = text; path = ".build/app-store-resources/THIRD-PARTY-NOTICES.md"; sourceTree = "<group>"; };
+		0000000000000000000000CB = { isa = PBXBuildFile; fileRef = 000000000000000000000067; };
+		000000000000000000000068 = { isa = PBXFileReference; lastKnownFileType = text; path = ".build/app-store-resources/README.md"; sourceTree = "<group>"; };
+		0000000000000000000000CC = { isa = PBXBuildFile; fileRef = 000000000000000000000068; };
+		000000000000000000000069 = { isa = PBXFileReference; lastKnownFileType = text; path = ".build/app-store-resources/SOURCE-COMMIT.txt"; sourceTree = "<group>"; };
+		0000000000000000000000CD = { isa = PBXBuildFile; fileRef = 000000000000000000000069; };
+		00000000000000000000006A = { isa = PBXFileReference; lastKnownFileType = text.xml; path = "AppStore/PrivacyInfo.xcprivacy"; sourceTree = "<group>"; };
+		0000000000000000000000CE = { isa = PBXBuildFile; fileRef = 00000000000000000000006A; };
+ }; rootObject = 000000000000000000000001;
+}

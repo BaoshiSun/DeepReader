@@ -1,8 +1,10 @@
 # DeepReader macOS 上架准备包
 
-准备日期：2026-10-07。基于 macOS 1.2.1 的现有实现。个人开发者注册由维护者提交，当前等待 Apple 审核；预计时间来自维护者，不代表 Apple 承诺。
+更新日期：2026-10-10。维护者已告知个人开发者会员获批；本机 Xcode 尚未登录 Apple 账号，也没有有效发布签名身份。已增加商店构建工程并通过未签名通用归档，尚未上传 Apple。
 
 **这是准备材料，不是已经符合商店要求的发行版。** 不在这里填写 Apple 密码、应用专用密码、证书私钥、API Key 或审核专用凭据。
+
+商店工程与本轮验证：[macos/AppStore/README.md](../../macos/AppStore/README.md)。
 
 ## 已备齐的材料
 
@@ -28,9 +30,9 @@ shellcheck macos/distribute.sh
 
 ## 账号等待期间与开通后的安排
 
-目前已经可以检查工具、校验文案、准备政策和测试材料、验证签名流程的离线控制逻辑。需要继续实现沙盒文件授权和 AI 明确同意流程，复核开源许可与商店条款，然后制作商店构建。
+现已加入沙盒文件书签、逐次 AI 明确同意、原生 Xcode 应用目标及文件元数据用途声明。27 项离线测试通过，本机沙盒 EPUB 打开、重启恢复和归档已验证。仍需完成正式身份签名测试、公开政策和商店信息，并复核开源许可与商店条款。
 
-账号开通后：在本机 Xcode 登录个人开发者账号，核对 Team ID 和 Bundle ID，创建所需证书和描述文件。先运行 Developer ID 发行流程验证签名和公证；另行完成 App Store 构建、TestFlight 和审核提交。正式的签名、公证、Apple 上传、付费设置和商店提交在本次准备工作中均未执行。
+账号开通后：在本机 Xcode 登录个人开发者账号，核对 Team ID 和 Bundle ID，创建所需证书和描述文件。App Store 流程直接使用商店分发签名、TestFlight 和审核提交；Developer ID 公证是独立的站外发行流程，不是商店上架前置条件。正式的签名、公证、Apple 上传、付费设置和商店提交在本次准备工作中均未执行。
 
 待维护者决定：
 
@@ -40,7 +42,7 @@ shellcheck macos/distribute.sh
 - 隐私政策和支持页面的长期公开 URL；本地 Markdown 草稿不能直接填成隐私政策网址。
 - 名称可用性、最终 Bundle ID（当前代码为 `org.deepreader.macos`）。标识变更需同步考虑钥匙串和数据迁移。
 
-本次已从 Apple 官方下载、校验并将 Xcode 26.3（17C529，Apple Silicon）安装到 `/Applications/Xcode.app`，另安装 ShellCheck 0.11.0。Xcode 首次启动的许可协议仍需维护者明确同意，然后完成所需组件安装；此前的应用 XCTest 因此尚未在本机补跑。系统目前为 macOS 15.7.4，Apple 兼容表列出 Xcode 26.3 支持 macOS 15.6+；这不等于它永久满足商店上传要求。提交当天重新检查兼容表和上传要求。本次未升级整个 macOS。
+本次已从 Apple 官方下载、校验并将 Xcode 26.3（17C529，Apple Silicon）安装到 `/Applications/Xcode.app`，另安装 ShellCheck 0.11.0。截至 2026-10-10，Xcode 首次启动检查通过，应用 XCTest 已在本机补跑通过。系统目前为 macOS 15.7.4，Apple 兼容表列出 Xcode 26.3 支持 macOS 15.6+；这不等于它永久满足商店上传要求。提交当天重新检查兼容表和上传要求。本次未升级整个 macOS。
 
 ## 官方参考
 

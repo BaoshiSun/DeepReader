@@ -64,10 +64,10 @@ def report():
     pending = [
         'Owner confirms seller identity, pricing, territories, review contact and public privacy-policy URL',
         'Review AGPL/LGPL distribution terms and static libmobi relinking obligations',
-        'Implement and test sandbox bookmarks, archive access, PDF writes and profile migration',
-        'Implement third-party AI consent, policy link and revocation; verify provider terms and retention',
-        'Audit required-reason APIs/privacy manifests and final App Privacy answers',
-        'Create and validate Xcode App Store archive, provisioning and TestFlight build',
+        'Complete signed sandbox PDF/export/cancellation checks and decide profile migration; bookmark/EPUB/archive checks implemented',
+        'Approve public privacy policy and in-app link; verify provider terms/retention; per-operation AI consent implemented',
+        'Finalize privacy data declarations and App Privacy answers; file-metadata API reasons declared',
+        'Sign and validate Xcode App Store archive, provisioning and TestFlight build; unsigned universal archive implemented',
         'Capture final screenshots and supply working private review access; test real provider calls',
     ]
     return {'bundle_id': info['CFBundleIdentifier'], 'version': info['CFBundleShortVersionString'],

@@ -18,6 +18,7 @@ import DeepReaderCore
     private let search = NSSearchField()
     private let chapters = NSPopUpButton()
     private var openTask: Task<Void, Never>?
+    private var documentAccess: FileAccess?
     private var openID = UUID()
     private var observer: NSObjectProtocol?
     public var menusChanged: (() -> Void)?
@@ -107,21 +108,26 @@ import DeepReaderCore
         let picker = NSOpenPanel(); picker.allowedContentTypes = BookFormat.extensions.compactMap { UTType(filenameExtension: $0) }; picker.allowsMultipleSelection = false
         if picker.runModal() == .OK, let url = picker.url { open(url) }
     }
-    public func open(_ url: URL) {
+    public func open(_ requestedURL: URL) {
         guard mayDiscard() else { return }
+        let access: FileAccess
+        do { access = try model.fileAccess.acquire(requestedURL) }
+        catch { model.show(error); return }
+        let url = access.url
         openTask?.cancel(); openID = UUID(); model.cancel(); model.opening = false
         if url.pathExtension.lowercased() != "pdf" {
             let id = openID
             model.opening = true; model.status = model.t("正在打开电子书…", "Opening ebook…")
             openTask = Task { [weak self] in
-                let worker = Task.detached { try EBookDocument.load(url) }
+                let worker = Task.detached { try withExtendedLifetime(access) { try EBookDocument.load(url) } }
                 do {
                     let book = try await withTaskCancellationHandler(operation: { try await worker.value }, onCancel: { worker.cancel() })
                     try Task.checkCancellation()
                     guard let self = self, self.openID == id else { return }
                     let entry = try self.model.store.ensureBook(url)
                     let marks = try self.model.store.highlights(bookID: entry.id, fingerprint: book.fingerprint)
-                    self.model.reader.openEBook(book, marks: marks); try self.model.didOpen(); self.opened(url)
+                    self.model.reader.openEBook(book, marks: marks); self.documentAccess = access
+                    try self.model.didOpen(); self.opened(url)
                 } catch is CancellationError {} catch { if self?.openID == id { self?.model.show(error) } }
                 if self?.openID == id { self?.model.opening = false; self?.openTask = nil }
             }
@@ -136,7 +142,8 @@ import DeepReaderCore
                 alert.window.initialFirstResponder = input
                 guard alert.runModal() == .alertFirstButtonReturn else { return }; password = input.stringValue
             }
-            try model.reader.openPDF(url, password: password); try model.didOpen(); opened(url)
+            try model.reader.openPDF(url, password: password); documentAccess = access
+            try model.didOpen(); opened(url)
         } catch { model.show(error) }
     }
     private func opened(_ url: URL) {
@@ -175,7 +182,10 @@ import DeepReaderCore
     @objc public func saveCopy() {
         guard model.reader.isPDF, model.pdf.url != nil else { return }
         let panel = NSSavePanel(); panel.allowedContentTypes = [.pdf]; panel.nameFieldStringValue = "DeepReader-copy.pdf"
-        if panel.runModal() == .OK, let url = panel.url { do { try model.pdf.saveCopy(url) } catch { model.show(error) } }
+        if panel.runModal() == .OK, let url = panel.url {
+            let access = FileAccess(url)
+            do { try withExtendedLifetime(access) { try model.pdf.saveCopy(url) } } catch { model.show(error) }
+        }
     }
     @objc public func showAI() {
         hidden = false
