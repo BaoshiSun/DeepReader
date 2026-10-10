@@ -139,7 +139,7 @@ struct SettingsView: View {
             Section("DeepSeek") {
                 Text(model.hasKey ? model.t("API Key 已保存在本机钥匙串", "API key saved in this device's Keychain") : model.t("尚未设置 API Key", "No API key configured"))
                 SecureField("API Key", text: $key).textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button(model.t("保存 Key", "Save key")) { model.key(key); if model.hasKey { key = "" } }.disabled(key.isEmpty)
+                Button(model.t("保存 Key", "Save key")) { if model.key(key) { key = "" } }.disabled(key.isEmpty)
                 Button(model.t("删除已存 Key", "Remove saved key"), role: .destructive) { model.removeKey() }.disabled(!model.hasKey)
                 Picker(model.t("模型", "Model"), selection: Binding(get: { model.settings.model }, set: { model.settings.models[Provider.deepSeek.rawValue] = $0; model.persistSettings() })) { ForEach(Provider.deepSeek.models, id: \.self) { Text($0) } }
                 Text(model.t("本地阅读免费且不需要 Key。AI 需您自己的账户，费用和额度由 DeepSeek 决定。", "Local reading needs no key. AI uses your own account; DeepSeek sets fees and quotas.")).font(.footnote)

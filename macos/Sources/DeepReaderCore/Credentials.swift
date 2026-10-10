@@ -21,7 +21,7 @@ public final class KeychainCredentials: Credentials {
         let status = SecItemCopyMatching(q as CFDictionary, &result)
         if status == errSecItemNotFound { return "" }
         guard status == errSecSuccess, let data = result as? Data, let text = String(data: data, encoding: .utf8) else {
-            throw ReaderError("无法读取钥匙串中的 API Key。请检查系统授权。", "Could not read the API key from Keychain. Check system access permissions.")
+            throw Self.failure(status == errSecSuccess ? errSecDecode : status, "无法读取钥匙串中的 API Key。", "Could not read the API key from Keychain.")
         }
         return text
     }
@@ -34,10 +34,22 @@ public final class KeychainCredentials: Credentials {
             add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
             status = SecItemAdd(add as CFDictionary, nil)
         }
-        guard status == errSecSuccess else { throw ReaderError("API Key 未能保存到钥匙串。", "Could not save the API key in Keychain.") }
+        guard status == errSecSuccess else { throw Self.failure(status, "API Key 未能保存到钥匙串。", "Could not save the API key in Keychain.") }
     }
     public func remove(_ provider: Provider) throws {
         let status = SecItemDelete(query(provider) as CFDictionary)
-        guard status == errSecSuccess || status == errSecItemNotFound else { throw ReaderError("无法删除已保存的密钥。", "Could not remove the saved key.") }
+        guard status == errSecSuccess || status == errSecItemNotFound else { throw Self.failure(status, "无法删除已保存的密钥。", "Could not remove the saved key.") }
+    }
+    static func failure(_ status: OSStatus, _ chinese: String, _ english: String) -> ReaderError {
+        var zh = "\(chinese)（Keychain \(status)）"
+        var en = "\(english) (Keychain \(status))"
+        if status == errSecMissingEntitlement {
+            zh += "当前应用构建缺少钥匙串访问权限，请重新签名并安装应用。"
+            en += " This app build lacks Keychain access entitlements. Rebuild with signing and reinstall."
+        } else if status == errSecInteractionNotAllowed {
+            zh += "请解锁设备后重试。"
+            en += " Unlock the device and try again."
+        }
+        return ReaderError(zh, en)
     }
 }

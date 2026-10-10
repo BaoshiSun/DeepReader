@@ -3,6 +3,7 @@ import XCTest
 import PDFKit
 import SwiftUI
 import ZIPFoundation
+import Security
 @testable import DeepReaderMobile
 
 final class MobileTests: XCTestCase {
@@ -12,6 +13,47 @@ final class MobileTests: XCTestCase {
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
     }
     override func tearDownWithError() throws { try FileManager.default.removeItem(at: root) }
+    func testKeychainSaveUpdateReloadAndRemove() throws {
+        let service = "org.deepreader.ios.tests." + UUID().uuidString
+        let credentials = KeychainCredentials(service: service)
+        defer { try? credentials.remove(.deepSeek) }
+        XCTAssertEqual(try credentials.read(.deepSeek), "")
+        let first = "sk-offline-test-" + UUID().uuidString
+        let second = "sk-offline-test-" + UUID().uuidString
+        try credentials.save(first, for: .deepSeek)
+        XCTAssertEqual(try KeychainCredentials(service: service).read(.deepSeek), first)
+        try credentials.save(second, for: .deepSeek)
+        XCTAssertEqual(try credentials.read(.deepSeek), second)
+        try credentials.remove(.deepSeek)
+        XCTAssertEqual(try credentials.read(.deepSeek), "")
+    }
+    @MainActor func testFailedKeyReplacementPreservesSavedStateAndReportsFailure() throws {
+        let credentials = FailingCredentials()
+        let model = MobileModel(root: root, credentials: credentials)
+        XCTAssertFalse(model.hasKey)
+        XCTAssertFalse(model.key("sk-offline-test"))
+        XCTAssertFalse(model.hasKey)
+        XCTAssertTrue(model.error?.contains("-34018") == true)
+        credentials.failSave = false
+        XCTAssertTrue(model.key("  sk-offline-test  \n"))
+        XCTAssertTrue(model.hasKey)
+        XCTAssertNil(model.error)
+        XCTAssertEqual(credentials.value, "sk-offline-test")
+        credentials.failSave = true
+        XCTAssertFalse(model.key("sk-replacement"))
+        XCTAssertTrue(model.hasKey)
+        XCTAssertEqual(credentials.value, "sk-offline-test")
+        model.removeKey()
+        XCTAssertFalse(model.hasKey)
+    }
+    func testInvalidKeyDoesNotReplaceExistingKey() throws {
+        let credentials = KeychainCredentials(service: "org.deepreader.ios.tests." + UUID().uuidString)
+        defer { try? credentials.remove(.deepSeek) }
+        let value = "sk-offline-test-" + UUID().uuidString
+        try credentials.save(value, for: .deepSeek)
+        XCTAssertThrowsError(try credentials.save("invalid key\n", for: .deepSeek))
+        XCTAssertEqual(try credentials.read(.deepSeek), value)
+    }
     func write(_ name: String, _ text: String) throws -> URL {
         let url = root.appendingPathComponent(name); try Data(text.utf8).write(to: url); return url
     }
@@ -149,4 +191,15 @@ private final class EmptyCredentials: Credentials {
     func read(_ provider: DeepReaderMobile.Provider) throws -> String { "" }
     func save(_ value: String, for provider: DeepReaderMobile.Provider) throws {}
     func remove(_ provider: DeepReaderMobile.Provider) throws {}
+}
+
+private final class FailingCredentials: Credentials {
+    var value = ""
+    var failSave = true
+    func read(_ provider: DeepReaderMobile.Provider) throws -> String { value }
+    func save(_ value: String, for provider: DeepReaderMobile.Provider) throws {
+        if failSave { throw KeychainCredentials.failure(errSecMissingEntitlement, "保存失败。", "Save failed.") }
+        self.value = value
+    }
+    func remove(_ provider: DeepReaderMobile.Provider) throws { value = "" }
 }

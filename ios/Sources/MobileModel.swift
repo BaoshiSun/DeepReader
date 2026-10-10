@@ -56,8 +56,12 @@ struct PendingAI: Identifiable {
         settings.provider = .deepSeek
         do { try library?.update { $0.settings = settings } } catch { report(error) }
     }
-    func key(_ value: String) {
-        do { try credentials.save(value.trimmingCharacters(in: .whitespacesAndNewlines), for: .deepSeek); hasKey = true } catch { report(error) }
+    @discardableResult func key(_ value: String) -> Bool {
+        do {
+            try credentials.save(value.trimmingCharacters(in: .whitespacesAndNewlines), for: .deepSeek)
+            hasKey = true; error = nil
+            return true
+        } catch { report(error); return false }
     }
     func removeKey() { do { try credentials.remove(.deepSeek); hasKey = false } catch { report(error) } }
     func importFile(_ url: URL) {
