@@ -1,5 +1,7 @@
 # DeepReader · AI 阅读器
 
+**iPhone / iPad 初版：** 原生 SwiftUI 工程已加入 [`ios/`](ios/README.md)，支持 iOS 17+ 的本地阅读与 DeepSeek 辅助阅读。当前为开发版本，尚未在 iOS App Store 发布。
+
 基于 **SumatraPDF 3.6.1rel** 的 Windows x64 原生定制版，提供可调宽度、可收起或悬浮的 AI 侧栏。选中词句、按 **Ctrl + Alt + D**，即可结合附近上下文获得简短解释。
 
 项目地址：[BaoshiSun/DeepReader](https://github.com/BaoshiSun/DeepReader)。**1.0.0 是首个公开发行版本。**

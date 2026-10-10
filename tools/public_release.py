@@ -11,6 +11,20 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = "1.2.0"
 PRODUCT = "DeepReader"
 PUBLIC_PATHS = tuple("""
+ios/DeepReader.xcodeproj/project.pbxproj
+ios/DeepReader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+ios/DeepReader.xcodeproj/xcshareddata/xcschemes/DeepReaderiOS.xcscheme
+ios/Info.plist
+ios/README.md
+ios/Resources/Reading-Garden.txt
+ios/Resources/ZIPFoundation-LICENSE.txt
+ios/Sources/DeepReaderApp.swift
+ios/Sources/MobileDocument.swift
+ios/Sources/MobileLibrary.swift
+ios/Sources/MobileModel.swift
+ios/Sources/ReaderViews.swift
+ios/Tests/MobileTests.swift
+ios/prepare_project.py
 .gitignore
 .github/workflows/release-checks.yml
 .github/workflows/macos-build.yml
