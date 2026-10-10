@@ -33,18 +33,24 @@ struct PendingAI: Identifiable {
     @Published var progress = ""
     @Published var showAI = false
     @Published var hasKey = false
+    @Published private(set) var hasAIConsent = false
+    static let aiConsentVersion = 1
     private(set) var library: MobileLibrary?
     private let credentials: Credentials
-    private let ai = AIClient()
+    private let ai: AIClient
     private var work: Task<Void, Never>?
     private var activeRecord: ReadingRecord?
+    var answerSubject: String {
+        activeRecord?.kind == "file" ? t("全文总结", "Document summary") : (activeRecord?.selected ?? "")
+    }
     var pdfView: PDFView?
     var english: Bool { settings.english }
     func t(_ zh: String, _ en: String) -> String { english ? en : zh }
-    init(root: URL? = nil, credentials: Credentials = KeychainCredentials(service: "org.deepreader.ios.providers")) {
-        self.credentials = credentials
+    init(root: URL? = nil, credentials: Credentials = KeychainCredentials(service: "org.deepreader.ios.providers"), ai: AIClient = AIClient()) {
+        self.credentials = credentials; self.ai = ai
         do {
             library = try MobileLibrary(root: root); refresh(); settings = library!.state.settings
+            hasAIConsent = library?.state.aiConsentVersion == Self.aiConsentVersion
             hasKey = !(try credentials.read(.deepSeek)).isEmpty
         } catch { report(error) }
     }
@@ -64,6 +70,23 @@ struct PendingAI: Identifiable {
         } catch { report(error); return false }
     }
     func removeKey() { do { try credentials.remove(.deepSeek); hasKey = false } catch { report(error) } }
+    func dismissAssistant() { showAI = false; pending = nil }
+    func revokeAIConsent() {
+        do {
+            guard let library else { return }
+            try library.update { $0.aiConsentVersion = nil }
+            hasAIConsent = false; pending = nil; cancel()
+        } catch { report(error) }
+    }
+    func authorizeAndSend(_ request: PendingAI) {
+        guard pending?.id == request.id, request.book.id == book?.id, !busy else { return }
+        do {
+            guard let library else { return }
+            try library.update { $0.aiConsentVersion = Self.aiConsentVersion }
+            hasAIConsent = true
+            send(request)
+        } catch { report(error) }
+    }
     func importFile(_ url: URL) {
         guard !busy, !importing, let library else { return }
         importing = true
@@ -80,9 +103,10 @@ struct PendingAI: Identifiable {
             document = opened; book = target
             position = min(target.position, max(0, (opened.pdf?.pageCount ?? opened.chapters.count) - 1))
             selected = ""; context = ""; answer = ""; activeRecord = nil; question = ""; pdfView = nil
+            dismissAssistant()
         } catch { report(error) }
     }
-    func closeBook() { savePosition(); document = nil; book = nil; pdfView = nil }
+    func closeBook() { savePosition(); dismissAssistant(); document = nil; book = nil; pdfView = nil }
     func savePosition() { updateBook { $0.position = position } }
     func updateBook(_ mutate: (inout MobileBook) -> Void) {
         guard var value = book, let library else { return }
@@ -99,7 +123,13 @@ struct PendingAI: Identifiable {
         do { try library?.update { $0.records.removeAll { $0.id == id } }; refresh() } catch { report(error) }
     }
     func select(_ text: String, surrounding: String) {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        if selected != TextLimits.prefix(text, 4000) {
+            pending = nil
+            if !busy { answer = ""; activeRecord = nil; question = "" }
+        }
         selected = TextLimits.prefix(text, 4000)
+        showAI = true
         if let match = surrounding.range(of: text) {
             let before = min(1000, surrounding.distance(from: surrounding.startIndex, to: match.lowerBound))
             let start = surrounding.index(match.lowerBound, offsetBy: -before)
@@ -123,14 +153,18 @@ struct PendingAI: Identifiable {
     private func prepare(_ task: AITask, source: String, previous: ReadingRecord? = nil) {
         guard !busy, let book else { return }
         guard hasKey else { error = t("请先在设置中保存您自己的 DeepSeek API Key。", "Save your own DeepSeek API key in Settings first."); return }
-        pending = PendingAI(task: task, source: source, selection: selected, context: context, book: book, settings: settings, previous: previous, question: question, page: position + 1)
+        showAI = true
+        let request = PendingAI(task: task, source: source, selection: selected, context: context, book: book, settings: settings, previous: previous, question: question, page: position + 1)
+        if hasAIConsent { send(request) } else { pending = request }
     }
-    func send(_ request: PendingAI) {
-        guard !busy else { return }
+    private func send(_ request: PendingAI) {
+        guard !busy, hasAIConsent else { return }
         pending = nil; busy = true; progress = t("正在请求 DeepSeek…", "Requesting DeepSeek…"); showAI = true
         work = Task {
             defer { busy = false; work = nil; progress = "" }
             do {
+                try Task.checkCancellation()
+                guard hasAIConsent else { return }
                 let key = try credentials.read(.deepSeek)
                 let output: String
                 if request.task == .document {

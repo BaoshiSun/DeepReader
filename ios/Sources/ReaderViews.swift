@@ -126,6 +126,9 @@ struct ReaderScreen: View {
                 }.font(.subheadline).padding().background(.bar)
             }
         }
+        .overlay {
+            if model.showAI { FloatingAssistant().environmentObject(model).padding(.bottom, 56) }
+        }
         .navigationTitle(model.book?.title ?? "DeepReader").navigationBarTitleDisplayMode(.inline)
         .searchable(text: $search, prompt: model.t("搜索正文（电子书限当前章）", "Find text (ebooks: current chapter)"))
         .toolbar {
@@ -137,7 +140,58 @@ struct ReaderScreen: View {
                 } label: { Image(systemName: "ellipsis.circle") }
             }
         }
-        .onChange(of: model.position) { model.savePosition(); model.selected = ""; model.context = "" }
-        .onDisappear { model.savePosition() }
+        .onChange(of: model.position) { model.savePosition(); model.selected = ""; model.context = ""; model.pending = nil }
+        .onDisappear { model.savePosition(); model.dismissAssistant() }
+    }
+}
+
+struct FloatingAssistant: View {
+    @EnvironmentObject var model: MobileModel
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var collapsed = false
+    @State private var offset: CGSize?
+    @GestureState private var translation = CGSize.zero
+    var body: some View {
+        GeometryReader { geometry in
+            let width = min(collapsed ? 260 : 380, max(0, geometry.size.width - 24))
+            let preferredHeight: CGFloat = model.pending != nil ? 520 : (model.answer.isEmpty && !model.busy ? 270 : 400)
+            let height = collapsed ? 52 : min(preferredHeight, max(100, geometry.size.height - 24))
+            let initial = CGSize(width: 0, height: max(0, geometry.size.height - height - 24))
+            let base = bounded(offset ?? initial, in: geometry.size, panel: CGSize(width: width, height: height))
+            let position = bounded(CGSize(width: base.width + translation.width, height: base.height + translation.height), in: geometry.size, panel: CGSize(width: width, height: height))
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    Label(model.t("阅读助手", "Reading assistant"), systemImage: "sparkles")
+                        .font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .accessibilityHint(model.t("拖动标题可移动浮窗", "Drag the title to move the panel"))
+                        .gesture(DragGesture().updating($translation) { value, state, _ in state = value.translation }
+                            .onEnded { value in offset = bounded(CGSize(width: base.width + value.translation.width, height: base.height + value.translation.height), in: geometry.size, panel: CGSize(width: width, height: height)) })
+                    if model.busy { ProgressView().controlSize(.small) }
+                    Button { collapsed.toggle() } label: { Image(systemName: collapsed ? "chevron.down" : "minus").frame(width: 44, height: 44) }
+                        .accessibilityLabel(model.t(collapsed ? "展开助手" : "收起助手", collapsed ? "Expand assistant" : "Collapse assistant"))
+                    Button { model.dismissAssistant() } label: { Image(systemName: "xmark").frame(width: 44, height: 44) }
+                        .accessibilityLabel(model.t("关闭助手", "Close assistant"))
+                }.padding(.leading, 16).padding(.trailing, 4).frame(height: 52)
+                if !collapsed { Divider(); AssistantView() }
+            }
+            .frame(width: width, height: height)
+            .tint(colorScheme == .dark ? Color(red: 0.45, green: 0.8, blue: 0.63) : Color(red: 0.16, green: 0.43, blue: 0.32))
+            .background {
+                if reduceTransparency { RoundedRectangle(cornerRadius: 20).fill(Color(.secondarySystemBackground)) }
+                else { RoundedRectangle(cornerRadius: 20).fill(.ultraThinMaterial) }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(.primary.opacity(0.12)))
+            .shadow(color: .black.opacity(0.16), radius: 16, y: 6)
+            .offset(x: geometry.size.width - width - 12 + position.width, y: 12 + position.height)
+            .onChange(of: model.selected) { collapsed = false }
+            .onChange(of: model.pending?.id) { if model.pending != nil { collapsed = false } }
+        }
+    }
+    private func bounded(_ value: CGSize, in size: CGSize, panel: CGSize) -> CGSize {
+        CGSize(width: min(0, max(-max(0, size.width - panel.width - 24), value.width)),
+               height: min(max(0, size.height - panel.height - 24), max(0, value.height)))
     }
 }

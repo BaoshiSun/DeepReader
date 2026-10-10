@@ -148,6 +148,69 @@ final class MobileTests: XCTestCase {
         XCTAssertThrowsError(try AIClient.decode(Data(), status: 402))
         XCTAssertEqual(AIClient.summaryRequests(chunks: 4), 7)
     }
+    @MainActor func testRememberedConsentAndRevocationGateRequests() async throws {
+        OfflineAIProtocol.reset()
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [OfflineAIProtocol.self]
+        let credentials = FailingCredentials(); credentials.value = "offline-test"
+        let client = AIClient(configuration: configuration)
+        let model = MobileModel(root: root.appendingPathComponent("consent"), credentials: credentials, ai: client)
+        let library = try XCTUnwrap(model.library)
+        let book = try library.importFile(write("consent.txt", "The river bank is green."))
+        model.open(book); model.select("bank", surrounding: "The river bank is green.")
+        XCTAssertTrue(model.showAI)
+        XCTAssertFalse(model.busy)
+        XCTAssertEqual(OfflineAIProtocol.count, 0)
+        model.explain()
+        let obsolete = try XCTUnwrap(model.pending)
+        model.select("river", surrounding: "The river bank is green.")
+        model.authorizeAndSend(obsolete)
+        XCTAssertFalse(model.hasAIConsent)
+        XCTAssertEqual(OfflineAIProtocol.count, 0)
+        model.explain()
+        model.authorizeAndSend(try XCTUnwrap(model.pending))
+        await waitForAI(model)
+        XCTAssertTrue(model.hasAIConsent)
+        XCTAssertNil(model.pending)
+        XCTAssertEqual(OfflineAIProtocol.count, 1)
+        model.question = "Why?"; model.followup(); await waitForAI(model)
+        XCTAssertNil(model.pending)
+        XCTAssertEqual(OfflineAIProtocol.count, 2)
+        model.summary(); await waitForAI(model)
+        XCTAssertNil(model.pending)
+        XCTAssertEqual(OfflineAIProtocol.count, 3)
+        let restored = MobileModel(root: library.root, credentials: credentials, ai: client)
+        XCTAssertTrue(restored.hasAIConsent)
+        restored.open(book); restored.select("bank", surrounding: "The river bank is green.")
+        restored.explain(); await waitForAI(restored)
+        XCTAssertEqual(OfflineAIProtocol.count, 4)
+        restored.revokeAIConsent()
+        XCTAssertFalse(restored.hasAIConsent)
+        XCTAssertFalse(MobileModel(root: library.root, credentials: credentials, ai: client).hasAIConsent)
+        restored.explain()
+        XCTAssertNotNil(restored.pending)
+        restored.dismissAssistant()
+        XCTAssertNil(restored.pending)
+        await waitForAI(restored)
+        XCTAssertEqual(OfflineAIProtocol.count, 4)
+    }
+    func testOlderLibraryRequiresFreshAIConsent() throws {
+        let directory = root.appendingPathComponent("legacy")
+        let library = try MobileLibrary(root: directory)
+        // This is the exact pre-consent schema, without the new optional field.
+        let state = try JSONSerialization.jsonObject(with: JSONEncoder().encode(library.state)) as! [String: Any]
+        XCTAssertNil(state["aiConsentVersion"])
+        try JSONSerialization.data(withJSONObject: state).write(to: directory.appendingPathComponent("library.json"))
+        XCTAssertNil(try MobileLibrary(root: directory).state.aiConsentVersion)
+    }
+    @MainActor private func waitForAI(_ model: MobileModel) async {
+        for _ in 0..<100 {
+            if !model.busy { break }
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+        XCTAssertFalse(model.busy)
+        XCTAssertNil(model.error)
+    }
     @MainActor func testReadingScreensAndMissingCredentialGate() async throws {
         let source = try write("Reading-Garden.txt", "阅读花园 · The Reading Garden\n\n慢下来，读懂一句话。\n\nThe river bank is green. The bank approved the loan.\n\n同一个词，在不同语境中含义不同。长按选择一句话，再打开阅读助手。\n\nRead at your own pace. Keep a question in mind and let context do the work.")
         let model = MobileModel(root: root.appendingPathComponent("preview"), credentials: EmptyCredentials())
@@ -164,16 +227,25 @@ final class MobileTests: XCTestCase {
         XCTAssertNotNil(model.error)
         model.error = nil
         let reader = NavigationStack { ReaderScreen() }.environmentObject(model).tint(Color(red: 0.16, green: 0.43, blue: 0.32))
-        await capture(reader, name: "iPhone-reading", size: CGSize(width: 393, height: 852))
-        await capture(reader, name: "iPad-reading", size: CGSize(width: 1024, height: 768))
+        let select = { model.select("bank", surrounding: "The bank approved the loan.") }
+        await capture(reader, name: "iPhone-reading", size: CGSize(width: 393, height: 852), beforeCapture: select)
+        await capture(reader, name: "iPad-reading", size: CGSize(width: 1024, height: 768), beforeCapture: select)
+        await capture(reader.environment(\.colorScheme, .dark), name: "iPhone-floating-dark", size: CGSize(width: 393, height: 852), beforeCapture: select)
+        await capture(reader, name: "iPhone-floating-landscape", size: CGSize(width: 852, height: 393), beforeCapture: select)
+        await capture(reader, name: "iPhone-first-consent", size: CGSize(width: 393, height: 852)) {
+            select(); model.hasKey = true; model.explain()
+        }
     }
-    @MainActor private func capture<V: View>(_ content: V, name: String, size: CGSize) async {
+    @MainActor private func capture<V: View>(_ content: V, name: String, size: CGSize, beforeCapture: () -> Void = {}) async {
         let host = UIHostingController(rootView: content)
         host.loadViewIfNeeded()
         host.view.frame = CGRect(origin: .zero, size: size)
         host.traitOverrides.horizontalSizeClass = size.width > 600 ? .regular : .compact
         host.view.setNeedsLayout(); host.view.layoutIfNeeded()
         try? await Task.sleep(nanoseconds: 300_000_000)
+        beforeCapture()
+        try? await Task.sleep(nanoseconds: 150_000_000)
+        host.view.setNeedsLayout(); host.view.layoutIfNeeded()
         let renderer = UIGraphicsImageRenderer(size: size)
         let image = renderer.image { _ in host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true) }
         let attachment = XCTAttachment(image: image)
@@ -202,4 +274,21 @@ private final class FailingCredentials: Credentials {
         self.value = value
     }
     func remove(_ provider: DeepReaderMobile.Provider) throws { value = "" }
+}
+
+private final class OfflineAIProtocol: URLProtocol {
+    private static let lock = NSLock()
+    private static var requests = 0
+    static var count: Int { lock.lock(); defer { lock.unlock() }; return requests }
+    static func reset() { lock.lock(); requests = 0; lock.unlock() }
+    override class func canInit(with request: URLRequest) -> Bool { true }
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+    override func startLoading() {
+        Self.lock.lock(); Self.requests += 1; Self.lock.unlock()
+        let data = Data(#"{"choices":[{"finish_reason":"stop","message":{"content":"Offline test response."}}]}"#.utf8)
+        client?.urlProtocol(self, didReceive: HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: data)
+        client?.urlProtocolDidFinishLoading(self)
+    }
+    override func stopLoading() {}
 }

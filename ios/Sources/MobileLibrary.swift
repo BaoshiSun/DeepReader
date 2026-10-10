@@ -15,6 +15,8 @@ struct MobileState: Codable {
     var books: [MobileBook] = []
     var records: [ReadingRecord] = []
     var settings = Settings()
+    // Optional so libraries created before remembered consent still decode safely.
+    var aiConsentVersion: Int?
 }
 final class MobileLibrary: @unchecked Sendable {
     private let lock = NSRecursiveLock()

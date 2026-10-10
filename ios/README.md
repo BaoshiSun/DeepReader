@@ -8,10 +8,11 @@ Native SwiftUI / UIKit first version, iOS and iPadOS 17 or later. Separate bundl
 - PDFKit reading, text selection, search, persistent PDF highlight annotations and exporting the annotated copy.
 - EPUB spine-order chapter reading in plain text; embedded scripts and external content never execute. Chapter selection, text selection/search, saved text highlights and chapter/page position.
 - Local book library, ratings, finished state, deletion of imported copies, built-in original bilingual sample and Chinese/English interface.
-- DeepSeek-only AI explanation, follow-up and full-document summary, using the existing macOS AI client and models. Every request requires explicit disclosure/consent. Provider credentials use a separate iOS Keychain service; no API key is bundled.
+- DeepSeek-only AI explanation, follow-up and full-document summary, using the existing macOS AI client and models. First-use disclosure covers selection/context, follow-ups and full-text summaries; explicit permission is remembered locally and can be revoked in Settings. Older libraries default to no permission. Provider credentials use a separate iOS Keychain service; no API key is bundled.
+- A translucent assistant floats over the reader without page navigation or a modal backdrop. Selecting text opens it without sending anything. Drag its title to move it, collapse it to keep reading, or close it. Explain/follow-up/summary actions send only on a user tap; the first permission prompt stays inside the panel. Reduce Transparency uses an opaque accessible background.
 - Request cancellation, bounded inputs/responses, saved successful history, record deletion and sharing.
 
-EPUB images, original book styling and malformed HTML are not supported in this first text-reading version. Markdown displays source text. MOBI/AZW3, DRM, OCR, Mac sync, floating windows, rating-folder archives and day/week/month summaries are not implemented on iOS. Text highlights match the chosen phrase within displayed chapters, so repeated phrases are also highlighted.
+EPUB images, original book styling and malformed HTML are not supported in this first text-reading version. Markdown displays source text. MOBI/AZW3, DRM, OCR, Mac sync, separate OS-level floating windows, rating-folder archives and day/week/month summaries are not implemented on iOS. Text highlights match the chosen phrase within displayed chapters, so repeated phrases are also highlighted.
 
 ## Build and run
 
@@ -42,6 +43,8 @@ The XCTest suite exercises import/relaunch persistence, original-file preservati
 Validation on 2026-10-11 with Xcode 26.3: all 10 iOS XCTest tests passed on an iPhone 16e simulator running iOS 26.3, and the existing 9 distribution tests passed. Generic iOS Simulator and unsigned arm64 iOS Release builds both succeeded. XCTest also rendered the library and reader at phone/tablet dimensions for visual inspection; these are layout test renders, not physical-device screenshots. Manual simulator tapping was blocked by the local UI automation tool, so complete touch interaction and actual iPad-device testing remain outstanding. No live AI request was made.
 
 Keychain regression follow-up on 2026-10-11: the earlier unsigned build reproduced `-34018`. With default simulator signing, all 13 iOS tests passed, including real Keychain create/update/read/delete in isolated services using disposable, nonfunctional test values, invalid-key preservation, and failed replacement state. The shared credential error diagnostics also passed the existing 28 macOS tests. The simulator Release app was rebuilt with signing enabled. No real user key was accessed by the regression tests, and no provider request was made.
+
+Floating-reader follow-up on 2026-10-11: all 15 iOS tests passed. New offline transport tests cover first-use consent, remembering it after reopening the library, explanations/follow-ups/summaries without repeated prompts, revocation, and rejecting obsolete pending requests. Selection alone makes no request. Phone/tablet, landscape, dark appearance and inline consent layouts were rendered for inspection; subsequent layout changes passed the rendering test again. These checks do not substitute for manual drag/keyboard testing on a physical device.
 
 ## Data and distribution
 

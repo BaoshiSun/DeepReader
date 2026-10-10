@@ -64,7 +64,6 @@ struct RootView: View {
         .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .plainText, UTType(filenameExtension: "epub") ?? .data, UTType(filenameExtension: "md") ?? .plainText], allowsMultipleSelection: false) { result in
             do { if let url = try result.get().first { model.importFile(url) } } catch { model.report(error) }
         }
-        .sheet(isPresented: $model.showAI) { NavigationStack { AssistantView() }.environmentObject(model) }
         .alert(model.t("提示", "Notice"), isPresented: Binding(get: { model.error != nil && !model.showAI }, set: { if !$0 { model.error = nil } })) { Button("OK") { model.error = nil } } message: { Text(model.error ?? "") }
         .confirmationDialog(model.t("删除应用中的导入副本？原文件保持不变。", "Delete the imported copy? Your original stays unchanged."), isPresented: Binding(get: { removal != nil }, set: { if !$0 { removal = nil } }), titleVisibility: .visible) {
             Button(model.t("删除副本", "Delete copy"), role: .destructive) { if let removal { model.deleteBook(removal) }; removal = nil }
@@ -73,43 +72,51 @@ struct RootView: View {
 }
 struct AssistantView: View {
     @EnvironmentObject var model: MobileModel
-    @Environment(\.dismiss) private var dismiss
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                Label("DeepSeek", systemImage: "sparkles").font(.title2.bold())
-                Text(model.t("AI 回答可能出错，请结合原文核对。每次发送前都会请您确认。", "AI can make mistakes. Check the source. You confirm each request before sending.")).font(.footnote).foregroundStyle(.secondary)
-                GroupBox(model.t("选中内容", "Selection")) { Text(model.selected.isEmpty ? model.t("返回正文，长按选择一段文字。", "Return to the document and touch and hold to select text.") : model.selected).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled) }
-                HStack {
-                    Button(model.t("解释选文", "Explain")) { model.explain() }.buttonStyle(.borderedProminent).disabled(model.selected.isEmpty || model.busy)
-                    Button(model.t("总结全文", "Summarize")) { model.summary() }.buttonStyle(.bordered).disabled(model.busy)
-                }
-                if model.busy { HStack { ProgressView(); Text(model.progress); Spacer(); Button(model.t("取消", "Cancel")) { model.cancel() } } }
-                if !model.answer.isEmpty {
-                    Text(model.answer).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
-                    ShareLink(item: model.answer) { Label(model.t("分享回答", "Share answer"), systemImage: "square.and.arrow.up") }
-                    TextField(model.t("继续追问…", "Ask a follow-up…"), text: $model.question, axis: .vertical).textFieldStyle(.roundedBorder).disabled(model.busy)
-                    Button(model.t("发送追问", "Send follow-up")) { model.followup() }.disabled(model.busy || model.question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }.padding(22)
-        }.navigationTitle(model.t("阅读助手", "Reading assistant")).navigationBarTitleDisplayMode(.inline)
-        .toolbar { ToolbarItem(placement: .confirmationAction) { Button(model.t("完成", "Done")) { dismiss() } } }
-        .sheet(item: $model.pending) { request in
-            NavigationStack {
-                Form {
-                    Section(model.t("发送到 DeepSeek", "Send to DeepSeek")) {
-                        Text(model.t("接收方：api.deepseek.com", "Recipient: api.deepseek.com"))
-                        Text(model.t("模型：", "Model: ") + request.settings.model)
-                        Text(request.task == .document ? model.t("范围：可提取的全文；长文会分段发送并合并摘要。", "Scope: all extractable document text; long documents are split and summaries combined.") : model.t("范围：选文、附近语境；追问还包括之前的回答与问题。", "Scope: selection and context; follow-ups also include the previous answer and question."))
-                        Text(model.t("预计请求数：", "Estimated requests: ") + String(request.requests))
-                        Text(model.t("API Key 用于关联您的服务商账户。文字和网络信息由服务商按其政策处理，可能保存及用于训练。费用由您的账户承担。", "Your API key identifies your provider account. The provider processes text and network information under its policy, potentially retaining or training on it. Your account pays the fees."))
-                        Link(model.t("DeepSeek 隐私政策", "DeepSeek privacy policy"), destination: URL(string: "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html")!)
+            VStack(alignment: .leading, spacing: 14) {
+                if let request = model.pending {
+                    Text(model.t("允许将阅读内容发送到 DeepSeek？", "Allow reading content to be sent to DeepSeek?")).font(.headline)
+                    Text(model.t("解释发送选文和附近语境；追问还发送先前回答和问题；点击“总结全文”会发送可提取的全文，长文分段处理。", "Explanations send your selection and nearby context; follow-ups also send the previous answer and question. Summarize sends all extractable text, split for long documents."))
+                    Text("api.deepseek.com · " + request.settings.model).font(.caption)
+                    Text(model.t("本次预计请求数：", "Estimated requests now: ") + String(request.requests)).font(.caption)
+                    Text(model.t("内容和网络信息由 DeepSeek 按其政策处理，可能保存及用于训练；API 费用由您的账户承担。", "DeepSeek processes content and network information under its policy, potentially retaining or training on it. Your account pays API fees.")).font(.footnote)
+                    Link(model.t("DeepSeek 隐私政策", "DeepSeek privacy policy"), destination: URL(string: "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html")!)
+                    Text(model.t("记住授权后，仅在您点击解释、追问或总结时发送，不再逐次询问。可在设置中撤销。", "Remembering permission skips future prompts when you tap Explain, Follow-up or Summarize. Revoke it in Settings at any time.")).font(.footnote)
+                    Button { model.authorizeAndSend(request) } label: { Text(model.t("同意并记住，发送", "Allow, remember and send")).foregroundStyle(.white) }
+                        .buttonStyle(.borderedProminent).tint(Color(red: 0.16, green: 0.43, blue: 0.32))
+                    Button(model.t("暂不发送", "Not now")) { model.pending = nil }
+                } else {
+                    Text(model.t("AI 回答仅供参考，请结合原文核对。", "AI can make mistakes. Check the source.")).font(.caption).foregroundStyle(.secondary)
+                    if !model.selected.isEmpty {
+                        Text(model.selected).font(.subheadline).lineLimit(3).frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(10).background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+                    } else {
+                        Text(model.t("在正文中长按选择文字，再点解释。", "Touch and hold text in the document, then tap Explain.")).font(.subheadline)
                     }
-                    Section { Button(model.t("同意并发送", "Agree and send")) { model.send(request) }; Button(model.t("取消，继续本地阅读", "Cancel; keep reading locally"), role: .cancel) { model.pending = nil } }
-                }.navigationTitle(model.t("发送前确认", "Confirm sharing")).navigationBarTitleDisplayMode(.inline)
-            }
-        }
-        .alert(model.t("提示", "Notice"), isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) { Button("OK") { model.error = nil } } message: { Text(model.error ?? "") }
+                    HStack {
+                        Button { model.explain() } label: { Text(model.t("解释选文", "Explain")).foregroundStyle(.white) }
+                            .buttonStyle(.borderedProminent).tint(Color(red: 0.16, green: 0.43, blue: 0.32)).disabled(model.selected.isEmpty || model.busy)
+                        Menu {
+                            Button(model.t("发送全文并总结", "Send full text and summarize")) { model.summary() }
+                        } label: { Label(model.t("全文总结", "Summary"), systemImage: "doc.text") }.disabled(model.busy)
+                    }
+                    if model.busy { HStack { ProgressView(); Text(model.progress).font(.caption); Spacer(); Button(model.t("取消", "Cancel")) { model.cancel() } } }
+                    if !model.answer.isEmpty {
+                        Text(model.answerSubject).font(.caption.weight(.semibold)).lineLimit(2).foregroundStyle(.secondary)
+                        Text(model.answer).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
+                        ShareLink(item: model.answer) { Label(model.t("分享回答", "Share answer"), systemImage: "square.and.arrow.up") }.font(.caption)
+                        TextField(model.t("继续追问…", "Ask a follow-up…"), text: $model.question, axis: .vertical).lineLimit(1...4).textFieldStyle(.roundedBorder).disabled(model.busy)
+                        Button(model.t("发送追问", "Send follow-up")) { model.followup() }.disabled(model.busy || model.question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                    Text(model.hasAIConsent ? model.t("DeepSeek · 已记住发送授权", "DeepSeek · Sharing permission remembered") : model.t("首次发送前会征求授权", "Permission is requested before the first send")).font(.caption2).foregroundStyle(.secondary)
+                }
+                if let error = model.error {
+                    Text(error).font(.footnote).foregroundStyle(.red)
+                    Button(model.t("知道了", "Dismiss notice")) { model.error = nil }.font(.caption)
+                }
+            }.padding(16).frame(maxWidth: .infinity, alignment: .leading)
+        }.scrollDismissesKeyboard(.interactively)
     }
 }
 struct HistoryView: View {
@@ -145,7 +152,13 @@ struct SettingsView: View {
                 Text(model.t("本地阅读免费且不需要 Key。AI 需您自己的账户，费用和额度由 DeepSeek 决定。", "Local reading needs no key. AI uses your own account; DeepSeek sets fees and quotas.")).font(.footnote)
             }.disabled(model.busy)
             Section(model.t("数据与隐私", "Data and privacy")) {
-                Text(model.t("文件导入后存为本机副本。书库、阅读位置、高亮和历史保存在应用容器；不自动同步 Mac。系统备份可能包含这些资料。每次 AI 操作单独确认后才发送文字。", "Imported files are local copies. Books, position, highlights and history stay in the app container; there is no automatic Mac sync. System backups may include these data. Each AI request requires your confirmation."))
+                if model.hasAIConsent {
+                    Label(model.t("已允许发送到 DeepSeek", "DeepSeek sharing allowed"), systemImage: "checkmark.shield")
+                    Button(model.t("撤销 AI 发送授权", "Revoke AI sharing permission"), role: .destructive) { model.revokeAIConsent() }
+                } else {
+                    Text(model.t("尚未授权 AI 发送；首次使用时会询问。", "AI sharing is not authorized; you will be asked on first use."))
+                }
+                Text(model.t("文件导入后存为本机副本。书库、阅读位置、高亮和历史保存在应用容器；不自动同步 Mac。系统备份可能包含这些资料。AI 首次发送时征求授权并记住；之后仅在点击解释、追问或总结时发送，可随时撤销授权。", "Imported files are local copies. Books, position, highlights and history stay in the app container; there is no automatic Mac sync. System backups may include these data. AI sharing permission is requested once and remembered. Text is sent only when you tap Explain, Follow-up or Summarize; permission can be revoked."))
                 Text(model.t("可在书库长按删除副本，在历史中左滑删除记录，在此移除 Key。卸载应用不保证删除钥匙串中的 Key；服务商数据需向 DeepSeek 申请删除。", "Long-press a book to delete its copy, swipe history to delete records, and remove your key here. Uninstalling may leave Keychain data; contact DeepSeek to delete provider-held data."))
                 Link(model.t("服务商隐私政策", "Provider privacy policy"), destination: URL(string: "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html")!)
             }
