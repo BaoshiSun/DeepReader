@@ -8,7 +8,7 @@ Developer ID distribution retains the existing native app and adds Hardened Runt
 
 ## Engineering gates
 
-- [x] Create the macOS app target/archive configuration in full Xcode, using the existing Swift and C sources without adding another runtime. Export with the approved team's Apple Distribution signing identity and a distribution provisioning profile. Local package/signature validation passed; server validation remains outstanding.
+- [x] Create the macOS app target/archive configuration in full Xcode, using the existing Swift and C sources without adding another runtime. Export with the approved team's Apple Distribution signing identity and a distribution provisioning profile. Local package/signature validation passed; build 4 completed Apple processing. This is not App Review approval.
 - [ ] Enable App Sandbox with outgoing network and user-selected read/write access. Decide the bookmark scope and add only the entitlements the implementation uses.
 - [ ] Replace plain-path persistence with security-scoped access for reopened documents and archive destinations. Balance start/stop access during asynchronous work, recover stale bookmarks, and prompt for renewed access when needed.
 - [ ] Test PDF in-place saves, Save Copy, ebook extraction to temporary storage, exported history and rating-folder archive copies under sandbox restrictions. Preserve originals and handle same-name collisions.
@@ -33,6 +33,8 @@ Code ownership: file selection and PDF saves are in `ReaderWindow.swift`; persis
 
 Final App Privacy answers depend on Apple's definition of collection, provider retention and account linkage. Do not automatically select “Data Not Collected” because the maintainer has no server. No final questionnaire answers, age rating, encryption exemption or regional compliance declarations are made by these drafts.
 
+Provider recheck on 2026-10-10: [OpenRouter Terms, section 2](https://openrouter.ai/terms) require users to be at least 18. Removing direct Gemini alone does not remove that age constraint from the two-provider candidate. The owner has been asked whether to ship only DeepSeek or retain OpenRouter under an 18+ approach; no choice is assumed. [DeepSeek's current API guide](https://api-docs.deepseek.com/) lists `deepseek-flash` and `deepseek-v4-pro`; this verifies the model names, not a successful authenticated request. The English Open Platform terms could not be retrieved reliably, and the privacy-policy URL redirected to a Japanese version; final API-specific terms and retention assessment remain open.
+
 ## License and ownership gate
 
 - [ ] Review original Mac code under AGPL-3.0-or-later against the final distribution agreement/EULA and any imposed restrictions. Identify the rights holder(s) before considering any alternative license or exception.
@@ -44,8 +46,8 @@ The Mac binary does not link the Windows SumatraPDF/MuPDF engine. Assess the Mac
 
 ## Store assets and owner decisions
 
-- [ ] Confirm free/paid pricing, BYOK design, countries/regions and the actual seller name; complete paid agreements/banking/tax only if applicable.
-- [ ] Confirm available display name, Bundle ID, copyright owner, support URL and a public privacy-policy URL.
+- [x] Confirm free/paid pricing, BYOK design, countries/regions and the actual seller name; complete paid agreements/banking/tax only if applicable. Free pricing and the exact ten storefronts are saved in App Store Connect.
+- [x] Confirm available display name, Bundle ID, copyright owner, support URL and a public privacy-policy URL. The record is DeepReader: Read with AI, org.deepreader.macos, Apple ID 6821368213; operator and original-code owner Baoshi Sun.
 - [ ] Fill private review contact and review access in App Store Connect; provide sufficient quota, not a production shared key.
 - [ ] Capture accurate final-build screenshots in Chinese and English. Apple's current Mac sizes are 1280×800, 1440×900, 2560×1600 or 2880×1800 (16:10); verify again before upload.
 - [ ] Suggested scenes: contextual PDF explanation; EPUB chapter/highlight; floating sidebar; ratings/book list; summary preview. Use invented sample text and no personal credentials.
