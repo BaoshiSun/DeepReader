@@ -1,6 +1,6 @@
 # DeepReader macOS 上架准备包
 
-更新日期：2026-10-10。个人开发者账号已登录 Xcode；维护者明确授权后，Apple Development、Apple Distribution、Mac Installer Distribution 三类证书已创建并通过本机身份验证。签名归档和 App Store 安装包导出成功，包内应用与安装包签名均验证通过。尚未上传 Apple；App Store Connect 首次使用的服务条款正在等待维护者明确同意。
+更新日期：2026-10-10。个人开发者账号已登录 Xcode；维护者明确授权后，Apple Development、Apple Distribution、Mac Installer Distribution 三类证书已创建并通过本机身份验证。签名归档和 App Store 安装包导出成功，包内应用与安装包签名均验证通过。尚未上传 Apple。维护者明确同意后，App Store Connect 首次使用条款已接受；创建应用时 Apple 提示“DeepReader”名称已被占用，正在等待维护者选择商店显示名称。
 
 **这是准备材料，不是已经符合商店要求的发行版。** 不在这里填写 Apple 密码、应用专用密码、证书私钥、API Key 或审核专用凭据。
 
