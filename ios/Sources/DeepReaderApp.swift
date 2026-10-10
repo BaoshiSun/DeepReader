@@ -152,6 +152,7 @@ struct SettingsView: View {
                 Text(model.t("本地阅读免费且不需要 Key。AI 需您自己的账户，费用和额度由 DeepSeek 决定。", "Local reading needs no key. AI uses your own account; DeepSeek sets fees and quotas.")).font(.footnote)
             }.disabled(model.busy)
             Section(model.t("数据与隐私", "Data and privacy")) {
+                Link(model.t("DeepReader 隐私政策", "DeepReader privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-native/docs/app-store/privacy-policy.md")!)
                 if model.hasAIConsent {
                     Label(model.t("已允许发送到 DeepSeek", "DeepSeek sharing allowed"), systemImage: "checkmark.shield")
                     Button(model.t("撤销 AI 发送授权", "Revoke AI sharing permission"), role: .destructive) { model.revokeAIConsent() }

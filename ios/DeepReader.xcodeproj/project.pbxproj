@@ -1,59 +1,375 @@
 // !$*UTF8*$!
-{ archiveVersion = 1; classes = {}; objectVersion = 56; objects = {
-000000000000000000000064 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sources/DeepReaderApp.swift"; sourceTree = "<group>"; };
-0000000000000000000000C8 = { isa = PBXBuildFile; fileRef = 000000000000000000000064; };
-000000000000000000000065 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sources/MobileDocument.swift"; sourceTree = "<group>"; };
-0000000000000000000000C9 = { isa = PBXBuildFile; fileRef = 000000000000000000000065; };
-000000000000000000000066 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sources/MobileLibrary.swift"; sourceTree = "<group>"; };
-0000000000000000000000CA = { isa = PBXBuildFile; fileRef = 000000000000000000000066; };
-000000000000000000000067 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sources/MobileModel.swift"; sourceTree = "<group>"; };
-0000000000000000000000CB = { isa = PBXBuildFile; fileRef = 000000000000000000000067; };
-000000000000000000000068 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Sources/ReaderViews.swift"; sourceTree = "<group>"; };
-0000000000000000000000CC = { isa = PBXBuildFile; fileRef = 000000000000000000000068; };
-000000000000000000000069 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../macos/Sources/DeepReaderCore/Models.swift"; sourceTree = "<group>"; };
-0000000000000000000000CD = { isa = PBXBuildFile; fileRef = 000000000000000000000069; };
-00000000000000000000006A = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../macos/Sources/DeepReaderCore/Credentials.swift"; sourceTree = "<group>"; };
-0000000000000000000000CE = { isa = PBXBuildFile; fileRef = 00000000000000000000006A; };
-00000000000000000000006B = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "../macos/Sources/DeepReaderCore/AIClient.swift"; sourceTree = "<group>"; };
-0000000000000000000000CF = { isa = PBXBuildFile; fileRef = 00000000000000000000006B; };
-00000000000000000000006C = { isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = ".build/Assets.xcassets"; sourceTree = "<group>"; };
-0000000000000000000000D0 = { isa = PBXBuildFile; fileRef = 00000000000000000000006C; };
-00000000000000000000006D = { isa = PBXFileReference; lastKnownFileType = text; path = "Resources/Reading-Garden.txt"; sourceTree = "<group>"; };
-0000000000000000000000D1 = { isa = PBXBuildFile; fileRef = 00000000000000000000006D; };
-00000000000000000000006E = { isa = PBXFileReference; lastKnownFileType = text; path = "Resources/ZIPFoundation-LICENSE.txt"; sourceTree = "<group>"; };
-0000000000000000000000D2 = { isa = PBXBuildFile; fileRef = 00000000000000000000006E; };
-00000000000000000000006F = { isa = PBXFileReference; lastKnownFileType = text; path = "../LICENSE-AGPL-3.0.txt"; sourceTree = "<group>"; };
-0000000000000000000000D3 = { isa = PBXBuildFile; fileRef = 00000000000000000000006F; };
-000000000000000000000070 = { isa = PBXFileReference; lastKnownFileType = text; path = "../THIRD-PARTY-NOTICES.md"; sourceTree = "<group>"; };
-0000000000000000000000D4 = { isa = PBXBuildFile; fileRef = 000000000000000000000070; };
-000000000000000000000071 = { isa = PBXFileReference; lastKnownFileType = text; path = "../macos/AppStore/PrivacyInfo.xcprivacy"; sourceTree = "<group>"; };
-0000000000000000000000D5 = { isa = PBXBuildFile; fileRef = 000000000000000000000071; };
-000000000000000000000001 = { isa = PBXProject; attributes = { LastUpgradeCheck = 2630; }; buildConfigurationList = 00000000000000000000000A; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; knownRegions = (en, "zh-Hans", Base); mainGroup = 000000000000000000000002; productRefGroup = 000000000000000000000003; projectDirPath = ""; projectRoot = ""; packageReferences = (00000000000000000000001E); targets = (000000000000000000000004, 000000000000000000000028); };
-000000000000000000000002 = { isa = PBXGroup; children = (000000000000000000000064, 000000000000000000000065, 000000000000000000000066, 000000000000000000000067, 000000000000000000000068, 000000000000000000000069, 00000000000000000000006A, 00000000000000000000006B, 00000000000000000000006C, 00000000000000000000006D, 00000000000000000000006E, 00000000000000000000006F, 000000000000000000000070, 000000000000000000000071, 000000000000000000000032, 000000000000000000000003); sourceTree = "<group>"; };
-000000000000000000000003 = { isa = PBXGroup; children = (000000000000000000000006, 00000000000000000000002E); name = Products; sourceTree = "<group>"; };
-000000000000000000000004 = { isa = PBXNativeTarget; buildConfigurationList = 00000000000000000000000B; buildPhases = (000000000000000000000007, 000000000000000000000008, 000000000000000000000009); buildRules = (); dependencies = (); name = DeepReaderiOS; packageProductDependencies = (00000000000000000000001F); productName = DeepReader; productReference = 000000000000000000000006; productType = "com.apple.product-type.application"; };
-000000000000000000000006 = { isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeepReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
-000000000000000000000007 = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (0000000000000000000000C8, 0000000000000000000000C9, 0000000000000000000000CA, 0000000000000000000000CB, 0000000000000000000000CC, 0000000000000000000000CD, 0000000000000000000000CE, 0000000000000000000000CF); runOnlyForDeploymentPostprocessing = 0; };
-000000000000000000000008 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000020); runOnlyForDeploymentPostprocessing = 0; };
-000000000000000000000009 = { isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (0000000000000000000000D0, 0000000000000000000000D1, 0000000000000000000000D2, 0000000000000000000000D3, 0000000000000000000000D4, 0000000000000000000000D5); runOnlyForDeploymentPostprocessing = 0; };
-00000000000000000000002F = { isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (000000000000000000000033); runOnlyForDeploymentPostprocessing = 0; };
-000000000000000000000030 = { isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-00000000000000000000000A = { isa = XCConfigurationList; buildConfigurations = (00000000000000000000000C, 00000000000000000000000D); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-00000000000000000000000B = { isa = XCConfigurationList; buildConfigurations = (00000000000000000000000E, 00000000000000000000000F); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-000000000000000000000029 = { isa = XCConfigurationList; buildConfigurations = (00000000000000000000002A, 00000000000000000000002B); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
-00000000000000000000000C = { isa = XCBuildConfiguration; buildSettings = { CLANG_ENABLE_MODULES = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; ENABLE_USER_SCRIPT_SANDBOXING = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; ENABLE_TESTABILITY = YES; ONLY_ACTIVE_ARCH = YES; }; name = Debug; };
-00000000000000000000000D = { isa = XCBuildConfiguration; buildSettings = { CLANG_ENABLE_MODULES = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; ENABLE_USER_SCRIPT_SANDBOXING = YES; SWIFT_OPTIMIZATION_LEVEL = "-O"; SWIFT_COMPILATION_MODE = wholemodule; }; name = Release; };
-00000000000000000000000E = { isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Info.plist; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios; PRODUCT_NAME = DeepReader; PRODUCT_MODULE_NAME = DeepReaderMobile; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks"; }; name = Debug; };
-00000000000000000000000F = { isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Info.plist; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios; PRODUCT_NAME = DeepReader; PRODUCT_MODULE_NAME = DeepReaderMobile; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks"; }; name = Release; };
-00000000000000000000001E = { isa = XCRemoteSwiftPackageReference; repositoryURL = "https://github.com/weichsel/ZIPFoundation.git"; requirement = { kind = exactVersion; version = 0.9.20; }; };
-00000000000000000000001F = { isa = XCSwiftPackageProductDependency; package = 00000000000000000000001E; productName = ZIPFoundation; };
-000000000000000000000020 = { isa = PBXBuildFile; productRef = 00000000000000000000001F; };
-000000000000000000000028 = { isa = PBXNativeTarget; buildConfigurationList = 000000000000000000000029; buildPhases = (00000000000000000000002F, 000000000000000000000030); buildRules = (); dependencies = (00000000000000000000002C); name = DeepReaderMobileTests; productName = DeepReaderMobileTests; productReference = 00000000000000000000002E; productType = "com.apple.product-type.bundle.unit-test"; };
-00000000000000000000002C = { isa = PBXTargetDependency; target = 000000000000000000000004; targetProxy = 00000000000000000000002D; };
-00000000000000000000002D = { isa = PBXContainerItemProxy; containerPortal = 000000000000000000000001; proxyType = 1; remoteGlobalIDString = 000000000000000000000004; remoteInfo = DeepReaderiOS; };
-00000000000000000000002E = { isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = DeepReaderMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-000000000000000000000032 = { isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/MobileTests.swift; sourceTree = "<group>"; };
-000000000000000000000033 = { isa = PBXBuildFile; fileRef = 000000000000000000000032; };
-00000000000000000000002A = { isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios.tests; PRODUCT_NAME = DeepReaderMobileTests; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DeepReader.app/DeepReader"; BUNDLE_LOADER = "$(TEST_HOST)"; }; name = Debug; };
-00000000000000000000002B = { isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios.tests; PRODUCT_NAME = DeepReaderMobileTests; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DeepReader.app/DeepReader"; BUNDLE_LOADER = "$(TEST_HOST)"; }; name = Release; };
-}; rootObject = 000000000000000000000001; }
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		000000000000000000000020 /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 00000000000000000000001F /* ZIPFoundation */; };
+		000000000000000000000033 /* Tests/MobileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000032 /* Tests/MobileTests.swift */; };
+		0000000000000000000000C8 /* Sources/DeepReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000064 /* Sources/DeepReaderApp.swift */; };
+		0000000000000000000000C9 /* Sources/MobileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000065 /* Sources/MobileDocument.swift */; };
+		0000000000000000000000CA /* Sources/MobileLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000066 /* Sources/MobileLibrary.swift */; };
+		0000000000000000000000CB /* Sources/MobileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000067 /* Sources/MobileModel.swift */; };
+		0000000000000000000000CC /* Sources/ReaderViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000068 /* Sources/ReaderViews.swift */; };
+		0000000000000000000000CD /* ../macos/Sources/DeepReaderCore/Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000069 /* ../macos/Sources/DeepReaderCore/Models.swift */; };
+		0000000000000000000000CE /* ../macos/Sources/DeepReaderCore/Credentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006A /* ../macos/Sources/DeepReaderCore/Credentials.swift */; };
+		0000000000000000000000CF /* ../macos/Sources/DeepReaderCore/AIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006B /* ../macos/Sources/DeepReaderCore/AIClient.swift */; };
+		0000000000000000000000D0 /* .build/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006C /* .build/Assets.xcassets */; };
+		0000000000000000000000D1 /* Resources/Reading-Garden.txt in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006D /* Resources/Reading-Garden.txt */; };
+		0000000000000000000000D2 /* Resources/ZIPFoundation-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006E /* Resources/ZIPFoundation-LICENSE.txt */; };
+		0000000000000000000000D3 /* ../LICENSE-AGPL-3.0.txt in Resources */ = {isa = PBXBuildFile; fileRef = 00000000000000000000006F /* ../LICENSE-AGPL-3.0.txt */; };
+		0000000000000000000000D4 /* ../THIRD-PARTY-NOTICES.md in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000070 /* ../THIRD-PARTY-NOTICES.md */; };
+		0000000000000000000000D5 /* ../macos/AppStore/PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 000000000000000000000071 /* ../macos/AppStore/PrivacyInfo.xcprivacy */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		00000000000000000000002D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 000000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 000000000000000000000004;
+			remoteInfo = DeepReaderiOS;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		000000000000000000000006 /* DeepReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeepReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		00000000000000000000002E /* DeepReaderMobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = DeepReaderMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		000000000000000000000032 /* Tests/MobileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/MobileTests.swift; sourceTree = "<group>"; };
+		000000000000000000000064 /* Sources/DeepReaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/DeepReaderApp.swift; sourceTree = "<group>"; };
+		000000000000000000000065 /* Sources/MobileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/MobileDocument.swift; sourceTree = "<group>"; };
+		000000000000000000000066 /* Sources/MobileLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/MobileLibrary.swift; sourceTree = "<group>"; };
+		000000000000000000000067 /* Sources/MobileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/MobileModel.swift; sourceTree = "<group>"; };
+		000000000000000000000068 /* Sources/ReaderViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/ReaderViews.swift; sourceTree = "<group>"; };
+		000000000000000000000069 /* ../macos/Sources/DeepReaderCore/Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../macos/Sources/DeepReaderCore/Models.swift; sourceTree = "<group>"; };
+		00000000000000000000006A /* ../macos/Sources/DeepReaderCore/Credentials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../macos/Sources/DeepReaderCore/Credentials.swift; sourceTree = "<group>"; };
+		00000000000000000000006B /* ../macos/Sources/DeepReaderCore/AIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../macos/Sources/DeepReaderCore/AIClient.swift; sourceTree = "<group>"; };
+		00000000000000000000006C /* .build/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = .build/Assets.xcassets; sourceTree = "<group>"; };
+		00000000000000000000006D /* Resources/Reading-Garden.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/Reading-Garden.txt"; sourceTree = "<group>"; };
+		00000000000000000000006E /* Resources/ZIPFoundation-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Resources/ZIPFoundation-LICENSE.txt"; sourceTree = "<group>"; };
+		00000000000000000000006F /* ../LICENSE-AGPL-3.0.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "../LICENSE-AGPL-3.0.txt"; sourceTree = "<group>"; };
+		000000000000000000000070 /* ../THIRD-PARTY-NOTICES.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = "../THIRD-PARTY-NOTICES.md"; sourceTree = "<group>"; };
+		000000000000000000000071 /* ../macos/AppStore/PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text; path = ../macos/AppStore/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		000000000000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000020 /* ZIPFoundation in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		000000000000000000000030 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		000000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000064 /* Sources/DeepReaderApp.swift */,
+				000000000000000000000065 /* Sources/MobileDocument.swift */,
+				000000000000000000000066 /* Sources/MobileLibrary.swift */,
+				000000000000000000000067 /* Sources/MobileModel.swift */,
+				000000000000000000000068 /* Sources/ReaderViews.swift */,
+				000000000000000000000069 /* ../macos/Sources/DeepReaderCore/Models.swift */,
+				00000000000000000000006A /* ../macos/Sources/DeepReaderCore/Credentials.swift */,
+				00000000000000000000006B /* ../macos/Sources/DeepReaderCore/AIClient.swift */,
+				00000000000000000000006C /* .build/Assets.xcassets */,
+				00000000000000000000006D /* Resources/Reading-Garden.txt */,
+				00000000000000000000006E /* Resources/ZIPFoundation-LICENSE.txt */,
+				00000000000000000000006F /* ../LICENSE-AGPL-3.0.txt */,
+				000000000000000000000070 /* ../THIRD-PARTY-NOTICES.md */,
+				000000000000000000000071 /* ../macos/AppStore/PrivacyInfo.xcprivacy */,
+				000000000000000000000032 /* Tests/MobileTests.swift */,
+				000000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		000000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				000000000000000000000006 /* DeepReader.app */,
+				00000000000000000000002E /* DeepReaderMobileTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		000000000000000000000004 /* DeepReaderiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 00000000000000000000000B /* Build configuration list for PBXNativeTarget "DeepReaderiOS" */;
+			buildPhases = (
+				000000000000000000000007 /* Sources */,
+				000000000000000000000008 /* Frameworks */,
+				000000000000000000000009 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DeepReaderiOS;
+			packageProductDependencies = (
+				00000000000000000000001F /* ZIPFoundation */,
+			);
+			productName = DeepReader;
+			productReference = 000000000000000000000006 /* DeepReader.app */;
+			productType = "com.apple.product-type.application";
+		};
+		000000000000000000000028 /* DeepReaderMobileTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 000000000000000000000029 /* Build configuration list for PBXNativeTarget "DeepReaderMobileTests" */;
+			buildPhases = (
+				00000000000000000000002F /* Sources */,
+				000000000000000000000030 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				00000000000000000000002C /* PBXTargetDependency */,
+			);
+			name = DeepReaderMobileTests;
+			productName = DeepReaderMobileTests;
+			productReference = 00000000000000000000002E /* DeepReaderMobileTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		000000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 2630;
+			};
+			buildConfigurationList = 00000000000000000000000A /* Build configuration list for PBXProject "DeepReader" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				"zh-Hans",
+				Base,
+			);
+			mainGroup = 000000000000000000000002;
+			packageReferences = (
+				00000000000000000000001E /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+			);
+			productRefGroup = 000000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				000000000000000000000004 /* DeepReaderiOS */,
+				000000000000000000000028 /* DeepReaderMobileTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		000000000000000000000009 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0000000000000000000000D0 /* .build/Assets.xcassets in Resources */,
+				0000000000000000000000D1 /* Resources/Reading-Garden.txt in Resources */,
+				0000000000000000000000D2 /* Resources/ZIPFoundation-LICENSE.txt in Resources */,
+				0000000000000000000000D3 /* ../LICENSE-AGPL-3.0.txt in Resources */,
+				0000000000000000000000D4 /* ../THIRD-PARTY-NOTICES.md in Resources */,
+				0000000000000000000000D5 /* ../macos/AppStore/PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		000000000000000000000007 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0000000000000000000000C8 /* Sources/DeepReaderApp.swift in Sources */,
+				0000000000000000000000C9 /* Sources/MobileDocument.swift in Sources */,
+				0000000000000000000000CA /* Sources/MobileLibrary.swift in Sources */,
+				0000000000000000000000CB /* Sources/MobileModel.swift in Sources */,
+				0000000000000000000000CC /* Sources/ReaderViews.swift in Sources */,
+				0000000000000000000000CD /* ../macos/Sources/DeepReaderCore/Models.swift in Sources */,
+				0000000000000000000000CE /* ../macos/Sources/DeepReaderCore/Credentials.swift in Sources */,
+				0000000000000000000000CF /* ../macos/Sources/DeepReaderCore/AIClient.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		00000000000000000000002F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				000000000000000000000033 /* Tests/MobileTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		00000000000000000000002C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 000000000000000000000004 /* DeepReaderiOS */;
+			targetProxy = 00000000000000000000002D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		00000000000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		00000000000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		00000000000000000000000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = YA66T3UWKU;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios;
+				PRODUCT_MODULE_NAME = DeepReaderMobile;
+				PRODUCT_NAME = DeepReader;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+			};
+			name = Debug;
+		};
+		00000000000000000000000F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = YA66T3UWKU;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.macos;
+				PRODUCT_MODULE_NAME = DeepReaderMobile;
+				PRODUCT_NAME = DeepReader;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+			};
+			name = Release;
+		};
+		00000000000000000000002A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios.tests;
+				PRODUCT_NAME = DeepReaderMobileTests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DeepReader.app/DeepReader";
+			};
+			name = Debug;
+		};
+		00000000000000000000002B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios.tests;
+				PRODUCT_NAME = DeepReaderMobileTests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DeepReader.app/DeepReader";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		00000000000000000000000A /* Build configuration list for PBXProject "DeepReader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000000C /* Debug */,
+				00000000000000000000000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		00000000000000000000000B /* Build configuration list for PBXNativeTarget "DeepReaderiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000000E /* Debug */,
+				00000000000000000000000F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		000000000000000000000029 /* Build configuration list for PBXNativeTarget "DeepReaderMobileTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00000000000000000000002A /* Debug */,
+				00000000000000000000002B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		00000000000000000000001E /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation.git";
+			requirement = {
+				kind = exactVersion;
+				version = 0.9.20;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		00000000000000000000001F /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 00000000000000000000001E /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 000000000000000000000001 /* Project object */;
+}

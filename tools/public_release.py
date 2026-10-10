@@ -25,6 +25,11 @@ ios/Sources/MobileModel.swift
 ios/Sources/ReaderViews.swift
 ios/Tests/MobileTests.swift
 ios/prepare_project.py
+ios/prepare_icon.swift
+docs/app-store/ios-listing.json
+docs/app-store/ios-review-notes.md
+docs/app-store/ios-support.md
+docs/app-store/ios-readiness.md
 .gitignore
 .github/workflows/release-checks.yml
 .github/workflows/macos-build.yml

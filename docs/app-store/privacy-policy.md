@@ -1,8 +1,8 @@
-# DeepReader for macOS 隐私政策 / Privacy Policy
+# DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-10。适用于 Mac App Store 版 1.2.1（构建 5 起）。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+更新日期 / Updated: 2026-10-11。适用于 Mac App Store 版 1.2.1（构建 5 起），以及 iOS / iPadOS 版 1.0.0。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
 
-## 中文
+## macOS — 中文
 
 ### 本机阅读和保存
 
@@ -45,7 +45,7 @@ AI 费用、额度和可用性由服务商决定。AI 回答可能不准确。�
 
 版本功能或处理方式变化时将更新本政策，并注明生效日期。
 
-## English
+## macOS — English
 
 ### Local reading and storage
 
@@ -74,3 +74,36 @@ Stopping AI use stops new AI requests. Local deletion does not remove informatio
 ### Contact and updates
 
 The operator is Baoshi Sun. Contact [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com) for privacy questions. If you contact the operator, your sender address, message and any attachments are received to handle your request; do not send API keys or unnecessary private material. Non-sensitive support questions may be posted in the project's GitHub Issues. Never post credentials, private documents or reading records publicly. This policy will be updated when relevant practices change.
+
+
+## iOS / iPadOS — 中文
+
+iOS 版不要求创建 DeepReader 账户，没有广告、分析统计 SDK 或自有云同步。本地阅读不发送内容。应用将通过“文件”导入的 PDF、EPUB、TXT 和 Markdown 复制到本机应用容器；原文件不变。容器内保存文档副本、标题、评分、读完状态、阅读位置、文字高亮、语言设置、发送授权和成功的 AI 历史。历史可包含选文、语境、问题、回答、页码、时间、服务商和模型。操作系统备份可能包含这些数据；这不代表应用提供跨设备同步。
+
+API Key 单独保存在 iOS 钥匙串（仅限本设备的可访问性设置），不写入书库 JSON、源码或发行包。发起 AI 请求时，Key 直接发送给 DeepSeek 认证，不经过 DeepReader 服务器。
+
+选中文字只打开阅读浮窗，不触发网络请求。首次点击解释、追问或全文总结时，应用在浮窗内说明接收方及数据范围；选择“同意并记住，发送”后，将在本机保存授权。之后只有您主动点击相应 AI 操作才发送，不再逐次询问。可在“设置 → 数据与隐私”撤销授权；撤销不影响本地阅读，也不能收回已发送的数据。取消首次授权不发送任何内容。
+
+解释发送选文和附近语境；追问还发送原选文、语境、先前回答和新问题；全文总结发送可提取全文，长文会分段处理并发送中间摘要合并。不上传原始文档二进制文件，不自动附带设备上的完整文件路径，不支持日／周／月总结。
+
+接收方仅为 DeepSeek（api.deepseek.com）。其账户关联、网络与使用日志、IP 推断的粗略位置、保留、训练及跨境处理规则与本政策 macOS 部分所述相同；应用不请求 GPS 位置，不使用广告跟踪。详见 [DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)。API 费用和额度由用户的 DeepSeek 账户承担。
+
+可在书库长按删除导入副本，在历史列表左滑删除记录，在设置中移除 Key。删除书籍副本不会删除原文件或既有历史；需分别删除。卸载应用会移除本机应用容器，但系统备份和导出副本应单独管理；卸载不保证删除钥匙串 Key，建议先在应用中移除。服务商已接收的数据需联系服务商申请删除。通过系统分享功能导出的文件和回答由您选择的目标应用处理。
+
+运营者为 Baoshi Sun，联系 [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。主动发送的邮件和附件仅用于处理您的支持请求；请勿发送 API Key 或无关私人资料。
+
+## iOS / iPadOS — English
+
+The iOS edition has no DeepReader account, advertising, analytics SDK or developer-operated cloud sync. Local reading sends no content. PDF, EPUB, TXT and Markdown files imported from Files are copied into the app container; originals remain unchanged. Local data includes document copies, titles, ratings, finished status, reading position, highlights, language settings, sharing permission and successful AI history. History may include selections, context, questions, answers, page numbers, timestamps, provider and model. OS backups may include these data; the app does not provide cross-device sync.
+
+Your API key is stored separately in iOS Keychain with ThisDeviceOnly accessibility, never in library JSON, source code or distribution packages. Requests send the key directly to DeepSeek for authentication, without a developer-operated relay.
+
+Selecting text only opens the floating assistant. Before the first Explain, Follow-up or Summary request, an inline disclosure names the recipient and data scope. Tapping Allow, remember and send stores permission locally. Subsequent requests occur only when you tap an AI action, without repeated prompts. Revoke permission in Settings → Data and privacy; this preserves local reading and cannot recall data already sent. Cancelling first-use permission sends nothing.
+
+Explanations send selected text and nearby context. Follow-ups add the original context, previous answer and new question. Summaries send extractable full text; long documents are split and intermediate notes are sent for merging. The app does not upload document binaries or automatically append full device file paths. The iOS edition has no daily, weekly or monthly summary feature.
+
+The only recipient is DeepSeek (api.deepseek.com). Account linkage, network/usage logs, IP-derived coarse location, retention, training and international processing follow the provider rules described in the macOS section above. The app does not request GPS location or use advertising tracking. See the [DeepSeek privacy policy](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html). Provider fees and quotas belong to your DeepSeek account.
+
+Long-press a library item to delete its imported copy, swipe in History to delete records, and remove the key in Settings. Deleting a book copy leaves the original file and existing history intact; delete them separately if desired. Uninstalling removes the local app container, but backups and exports require separate management. Uninstalling does not guarantee Keychain deletion; remove the key in-app first. Contact the provider to request deletion of data it already received. System sharing sends exported documents or answers to the destination app you choose.
+
+The operator is Baoshi Sun: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com). Emails and attachments you voluntarily send are used to handle your support request. Do not send API keys or unnecessary private information.

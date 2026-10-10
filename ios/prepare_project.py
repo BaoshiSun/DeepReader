@@ -11,6 +11,7 @@ def main():
     assets = ROOT / '.build/Assets.xcassets/AppIcon.appiconset'
     assets.mkdir(parents=True, exist_ok=True)
     subprocess.run(['sips', '-s', 'format', 'png', '-z', '1024', '1024', str(ROOT.parent / 'assets/DeepReader-green.png'), '--out', str(assets / 'AppIcon.png')], check=True, stdout=subprocess.DEVNULL)
+    subprocess.run(['swift', str(ROOT / 'prepare_icon.swift'), str(assets / 'AppIcon.png')], check=True)
     (assets / 'Contents.json').write_text(json.dumps({'images': [{'filename': 'AppIcon.png', 'idiom': 'universal', 'platform': 'ios', 'size': '1024x1024'}], 'info': {'author': 'xcode', 'version': 1}}))
     (assets.parent / 'Contents.json').write_text('{"info":{"author":"xcode","version":1}}')
     info = dict(CFBundleDisplayName='DeepReader', CFBundleExecutable='$(EXECUTABLE_NAME)', CFBundleIdentifier='$(PRODUCT_BUNDLE_IDENTIFIER)', CFBundleName='DeepReader', CFBundlePackageType='APPL', CFBundleShortVersionString='1.0.0', CFBundleVersion='1', LSRequiresIPhoneOS=True, LSSupportsOpeningDocumentsInPlace=False, DeepReaderAppStoreBuild=True, ITSAppUsesNonExemptEncryption=False, UILaunchScreen={}, UISupportedInterfaceOrientations=['UIInterfaceOrientationPortrait','UIInterfaceOrientationLandscapeLeft','UIInterfaceOrientationLandscapeRight'], **{'UISupportedInterfaceOrientations~ipad':['UIInterfaceOrientationPortrait','UIInterfaceOrientationPortraitUpsideDown','UIInterfaceOrientationLandscapeLeft','UIInterfaceOrientationLandscapeRight']})
@@ -42,8 +43,10 @@ def main():
     for n, name in [(12,'Debug'),(13,'Release')]:
         flags = 'SWIFT_OPTIMIZATION_LEVEL = "-Onone"; ENABLE_TESTABILITY = YES; ONLY_ACTIVE_ARCH = YES;' if name == 'Debug' else 'SWIFT_OPTIMIZATION_LEVEL = "-O"; SWIFT_COMPILATION_MODE = wholemodule;'
         obj(n, f'isa = XCBuildConfiguration; buildSettings = {{ {common} {flags} }}; name = {name};')
-    app = 'CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Info.plist; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios; PRODUCT_NAME = DeepReader; PRODUCT_MODULE_NAME = DeepReaderMobile; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";'
-    for n, name in [(14,'Debug'),(15,'Release')]: obj(n, f'isa = XCBuildConfiguration; buildSettings = {{ {app} }}; name = {name};')
+    app = 'DEVELOPMENT_TEAM = YA66T3UWKU; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Info.plist; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios; PRODUCT_NAME = DeepReader; PRODUCT_MODULE_NAME = DeepReaderMobile; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator"; SUPPORTS_MACCATALYST = NO; ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";'
+    for n, name in [(14,'Debug'),(15,'Release')]:
+        platform_app = app.replace('org.deepreader.ios;', 'org.deepreader.macos;') if name == 'Release' else app
+        obj(n, f'isa = XCBuildConfiguration; buildSettings = {{ {platform_app} }}; name = {name};')
     obj(30, 'isa = XCRemoteSwiftPackageReference; repositoryURL = "https://github.com/weichsel/ZIPFoundation.git"; requirement = { kind = exactVersion; version = 0.9.20; };')
     obj(31, f'isa = XCSwiftPackageProductDependency; package = {uid(30)}; productName = ZIPFoundation;')
     obj(32, f'isa = PBXBuildFile; productRef = {uid(31)};')
