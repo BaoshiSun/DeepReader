@@ -25,7 +25,7 @@ API Key 单独保存在 macOS 钥匙串，不写入设置 JSON 或公开发行�
 | 文件总结 | 可提取的全文；长文按段请求并发送中间摘要进行合并 |
 | 日／周／月总结 | 所选时间范围的已保存选文、回答、记录时间和记录标题 |
 
-不会上传文档二进制文件；程序不主动将本机完整目录路径加入提示词。但原文本身可能包含个人信息，周期总结中的标题可能来自文件名。服务商也会接收网络连接所必需的信息，例如 IP 地址和请求时间。
+不会上传文档二进制文件；程序不主动将本机完整目录路径加入提示词。但原文本身可能包含个人信息，周期总结中的标题可能来自文件名。服务商也会接收网络连接所必需的信息，例如 IP 地址和请求时间。DeepSeek 可能将请求与 API Key 所属账户关联，保留使用量和技术诊断日志，并根据 IP 推断粗略位置用于安全与防滥用；DeepReader 不请求 GPS 位置。服务商可能为功能提供、分析和改进服务处理数据，包括其政策允许的模型训练。商店隐私标签因此申报用户内容、用户标识、使用数据、诊断数据和粗略位置；不将本地阅读视为上述数据的自动上传。
 
 商店首发版仅提供 DeepSeek（`api.deepseek.com`），不提供 OpenRouter 或 Google Gemini 直连。DeepSeek 的保存期限、日志、训练使用、跨境处理和删除机制由其适用条款及账号设置决定；DeepReader 不承诺零保存或不用于训练。请阅读 [DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)。数据可能在您所在地区以外处理；使用前请核对您的账户条款。
 
@@ -59,7 +59,7 @@ The Mac App Store build stores data and file-access bookmarks in its system-assi
 
 The Mac App Store build asks for consent for each AI operation, naming the provider, model and content scope. Cancel keeps reading offline. The earlier 1.2.1 GitHub preview sends requests when an AI feature is invoked, without this new per-operation dialog. Requests go directly from your Mac to your selected provider, without a DeepReader-operated relay. Explanations send the selection and nearby context. Follow-ups add the question and conversation. Document summaries send extractable full text, with intermediate notes used to combine long sections. Period summaries send selected saved passages, answers, timestamps and record titles.
 
-The app does not upload document binaries or deliberately insert full local directory paths into prompts. Text can itself contain personal information, and period-summary titles may include filenames. Providers also receive network information such as your IP address and request time.
+The app does not upload document binaries or deliberately insert full local directory paths into prompts. Text can itself contain personal information, and period-summary titles may include filenames. Providers also receive network information such as your IP address and request time. DeepSeek may associate requests with the account owning the API key, retain usage and technical diagnostic logs, and infer coarse location from IP addresses for security and abuse prevention; DeepReader does not request GPS location. Provider processing may include functionality, analytics and service improvement, including model training permitted by its policy. The store privacy label therefore declares user content, user identifiers, usage data, diagnostic data and coarse location. Local reading does not automatically upload these data.
 
 The Mac App Store launch edition supports only DeepSeek (`api.deepseek.com`), with no OpenRouter or direct Google Gemini option. Retention, logging, training use, international processing and deletion depend on DeepSeek's applicable terms and account settings. DeepReader does not promise zero retention or no training use. Read the [DeepSeek privacy policy](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html). Processing may occur outside your country. Provider fees and quotas apply. AI answers may be inaccurate; share only content you are authorized to disclose.
 

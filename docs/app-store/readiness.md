@@ -31,9 +31,9 @@ Code ownership: file selection and PDF saves are in `ReaderWindow.swift`; persis
 | IP/request metadata | Visible to API provider as part of network communication | Confirm provider collection and retention |
 | Analytics and ads | No embedded SDK in current code | Re-evaluate if any dependency or business model changes |
 
-Final App Privacy answers depend on Apple's definition of collection, provider retention and account linkage. Do not automatically select “Data Not Collected” because the maintainer has no server. No final questionnaire answers, age rating, encryption exemption or regional compliance declarations are made by these drafts.
+Final App Privacy answers depend on Apple's definition of collection, provider retention and account linkage. Do not automatically select “Data Not Collected” because the maintainer has no server. The App Store Connect questionnaire has now been completed as recorded below; this does not resolve separate regional permit or license questions.
 
-Provider recheck on 2026-10-10: [OpenRouter Terms, section 2](https://openrouter.ai/terms) require users to be at least 18. Removing direct Gemini alone does not remove that age constraint from the two-provider candidate. The owner chose to remove OpenRouter as well; replacement build 5 supports only DeepSeek. This does not by itself establish the final age rating. [DeepSeek's current API guide](https://api-docs.deepseek.com/) lists `deepseek-flash` and `deepseek-v4-pro`; this verifies the model names, not a successful authenticated request. The English Open Platform terms could not be retrieved reliably, and the privacy-policy URL redirected to a Japanese version; final API-specific terms and retention assessment remain open.
+Provider recheck on 2026-10-10: [OpenRouter Terms, section 2](https://openrouter.ai/terms) require users to be at least 18. Removing direct Gemini alone does not remove that age constraint from the two-provider candidate. The owner chose to remove OpenRouter as well; replacement build 5 supports only DeepSeek. This does not by itself establish the final age rating. [DeepSeek's current API guide](https://api-docs.deepseek.com/) lists `deepseek-flash` and `deepseek-v4-pro`; this verifies the model names, not a successful authenticated request. The English Open Platform terms and privacy policy were successfully retrieved later on 2026-10-10. The Open Platform terms permit downstream API integration subject to the developer’s end-user privacy and consent duties. The privacy policy describes account linkage, input retention, technical/usage logs and IP-derived coarse location, and does not provide a universal zero-retention/no-training guarantee. See the [Open Platform terms](https://cdn.deepseek.com/policies/en-US/deepseek-open-platform-terms-of-service.html) and [privacy policy](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html).
 
 ## License and ownership gate
 
@@ -48,8 +48,8 @@ The Mac binary does not link the Windows SumatraPDF/MuPDF engine. Assess the Mac
 
 - [x] Confirm free/paid pricing, BYOK design, countries/regions and the actual seller name; complete paid agreements/banking/tax only if applicable. Free pricing and the exact ten storefronts are saved in App Store Connect.
 - [x] Confirm available display name, Bundle ID, copyright owner, support URL and a public privacy-policy URL. The record is DeepReader: Read with AI, org.deepreader.macos, Apple ID 6821368213; operator and original-code owner Baoshi Sun.
-- [ ] Fill private review contact and review access in App Store Connect; provide sufficient quota, not a production shared key.
-- [ ] Capture accurate final-build screenshots in Chinese and English. Apple's current Mac sizes are 1280×800, 1440×900, 2560×1600 or 2880×1800 (16:10); verify again before upload.
+- [x] Private review contact and review access are saved in App Store Connect. Credential validity and quota remain untested at the owner’s request.
+- [x] Capture accurate final-build screenshots in Chinese and English. Apple's current Mac sizes are 1280×800, 1440×900, 2560×1600 or 2880×1800 (16:10); verify again before upload.
 - [ ] Suggested scenes: contextual PDF explanation; EPUB chapter/highlight; floating sidebar; ratings/book list; summary preview. Use invented sample text and no personal credentials.
 - [ ] Existing smoke snapshots contain explicitly labeled offline answers and non-store dimensions. They are reference material only; do not stretch, crop away functionality, or present them as live API evidence.
 - [ ] Verify icon assets inside the signed app and archive, accessibility, light/dark appearance, keyboard operation, minimum window size and text clipping.
@@ -63,3 +63,13 @@ The Mac binary does not link the Windows SumatraPDF/MuPDF engine. Assess the Mac
 - [Privacy manifest files](https://developer.apple.com/documentation/bundleresources/privacy-manifest-files)
 - [Screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/)
 - [GNU license FAQ](https://www.gnu.org/licenses/gpl-faq.en.html)
+
+## App Store Connect completion — 2026-10-10
+
+- Version 1.2.1 is associated with DeepSeek-only build 5. Review contact and private review access are saved in Apple’s backend. The owner declined local use of the review key; no authenticated provider test was performed.
+- Content Rights: saved “Yes, this app has the necessary rights to its third-party content.” This describes licensed bundled content and does not establish AGPL/LGPL compatibility with the App Store agreement.
+- Age questionnaire: no built-in restricted content, social features, advertising, gambling or unrestricted browser. Calculated 4+; a conservative 16+ override was selected pending any owner preference change. Apple maps earlier-than-26 operating systems to 17+ with regional exceptions.
+- App Privacy: published. Other User Content: App Functionality, Analytics, Other Purposes. User ID, Other Usage Data, Other Diagnostic Data: App Functionality and Analytics. Coarse Location: App Functionality. All five are linked to the provider account; none is declared used for tracking. These declarations include direct DeepSeek API processing, not developer-operated analytics or GPS collection.
+- Store screenshots use the exact archived build 5 opening the original garden EPUB fixture. They contain no generated AI answer or credential. Full-window captures are proportionally scaled and padded to 2560×1600 without removing controls; originals and upload PNGs remain in ignored artifacts/app-store/screenshots.
+
+Both Chinese (Simplified) and English (U.S.) uploads completed with one 2560×1600 screenshot each. Apple’s Add for Review validation succeeded: version 1.2.1 (5) is Ready for Review and appears in Draft Submission as Item Ready to Submit. The final Submit for Review action has not been performed.
