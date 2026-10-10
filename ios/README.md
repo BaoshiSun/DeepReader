@@ -1,6 +1,6 @@
 # DeepReader for iPhone and iPad
 
-Native SwiftUI / UIKit first version, iOS and iPadOS 17 or later. Separate bundle ID `org.deepreader.ios`, version 1.0.0 (1). This project does not change the macOS app currently in App Review and has not been uploaded to App Store Connect.
+Native SwiftUI / UIKit first version, iOS and iPadOS 17 or later. Version 1.0.0 (1). Debug uses `org.deepreader.ios`; App Store Release uses `org.deepreader.macos` to join the existing DeepReader: Read with AI record (6821368213). Test-install libraries do not automatically migrate to the store app. iOS 1.0.0 (1) was submitted on 2026-10-11 and is Waiting for Review; the existing macOS 1.2.1 submission was not withdrawn. See [submission record](../docs/app-store/ios-readiness.md).
 
 ## Implemented
 
@@ -52,4 +52,4 @@ Books, settings, selected text highlights and successful AI history are stored i
 
 Settings exposes data handling, deletion controls, provider policy, source code, licenses and the support email `baoshi.sun@icloud.com`. The operator is Baoshi Sun. Only optional AI sends text to DeepSeek; network/account metadata and retention follow DeepSeek policy. Its API fees belong to the user's provider account.
 
-Original iOS code is AGPL-3.0-or-later, consistent with this repository; ZIPFoundation is MIT. The iOS target does not link libmobi, libarchive, SumatraPDF or MuPDF. License texts and icon attribution ship in the app. Before public distribution, complete an iOS-specific privacy-policy/label review, screenshots, supported-device testing, signing and App Store license compatibility review. Do not reuse a Mac-only privacy statement as an iOS declaration without updating it. No App Store approval is implied by successful compilation.
+Original iOS code is AGPL-3.0-or-later, consistent with this repository; ZIPFoundation is MIT. The iOS target does not link libmobi, libarchive, SumatraPDF or MuPDF. License texts and icon attribution ship in the app. The combined privacy policy now covers Mac and iOS; Chinese/English iPhone and iPad screenshots, signing and upload are complete. App Store submission is not approval or an independent determination of license compatibility.
