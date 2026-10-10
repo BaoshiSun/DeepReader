@@ -1,6 +1,6 @@
 # DeepReader macOS 上架准备包
 
-更新日期：2026-10-10。个人开发者账号已登录 Xcode；维护者明确授权后，Apple Development、Apple Distribution、Mac Installer Distribution 三类证书已创建并通过本机身份验证。签名归档和 App Store 安装包导出成功，包内应用与安装包签名均验证通过。App Store Connect 条款已按维护者明确同意接受。应用记录已创建为 **DeepReader: Read with AI**（Apple ID `6821368213`，Bundle ID `org.deepreader.macos`）；构建 1.2.1 (3) 已上传成功。免费价格、首发 10 个地区、中英文商店文案、审核联系方式已在 Apple 后台保存。构建 4 已移除商店版 Gemini 直连并加入隐私政策链接，上传成功并完成 Apple 构建处理；尚未提交审核或上架。
+更新日期：2026-10-10。个人开发者账号已登录 Xcode；维护者明确授权后，Apple Development、Apple Distribution、Mac Installer Distribution 三类证书已创建并通过本机身份验证。签名归档和 App Store 安装包导出成功，包内应用与安装包签名均验证通过。App Store Connect 条款已按维护者明确同意接受。应用记录已创建为 **DeepReader: Read with AI**（Apple ID `6821368213`，Bundle ID `org.deepreader.macos`）；构建 1.2.1 (3) 已上传成功。免费价格、首发 10 个地区、中英文商店文案、审核联系方式已在 Apple 后台保存。构建 4 已移除商店版 Gemini 直连并加入隐私政策链接，上传成功并完成 Apple 构建处理；尚未提交审核或上架。维护者随后确认首发一并移除 OpenRouter，替代构建 5 仅保留 DeepSeek。
 
 **这是准备材料，不是已经符合商店要求的发行版。** 不在这里填写 Apple 密码、应用专用密码、证书私钥、API Key 或审核专用凭据。
 

@@ -12,7 +12,7 @@ xcodebuild -project macos/DeepReader.xcodeproj -scheme DeepReaderStore \
   -derivedDataPath artifacts/app-store/DerivedData CODE_SIGNING_ALLOWED=NO archive
 ```
 
-This produces an **unsigned engineering archive, not an uploadable release**. The preparation script includes the explicit public source set, license texts and icon, and labels uncommitted source changes honestly. Run it again after source changes. Build 4 disables direct Gemini access in the store edition and adds the public privacy-policy link; build 3 was the first uploaded engineering build and build 2 was the GitHub preview.
+This produces an **unsigned engineering archive, not an uploadable release**. The preparation script includes the explicit public source set, license texts and icon, and labels uncommitted source changes honestly. Run it again after source changes. Build 5 supports only DeepSeek in the store edition; build 4 disabled direct Gemini access and added the public privacy-policy link; build 3 was the first uploaded engineering build and build 2 was the GitHub preview.
 
 For distribution, sign in to the approved Apple account in Xcode Settings → Apple Accounts, open the project, select the actual paid development team for `DeepReaderStore`, and confirm registration of `org.deepreader.macos`. Then archive with signing enabled and validate/distribute using Organizer → App Store Connect. Do not use Developer ID or the repository's DMG notarization script for a store upload. Team choice, certificates, provisioning and upload are not configured by this source tree; do not store private keys or account credentials here.
 
@@ -34,7 +34,7 @@ For distribution, sign in to the approved Apple account in Xcode Settings → Ap
 
 ## Still required before submission
 
-TestFlight testing of the processed replacement build 4; signed-identity Keychain checks; complete signed-build, export/cancellation and broader file-location tests; explicit old-profile import if migration is offered; verify the public privacy page renders; actual provider smoke tests and private reviewer access; final screenshots, App Privacy and age-rating answers; AGPL/LGPL App Store distribution compatibility review. Free pricing, ten intended storefronts and the public support address have been confirmed in `docs/app-store/listing.json`. Review contact information is already saved privately in App Store Connect; the owner is preparing review-only API access there. Preserve those private notes when changing other metadata.
+Upload and TestFlight testing of replacement build 5; signed-identity Keychain checks; complete signed-build, export/cancellation and broader file-location tests; explicit old-profile import if migration is offered; verify the public privacy page renders; actual provider smoke tests and private reviewer access; final screenshots, App Privacy and age-rating answers; AGPL/LGPL App Store distribution compatibility review. Free pricing, ten intended storefronts and the public support address have been confirmed in `docs/app-store/listing.json`. Review contact information is already saved privately in App Store Connect; the owner is preparing review-only API access there. Preserve those private notes when changing other metadata.
 
 No license was changed. libmobi remains statically linked under LGPL-3.0-or-later; a source archive alone does not resolve all App Store licensing questions. See [readiness](../../docs/app-store/readiness.md).
 

@@ -225,7 +225,9 @@ struct Sidebar: View {
                     Spacer(); Button(m.t("保存设置", "Save settings")) { m.saveConfiguration() }.buttonStyle(.borderedProminent)
                 }
                 Button(m.t("删除此服务的已存密钥", "Remove this provider's saved key")) { m.removeKey() }
-                Text(m.t("默认 DeepSeek，需要您自行配置 API。OpenRouter 的免费模型也需要账户和密钥，额度与可用性由服务商决定。密钥只保存到 macOS 钥匙串。", "DeepSeek is the default and requires your own API key. OpenRouter free models also require an account and key; provider quotas and availability apply. Keys are stored in macOS Keychain.")).font(.caption).foregroundStyle(.secondary)
+                Text(Provider.isAppStoreBuild
+                     ? m.t("AI 功能需要您自己的 DeepSeek API Key；费用、额度与可用性由 DeepSeek 决定。密钥只保存到 macOS 钥匙串。本地阅读不需要密钥。", "AI features require your own DeepSeek API key; DeepSeek fees, quotas and availability apply. Keys are stored in macOS Keychain. Local reading does not require a key.")
+                     : m.t("默认 DeepSeek，需要您自行配置 API。OpenRouter 的免费模型也需要账户和密钥，额度与可用性由服务商决定。密钥只保存到 macOS 钥匙串。", "DeepSeek is the default and requires your own API key. OpenRouter free models also require an account and key; provider quotas and availability apply. Keys are stored in macOS Keychain.")).font(.caption).foregroundStyle(.secondary)
                 Divider()
                 Text(m.t("归档文件夹", "Archive folder")).font(.headline)
                 Text(m.settings.archiveFolder.isEmpty ? m.t("尚未选择", "Not selected") : m.settings.archiveFolder).font(.caption).textSelection(.enabled)

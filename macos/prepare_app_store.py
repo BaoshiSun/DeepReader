@@ -26,7 +26,7 @@ def main():
     (output / 'SOURCE-COMMIT.txt').write_text(commit + (' (working tree changes included)' if dirty else '') + '\n')
     with (ROOT / 'macos/Info.plist').open('rb') as f:
         info = plistlib.load(f)
-    info['CFBundleVersion'] = '4'
+    info['CFBundleVersion'] = '5'
     info['DeepReaderAppStoreBuild'] = True
     info['CFBundleGetInfoString'] = 'DeepReader for macOS — AGPL-3.0-or-later'
     info['LSApplicationCategoryType'] = 'public.app-category.books'

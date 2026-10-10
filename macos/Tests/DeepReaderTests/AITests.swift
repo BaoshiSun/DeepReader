@@ -26,18 +26,19 @@ private final class MemoryCredentials: Credentials {
 }
 
 final class AITests: XCTestCase {
-    func testStoreEditionRejectsRestoredGeminiSettingsBeforeRequestCreation() throws {
-        var settings = Settings(); settings.provider = .gemini
-        XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
-                                                 source: "sample", appStore: true))
-        XCTAssertEqual(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
-                                           source: "sample", appStore: false).url?.host,
-                       "generativelanguage.googleapis.com")
-        for provider in Provider.available(appStore: true) {
+    func testStoreEditionRejectsRestoredUnsupportedProvidersBeforeRequestCreation() throws {
+        var settings = Settings()
+        for (provider, host) in [(Provider.gemini, "generativelanguage.googleapis.com"),
+                                 (Provider.openRouter, "openrouter.ai")] {
             settings.provider = provider
-            XCTAssertNotNil(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
-                                                source: "sample", appStore: true).url)
+            XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
+                                                     source: "sample", appStore: true))
+            XCTAssertEqual(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
+                                               source: "sample", appStore: false).url?.host, host)
         }
+        settings.provider = .deepSeek
+        XCTAssertEqual(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
+                                           source: "sample", appStore: true).url?.host, "api.deepseek.com")
     }
     @MainActor func testDeniedSharingNeverStartsNetworkAndConsentIsPerOperation() async throws {
         _ = NSApplication.shared

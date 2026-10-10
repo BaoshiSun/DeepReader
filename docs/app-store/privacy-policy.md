@@ -1,6 +1,6 @@
 # DeepReader for macOS 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-10。适用于 Mac App Store 版 1.2.1（构建 4 起）。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+更新日期 / Updated: 2026-10-10。适用于 Mac App Store 版 1.2.1（构建 5 起）。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
 
 ## 中文
 
@@ -27,7 +27,9 @@ API Key 单独保存在 macOS 钥匙串，不写入设置 JSON 或公开发行�
 
 不会上传文档二进制文件；程序不主动将本机完整目录路径加入提示词。但原文本身可能包含个人信息，周期总结中的标题可能来自文件名。服务商也会接收网络连接所必需的信息，例如 IP 地址和请求时间。
 
-商店版可选服务：DeepSeek（`api.deepseek.com`）和 OpenRouter（`openrouter.ai`）。商店版不提供 Google Gemini 直连；旧站外版另支持 Google Gemini。OpenRouter 会根据所选模型及路由设置将请求转交模型提供商，免费路由的接收方可能变化。服务商的保存期限、日志、训练使用、跨境处理和删除机制由其适用条款、账号设置及所选服务决定；DeepReader 不承诺这些服务零保存或不用于训练。请阅读 [DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)、[OpenRouter 隐私政策](https://openrouter.ai/privacy) 及其[模型供应商列表](https://openrouter.ai/providers)。这些服务可能在您所在地区以外处理数据；使用前请核对您的账户及模型条款。旧站外版 Gemini 适用 [Gemini API 条款](https://ai.google.dev/gemini-api/terms) 和 [Google 隐私政策](https://policies.google.com/privacy)。
+商店首发版仅提供 DeepSeek（`api.deepseek.com`），不提供 OpenRouter 或 Google Gemini 直连。DeepSeek 的保存期限、日志、训练使用、跨境处理和删除机制由其适用条款及账号设置决定；DeepReader 不承诺零保存或不用于训练。请阅读 [DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)。数据可能在您所在地区以外处理；使用前请核对您的账户条款。
+
+旧站外版另支持 OpenRouter 和 Google Gemini；商店内部候选构建 4 也支持 OpenRouter，但不会作为首发版本提交。OpenRouter 会根据所选模型及路由设置将请求转交模型提供商，免费路由的接收方可能变化，适用 [OpenRouter 隐私政策](https://openrouter.ai/privacy) 及其[模型供应商政策](https://openrouter.ai/providers)。旧站外版 Gemini 适用 [Gemini API 条款](https://ai.google.dev/gemini-api/terms) 和 [Google 隐私政策](https://policies.google.com/privacy)。
 
 AI 费用、额度和可用性由服务商决定。AI 回答可能不准确。不要提交您无权分享的文档或敏感内容。
 
@@ -59,7 +61,9 @@ The Mac App Store build asks for consent for each AI operation, naming the provi
 
 The app does not upload document binaries or deliberately insert full local directory paths into prompts. Text can itself contain personal information, and period-summary titles may include filenames. Providers also receive network information such as your IP address and request time.
 
-The Mac App Store edition supports DeepSeek and OpenRouter. It does not offer a direct Google Gemini connection; the earlier direct-distribution edition also supports Gemini. OpenRouter routes requests to model providers; recipients can vary with model and routing choices. Retention, logging, training use, international processing and deletion depend on provider terms and account settings. DeepReader does not promise zero retention or no training use by those services. Read the [DeepSeek privacy policy](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html), [OpenRouter privacy policy](https://openrouter.ai/privacy) and [model-provider policies](https://openrouter.ai/providers). Processing may occur outside your country. The earlier direct-distribution Gemini option is governed by the [Gemini API terms](https://ai.google.dev/gemini-api/terms) and [Google privacy policy](https://policies.google.com/privacy). Provider fees and quotas apply. AI answers may be inaccurate; share only content you are authorized to disclose.
+The Mac App Store launch edition supports only DeepSeek (`api.deepseek.com`), with no OpenRouter or direct Google Gemini option. Retention, logging, training use, international processing and deletion depend on DeepSeek's applicable terms and account settings. DeepReader does not promise zero retention or no training use. Read the [DeepSeek privacy policy](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html). Processing may occur outside your country. Provider fees and quotas apply. AI answers may be inaccurate; share only content you are authorized to disclose.
+
+The earlier direct-distribution edition also supports OpenRouter and Google Gemini. Internal store candidate build 4 supports OpenRouter but will not be submitted for launch. OpenRouter routes requests to model providers; recipients and data handling can vary. See the [OpenRouter privacy policy](https://openrouter.ai/privacy) and [model-provider policies](https://openrouter.ai/providers). The earlier direct-distribution Gemini option is governed by the [Gemini API terms](https://ai.google.dev/gemini-api/terms) and [Google privacy policy](https://policies.google.com/privacy).
 
 ### Retention and deletion
 

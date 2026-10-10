@@ -8,7 +8,7 @@ public enum Provider: String, Codable, CaseIterable, Identifiable {
         Bundle.main.object(forInfoDictionaryKey: "DeepReaderAppStoreBuild") as? Bool == true
     }
     public static func available(appStore: Bool = isAppStoreBuild) -> [Self] {
-        appStore ? [.deepSeek, .openRouter] : allCases
+        appStore ? [.deepSeek] : allCases
     }
     public var endpoint: URL {
         switch self {

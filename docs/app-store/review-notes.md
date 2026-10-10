@@ -1,12 +1,12 @@
 # App Review notes — working draft
 
-Do not submit this document unchanged. The sandboxed store candidate is separate from the older GitHub preview. Build 3 has been uploaded; build 4 removes direct Gemini support and adds the privacy-policy link. Complete the gates in readiness.md first. Private review contact details and access credentials belong in App Store Connect, never in this file or the public binary.
+Do not submit this document unchanged. The sandboxed store candidate is separate from the older GitHub preview. Build 4 was uploaded with DeepSeek and OpenRouter; replacement build 5 supports only DeepSeek for the first store launch. Complete the gates in readiness.md first. Private review contact details and access credentials belong in App Store Connect, never in this file or the public binary.
 
 ## Product explanation for the reviewer
 
 DeepReader is a native macOS document and ebook reader. It reads PDF, EPUB, TXT, Markdown and DRM-free MOBI/KF8/AZW3. Its optional AI features explain selected text using nearby context, answer follow-ups, and summarize documents or locally saved reading records. The app has no DeepReader account system or developer-operated AI relay. Reading, highlights, ratings, local book lists and archive copies work without an AI API key.
 
-AI requests authenticate with the user's selected third-party provider. Provider billing and quotas are separate. The app is free; store users may configure their own DeepSeek or OpenRouter API key. Provider charges and quotas are separate. Do not represent API credentials as an application activation code, and do not assume that BYOK automatically satisfies App Review payment rules.
+AI requests authenticate with the user's selected third-party provider. Provider billing and quotas are separate. The app is free; store users may configure their own DeepSeek API key. Provider charges and quotas are separate. Do not represent API credentials as an application activation code, and do not assume that BYOK automatically satisfies App Review payment rules.
 
 ## Private fields to complete in App Store Connect
 

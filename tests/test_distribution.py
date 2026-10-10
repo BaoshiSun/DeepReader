@@ -22,7 +22,6 @@ class ListingTests(unittest.TestCase):
     def test_localized_fields_fit_store_limits(self):
         data = json.loads((ROOT / 'docs/app-store/listing.json').read_text())
         self.assertEqual(preflight.listing_checks(data), [])
-        self.assertIsNone(data['privacy_policy_url'])
 
     def test_rejects_overlong_text_and_multibyte_keywords(self):
         data = json.loads((ROOT / 'docs/app-store/listing.json').read_text())
