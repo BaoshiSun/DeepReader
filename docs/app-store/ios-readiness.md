@@ -20,3 +20,11 @@ App Store Connect confirmed **Waiting for Review** for iOS **1.0.0 (1)** on 2026
 
 
 Licenses unchanged: original Swift code AGPL-3.0-or-later, ZIPFoundation MIT, existing icon CC BY 3.0 attribution. iOS does not link libmobi, SumatraPDF or MuPDF. This is not a legal compatibility determination.
+
+## Guideline 2.1 follow-up — 2026-10-11
+
+The first submission was rejected with “Information Needed - New App Submission” because the account has limited review history. The message requests six items: a physical-device recording on the latest OS, purpose/audience, setup and feature access, external services, regional differences, and relevant regulated-service/content documentation. It does not identify a specific crash or functional defect.
+
+The iOS App Review Notes were expanded with the six numbered sections; sections 2–6 are complete, while section 1 explicitly remains pending a genuine device recording and device/OS details. Existing private review credentials remain only in App Store Connect. No binary change or new build was made for this information request. No review reply or resubmission has been sent yet.
+
+The known iPhone 14 Pro was unavailable to the development host during preparation. The owner was asked for an existing recording and iOS version. Use [the recording checklist](ios-review-recording.md); do not substitute simulator footage or claim physical-device testing not performed.

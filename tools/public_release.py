@@ -28,6 +28,7 @@ ios/prepare_project.py
 ios/prepare_icon.swift
 docs/app-store/ios-listing.json
 docs/app-store/ios-review-notes.md
+docs/app-store/ios-review-recording.md
 docs/app-store/ios-support.md
 docs/app-store/ios-readiness.md
 .gitignore
