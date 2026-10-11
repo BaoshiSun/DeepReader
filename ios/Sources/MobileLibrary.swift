@@ -17,6 +17,9 @@ struct MobileState: Codable {
     var settings = Settings()
     // Optional so libraries created before remembered consent still decode safely.
     var aiConsentVersion: Int?
+    // Optional fields preserve compatibility with existing on-device libraries.
+    var assistantPresentation: String?
+    var assistantWidthFraction: Double?
 }
 final class MobileLibrary: @unchecked Sendable {
     private let lock = NSRecursiveLock()

@@ -32,6 +32,8 @@ struct PendingAI: Identifiable {
     @Published var importing = false
     @Published var progress = ""
     @Published var showAI = false
+    @Published var assistantPresentation = AssistantPresentation.sidebar
+    @Published var assistantWidthFraction = 0.38
     @Published var hasKey = false
     @Published private(set) var hasAIConsent = false
     static let aiConsentVersion = 1
@@ -50,6 +52,8 @@ struct PendingAI: Identifiable {
         self.credentials = credentials; self.ai = ai
         do {
             library = try MobileLibrary(root: root); refresh(); settings = library!.state.settings
+            assistantPresentation = AssistantPresentation(rawValue: library?.state.assistantPresentation ?? "") ?? .sidebar
+            assistantWidthFraction = ReaderSplitLayout.validFraction(library?.state.assistantWidthFraction ?? 0.38)
             hasAIConsent = library?.state.aiConsentVersion == Self.aiConsentVersion
             hasKey = !(try credentials.read(.deepSeek)).isEmpty
         } catch { report(error) }
@@ -71,6 +75,20 @@ struct PendingAI: Identifiable {
     }
     func removeKey() { do { try credentials.remove(.deepSeek); hasKey = false } catch { report(error) } }
     func dismissAssistant() { showAI = false; pending = nil }
+    func setAssistantPresentation(_ presentation: AssistantPresentation) {
+        assistantPresentation = presentation
+        showAI = true
+        persistReaderLayout()
+    }
+    func persistReaderLayout() {
+        assistantWidthFraction = ReaderSplitLayout.validFraction(assistantWidthFraction)
+        do {
+            try library?.update {
+                $0.assistantPresentation = assistantPresentation.rawValue
+                $0.assistantWidthFraction = assistantWidthFraction
+            }
+        } catch { report(error) }
+    }
     func revokeAIConsent() {
         do {
             guard let library else { return }

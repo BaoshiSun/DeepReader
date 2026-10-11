@@ -100,11 +100,113 @@ struct PDFReaderView: UIViewRepresentable {
         deinit { observers.forEach(NotificationCenter.default.removeObserver) }
     }
 }
+enum AssistantPresentation: String {
+    case sidebar, floating
+}
+
+/// Uses the actual window width, so rotation and iPad multitasking share one layout.
+struct ReaderSplitLayout {
+    static let dividerWidth: CGFloat = 24
+    static let minimumReaderWidth: CGFloat = 340
+    static let minimumAssistantWidth: CGFloat = 300
+    let width: CGFloat
+    var canDock: Bool { width >= Self.minimumReaderWidth + Self.minimumAssistantWidth + Self.dividerWidth }
+    static func validFraction(_ value: Double) -> Double {
+        value.isFinite ? min(0.65, max(0.25, value)) : 0.38
+    }
+    func assistantWidth(fraction: Double) -> CGFloat {
+        guard canDock else { return 0 }
+        return min(width - Self.dividerWidth - Self.minimumReaderWidth,
+                   max(Self.minimumAssistantWidth, width * Self.validFraction(fraction)))
+    }
+    func resizedFraction(startWidth: CGFloat, translation: CGFloat) -> Double {
+        guard canDock else { return 0.38 }
+        let requested = min(width - Self.dividerWidth - Self.minimumReaderWidth,
+                            max(Self.minimumAssistantWidth, startWidth - translation))
+        return Self.validFraction(Double(requested / width))
+    }
+}
+
 struct ReaderScreen: View {
     @EnvironmentObject var model: MobileModel
     @State private var search = ""
-    @Environment(\.dismiss) private var dismiss
+    @State private var resizeStartWidth: CGFloat?
     var body: some View {
+        GeometryReader { geometry in
+            let layout = ReaderSplitLayout(width: geometry.size.width)
+            let docked = model.showAI && model.assistantPresentation == .sidebar && layout.canDock
+            HStack(spacing: 0) {
+                readingContent.frame(maxWidth: .infinity, maxHeight: .infinity)
+                if docked {
+                    resizeHandle(layout)
+                    DockedAssistant()
+                        .frame(width: layout.assistantWidth(fraction: model.assistantWidthFraction))
+                        .background(Color(.secondarySystemBackground))
+                }
+            }
+            .coordinateSpace(name: "readerSplit")
+            .overlay {
+                if model.showAI && !docked {
+                    FloatingAssistant(canDock: layout.canDock).padding(.bottom, 56)
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button { model.setAssistantPresentation(.sidebar) } label: {
+                            Label(model.t("右侧栏", "Right sidebar"), systemImage: "sidebar.right")
+                        }.disabled(!layout.canDock)
+                        Button { model.setAssistantPresentation(.floating) } label: {
+                            Label(model.t("悬浮窗", "Floating panel"), systemImage: "rectangle.on.rectangle")
+                        }
+                        if !layout.canDock {
+                            Text(model.t("加宽窗口或横屏可使用右侧栏", "Widen the window or rotate for the sidebar"))
+                        }
+                    } label: { Image(systemName: docked ? "sidebar.right" : "rectangle.on.rectangle") }
+                    .accessibilityLabel(model.t("助手显示方式", "Assistant layout"))
+                }
+            }
+            .onAppear {
+                if layout.canDock && model.assistantPresentation == .sidebar { model.showAI = true }
+            }
+            .onChange(of: geometry.size.width) { resizeStartWidth = nil }
+        }
+        .navigationTitle(model.book?.title ?? "DeepReader").navigationBarTitleDisplayMode(.inline)
+        .searchable(text: $search, prompt: model.t("搜索正文（电子书限当前章）", "Find text (ebooks: current chapter)"))
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    if let book = model.book, let library = model.library { ShareLink(item: library.url(book)) { Label(model.t("导出副本", "Export copy"), systemImage: "square.and.arrow.up") } }
+                    ForEach(1...5, id: \.self) { rating in Button(String(repeating: "★", count: rating)) { model.updateBook { $0.rating = rating } } }
+                    Button(model.t("切换读完状态", "Toggle finished")) { model.updateBook { $0.finished.toggle() } }
+                } label: { Image(systemName: "ellipsis.circle") }
+            }
+        }
+        .onChange(of: model.position) { model.savePosition(); model.selected = ""; model.context = ""; model.pending = nil }
+        .onDisappear { model.savePosition(); model.dismissAssistant() }
+    }
+    private func resizeHandle(_ layout: ReaderSplitLayout) -> some View {
+        Rectangle().fill(Color(.tertiarySystemFill))
+            .overlay { Capsule().fill(.secondary).frame(width: 4, height: 44) }
+            .frame(width: ReaderSplitLayout.dividerWidth)
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .named("readerSplit"))
+                .onChanged { value in
+                    if resizeStartWidth == nil { resizeStartWidth = layout.assistantWidth(fraction: model.assistantWidthFraction) }
+                    model.assistantWidthFraction = layout.resizedFraction(startWidth: resizeStartWidth!, translation: value.translation.width)
+                }
+                .onEnded { _ in resizeStartWidth = nil; model.persistReaderLayout() })
+            .accessibilityElement()
+            .accessibilityLabel(model.t("调整 AI 侧栏宽度", "Resize AI sidebar"))
+            .accessibilityValue("\(Int(layout.assistantWidth(fraction: model.assistantWidthFraction) / layout.width * 100))%")
+            .accessibilityHint(model.t("左右拖动分隔线", "Drag the divider left or right"))
+            .accessibilityAdjustableAction { direction in
+                let step: CGFloat = direction == .increment ? -40 : 40
+                model.assistantWidthFraction = layout.resizedFraction(startWidth: layout.assistantWidth(fraction: model.assistantWidthFraction), translation: step)
+                model.persistReaderLayout()
+            }
+    }
+    private var readingContent: some View {
         VStack(spacing: 0) {
             if let document = model.document {
                 if document.pdf == nil && document.chapters.count > 1 {
@@ -126,26 +228,32 @@ struct ReaderScreen: View {
                 }.font(.subheadline).padding().background(.bar)
             }
         }
-        .overlay {
-            if model.showAI { FloatingAssistant().environmentObject(model).padding(.bottom, 56) }
+    }
+}
+
+struct DockedAssistant: View {
+    @EnvironmentObject var model: MobileModel
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                Label(model.t("阅读助手", "Reading assistant"), systemImage: "sparkles")
+                    .font(.subheadline.weight(.semibold)).lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Button { model.setAssistantPresentation(.floating) } label: {
+                    Image(systemName: "rectangle.on.rectangle").frame(width: 44, height: 44)
+                }.accessibilityLabel(model.t("改为悬浮窗", "Switch to floating panel"))
+                Button { model.dismissAssistant() } label: {
+                    Image(systemName: "xmark").frame(width: 44, height: 44)
+                }.accessibilityLabel(model.t("关闭助手", "Close assistant"))
+            }.padding(.leading, 12).padding(.trailing, 4).frame(minHeight: 52)
+            Divider()
+            AssistantView()
         }
-        .navigationTitle(model.book?.title ?? "DeepReader").navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $search, prompt: model.t("搜索正文（电子书限当前章）", "Find text (ebooks: current chapter)"))
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    if let book = model.book, let library = model.library { ShareLink(item: library.url(book)) { Label(model.t("导出副本", "Export copy"), systemImage: "square.and.arrow.up") } }
-                    ForEach(1...5, id: \.self) { rating in Button(String(repeating: "★", count: rating)) { model.updateBook { $0.rating = rating } } }
-                    Button(model.t("切换读完状态", "Toggle finished")) { model.updateBook { $0.finished.toggle() } }
-                } label: { Image(systemName: "ellipsis.circle") }
-            }
-        }
-        .onChange(of: model.position) { model.savePosition(); model.selected = ""; model.context = ""; model.pending = nil }
-        .onDisappear { model.savePosition(); model.dismissAssistant() }
     }
 }
 
 struct FloatingAssistant: View {
+    var canDock = false
     @EnvironmentObject var model: MobileModel
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorScheme) private var colorScheme
@@ -163,12 +271,17 @@ struct FloatingAssistant: View {
             VStack(spacing: 0) {
                 HStack(spacing: 0) {
                     Label(model.t("阅读助手", "Reading assistant"), systemImage: "sparkles")
-                        .font(.subheadline.weight(.semibold)).frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        .font(.subheadline.weight(.semibold)).lineLimit(1).frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
                         .contentShape(Rectangle())
                         .accessibilityHint(model.t("拖动标题可移动浮窗", "Drag the title to move the panel"))
                         .gesture(DragGesture().updating($translation) { value, state, _ in state = value.translation }
                             .onEnded { value in offset = bounded(CGSize(width: base.width + value.translation.width, height: base.height + value.translation.height), in: geometry.size, panel: CGSize(width: width, height: height)) })
                     if model.busy { ProgressView().controlSize(.small) }
+                    if canDock && !collapsed {
+                        Button { model.setAssistantPresentation(.sidebar) } label: {
+                            Image(systemName: "sidebar.right").frame(width: 44, height: 44)
+                        }.accessibilityLabel(model.t("移到右侧栏", "Move to right sidebar"))
+                    }
                     Button { collapsed.toggle() } label: { Image(systemName: collapsed ? "chevron.down" : "minus").frame(width: 44, height: 44) }
                         .accessibilityLabel(model.t(collapsed ? "展开助手" : "收起助手", collapsed ? "Expand assistant" : "Collapse assistant"))
                     Button { model.dismissAssistant() } label: { Image(systemName: "xmark").frame(width: 44, height: 44) }

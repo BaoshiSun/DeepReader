@@ -236,6 +236,74 @@ final class MobileTests: XCTestCase {
             select(); model.hasKey = true; model.explain()
         }
     }
+    func testSplitBoundsAcrossWindowSizes() {
+        for width: CGFloat in [320, 393, 600, 663, 664, 700, 852, 1024, 1366] {
+            let layout = ReaderSplitLayout(width: width)
+            if width < 664 {
+                XCTAssertFalse(layout.canDock)
+                XCTAssertEqual(layout.assistantWidth(fraction: 0.5), 0)
+            } else {
+                XCTAssertTrue(layout.canDock)
+                for fraction in [-1.0, 0.25, 0.38, 0.65, 2.0, .nan, .infinity] {
+                    let panel = layout.assistantWidth(fraction: fraction)
+                    XCTAssertGreaterThanOrEqual(panel, 300)
+                    XCTAssertGreaterThanOrEqual(width - 24 - panel, 340)
+                }
+                let start = layout.assistantWidth(fraction: 0.38)
+                let expanded = layout.assistantWidth(fraction: layout.resizedFraction(startWidth: start, translation: -10000))
+                let reduced = layout.assistantWidth(fraction: layout.resizedFraction(startWidth: start, translation: 10000))
+                XCTAssertGreaterThanOrEqual(expanded, start)
+                XCTAssertLessThanOrEqual(reduced, start)
+            }
+        }
+    }
+    @MainActor func testReaderLayoutPersistsWithoutSendingOrLosingReadingState() throws {
+        OfflineAIProtocol.reset()
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [OfflineAIProtocol.self]
+        let model = MobileModel(root: root, credentials: EmptyCredentials(), ai: AIClient(configuration: config))
+        XCTAssertEqual(model.assistantPresentation, .sidebar)
+        XCTAssertEqual(model.assistantWidthFraction, 0.38)
+        let book = try XCTUnwrap(model.library).importFile(write("layout.txt", "The bank approved the loan."))
+        model.open(book); model.select("bank", surrounding: "The bank approved the loan.")
+        model.answer = "Existing explanation"; model.question = "Why?"
+        model.setAssistantPresentation(.floating)
+        model.assistantWidthFraction = 0.52; model.persistReaderLayout()
+        let restored = MobileModel(root: root, credentials: EmptyCredentials())
+        XCTAssertEqual(restored.assistantPresentation, .floating)
+        XCTAssertEqual(restored.assistantWidthFraction, 0.52)
+        model.setAssistantPresentation(.sidebar)
+        XCTAssertEqual(model.selected, "bank")
+        XCTAssertEqual(model.answer, "Existing explanation")
+        XCTAssertEqual(model.question, "Why?")
+        XCTAssertEqual(model.book?.id, book.id)
+        XCTAssertEqual(OfflineAIProtocol.count, 0)
+        model.dismissAssistant()
+        XCTAssertFalse(model.showAI)
+        XCTAssertEqual(model.assistantWidthFraction, 0.52)
+        // Older libraries have neither field; unknown modes safely fall back.
+        try model.library?.update { $0.assistantPresentation = "future-mode"; $0.assistantWidthFraction = nil }
+        XCTAssertEqual(MobileModel(root: root, credentials: EmptyCredentials()).assistantPresentation, .sidebar)
+    }
+    @MainActor func testAdaptiveAssistantLayouts() async throws {
+        let model = MobileModel(root: root, credentials: EmptyCredentials())
+        let book = try XCTUnwrap(model.library).importFile(write("Adaptive reading.txt", String(repeating: "The river bank is green. Read at your own pace.\n\n", count: 20)))
+        model.open(book); model.settings.english = true
+        let reader = NavigationStack { ReaderScreen() }.environmentObject(model)
+        let answer = {
+            model.select("bank", surrounding: "The river bank is green.")
+            model.answer = "In this passage, bank means the land beside the river. The phrase ‘river bank’ gives the word its context."
+        }
+        await capture(reader, name: "iPad-sidebar-default", size: CGSize(width: 1024, height: 768), beforeCapture: answer)
+        model.assistantWidthFraction = 0.58
+        await capture(reader, name: "iPad-sidebar-wide", size: CGSize(width: 1024, height: 768), beforeCapture: answer)
+        await capture(reader, name: "compact-window-fallback", size: CGSize(width: 600, height: 768), beforeCapture: answer)
+        await capture(reader, name: "iPhone-landscape-sidebar", size: CGSize(width: 852, height: 393), beforeCapture: answer)
+        model.setAssistantPresentation(.floating)
+        await capture(reader, name: "iPad-floating-option", size: CGSize(width: 1024, height: 768), beforeCapture: answer)
+        model.setAssistantPresentation(.sidebar)
+        await capture(reader.environment(\.colorScheme, .dark), name: "iPad-sidebar-dark", size: CGSize(width: 1024, height: 768), beforeCapture: answer)
+    }
     @MainActor private func capture<V: View>(_ content: V, name: String, size: CGSize, beforeCapture: () -> Void = {}) async {
         let host = UIHostingController(rootView: content)
         host.loadViewIfNeeded()
