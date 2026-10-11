@@ -28,3 +28,17 @@ The first submission was rejected with “Information Needed - New App Submissio
 The iOS App Review Notes were expanded with the six numbered sections; sections 2–6 are complete, while section 1 explicitly remains pending a genuine device recording and device/OS details. Existing private review credentials remain only in App Store Connect. No binary change or new build was made for this information request. No review reply or resubmission has been sent yet.
 
 The known iPhone 14 Pro was unavailable to the development host during preparation. The owner was asked for an existing recording and iOS version. Use [the recording checklist](ios-review-recording.md); do not substitute simulator footage or claim physical-device testing not performed.
+
+## Physical-device recording received — 2026-10-11
+
+The owner supplied a 77.93-second iPhone screen recording and identified the device as iPhone 14 Pro running iOS 26.6.2 (owner-reported; the OS version is not independently established by the recording). The visible About screen shows DeepReader iOS 1.0.0. The video shows launch, settings, local reading, selected-text AI explanation with a successful response, and History. The recorded documents were imported by the user; they are not the bundled sample or an app-provided catalog.
+
+A private review copy, `artifacts/ios-app-store/review-video/DeepReader-iPhone14Pro-demo.mp4`, omits the first 3 seconds because unrelated personal photos appeared in the app switcher. The remainder is continuous, about 74.93 seconds, with the launch preserved. The original is unchanged. Neither the recording nor extracted frames are tracked or uploaded to the public repository.
+
+After owner sign-in, App Review Notes were updated with the recording details while preserving private review access. Once the owner enabled the Chrome extension file-upload permission, the video uploaded successfully and was sent with the six-section review reply. App Store Connect displayed the attachment under the sent message.
+
+## Resubmission result — 2026-10-11
+
+At 13:11 Asia/Riyadh, App Store Connect confirmed **Waiting for Review** for iOS **1.0.0 (1)** after updating the review item and resubmitting. The submission ID remains `ec13236a-878d-4e69-aa1f-0913d2fba681`, and the selected build remains `c0d0bc3f-38cb-4d1c-93ff-23aa27b0c522`. No binary change was needed for this information request.
+
+The six requested information sections are present in both the sent reply and App Review Notes. The private review key is retained only in App Store Connect. The video is an attachment to the reply, not a public repository asset. Local proof: `artifacts/ios-app-store/resubmitted-review.jpg`. The macOS submission was not modified.

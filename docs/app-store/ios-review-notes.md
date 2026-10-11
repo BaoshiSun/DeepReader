@@ -1,7 +1,7 @@
 DeepReader iOS 1.0.0 (1) — Guideline 2.1 information
 
 1. Physical-device demonstration
-A recording from a physical iPhone running the latest public iOS is required for this resubmission. Recording and device/OS details are pending; they will be attached to the App Review reply before resubmission.
+Video: DeepReader-iPhone14Pro-demo.mp4 (attached to the review reply). Recorded on a physical iPhone 14 Pro; the developer reports iOS 26.6.2. It shows launch, settings, local reading, text selection, a successful AI explanation and History. Only the first 3 seconds of unrelated personal content were trimmed; the remaining flow is continuous. Books shown are user-imported, not supplied by the app.
 
 2. Purpose and audience
 DeepReader is a free local document reader for individual readers, students and researchers who want to understand their own documents without leaving the reading page. It reads PDF, EPUB, TXT and Markdown, with search, highlights, reading position, ratings and optional AI explanations, follow-ups and summaries in a movable translucent panel. It has no bookstore or enterprise-only access.
