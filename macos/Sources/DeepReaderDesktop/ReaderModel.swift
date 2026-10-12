@@ -34,6 +34,7 @@ import DeepReaderCore
     @Published public var summaryAnswer = ""
     @Published public var keyDraft = ""
     @Published public var modelDraft = ""
+    @Published public var endpointDraft = ""
     @Published public var dirty = false
     public var openAction: (() -> Void)?
     public var openURLAction: ((URL) -> Void)?
@@ -60,7 +61,7 @@ import DeepReaderCore
         self.confirmSharing = confirmSharing
         self.settings = (try? store.settings()) ?? Settings()
         if !Provider.available().contains(settings.provider) { settings.provider = .deepSeek }
-        modelDraft = settings.model
+        modelDraft = settings.model; endpointDraft = settings.endpointText
         do { _ = try store.settings(); try reload() }
         catch { show(error) }
         if !settings.onboardingSeen { tab = 4; guide() }
@@ -92,22 +93,24 @@ import DeepReaderCore
     public func language() { settings.english.toggle(); clearSummary(); persist(); languageAction?() }
     public func chooseProvider(_ provider: Provider) {
         guard Provider.available().contains(provider) else { return }
-        settings.provider = provider; modelDraft = settings.model; keyDraft = ""; clearSummary()
+        settings.provider = provider; modelDraft = settings.model; endpointDraft = settings.endpointText; keyDraft = ""; clearSummary()
     }
     public func saveConfiguration() {
         do {
             let model = modelDraft.trimmingCharacters(in: .whitespacesAndNewlines)
             guard Settings.validModel(model) else { throw ReaderError("模型 ID 格式无效。", "Invalid model ID.") }
             var next = settings; next.models[next.provider.rawValue] = model
+            next.setEndpoint(endpointDraft)
             next = try next.validated()
+            _ = try next.requestEndpoint()
             let key = keyDraft.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !key.isEmpty { try credentials.save(key, for: next.provider) }
+            if !key.isEmpty { try credentials.save(key, for: next) }
             try store.saveSettings(next); settings = next; keyDraft = ""; clearSummary()
             status = t("设置已保存。空白密钥框会保留已有密钥。", "Settings saved. An empty key field keeps the existing key.")
         } catch { show(error) }
     }
     public func removeKey() {
-        do { try credentials.remove(settings.provider); keyDraft = ""; status = t("此服务的密钥已删除。", "This provider's key was removed.") }
+        do { try credentials.remove(settings); keyDraft = ""; status = t("此服务的密钥已删除。", "This provider's key was removed.") }
         catch { show(error) }
     }
     public func chooseArchiveFolder() {
@@ -134,7 +137,7 @@ import DeepReaderCore
     public func explain() {
         guard !busy, !opening else { return }
         do {
-            let configuration = try settings.validated(), key = try credentials.read(settings.provider)
+            let configuration = try settings.validated(), key = try credentials.read(settings)
             _ = try AIClient.request(settings: configuration, key: key, task: .explain, source: "validate")
             let file = reader.url?.path ?? "", title = reader.url?.lastPathComponent ?? ""
             begin { [weak self] id in
@@ -153,7 +156,7 @@ import DeepReaderCore
                 try self.store.saveRecord(record); self.currentRecord = record; try self.reload()
                 self.status = self.t("解释已自动保存。", "Explanation saved automatically.")
             }
-        } catch { show(error); if (try? credentials.read(settings.provider)) == "" { tab = 4 } }
+        } catch { show(error); if (try? credentials.read(settings)) == "" { tab = 4 } }
     }
     public func ask() {
         guard !busy, !opening, let original = currentRecord else { status = t("请先解释一次选中文字。", "Explain a selection first."); return }
@@ -162,7 +165,7 @@ import DeepReaderCore
             guard !question.isEmpty, question.utf16.count <= 1200, original.answer.utf16.count <= 12000 else {
                 throw ReaderError("追问限 1200 字符；对话过长时请重新选词。", "Follow-ups allow 1,200 characters. Start a new lookup if the conversation is too long.")
             }
-            let configuration = settings, key = try credentials.read(settings.provider)
+            let configuration = settings, key = try credentials.read(settings)
             guard allowSharing(configuration, .followup) else { return }
             begin { [weak self] id in
                 guard let self = self else { return }
@@ -267,7 +270,7 @@ import DeepReaderCore
     public func summarize() {
         guard !busy, let snapshot = prepared else { return }
         do {
-            let key = try credentials.read(snapshot.settings.provider)
+            let key = try credentials.read(snapshot.settings)
             _ = try AIClient.request(settings: snapshot.settings, key: key, task: .part, source: "validate")
             guard allowSharing(snapshot.settings, snapshot.scope == 0 ? .document : .history) else { return }
             begin { [weak self] id in

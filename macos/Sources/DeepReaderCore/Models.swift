@@ -2,35 +2,80 @@
 import Foundation
 
 public enum Provider: String, Codable, CaseIterable, Identifiable {
-    case deepSeek = "DeepSeek", openRouter = "OpenRouter", gemini = "Gemini"
+    case deepSeek = "DeepSeek"
+    case openAI = "OpenAI"
+    case claude = "Claude"
+    case gemini = "Gemini"
+    case qwen = "Qwen"
+    case kimi = "Kimi"
+    case glm = "GLM"
+    case doubao = "Doubao"
+    case miniMax = "MiniMax"
+    case grok = "Grok"
+    case mistral = "Mistral"
+    case openRouter = "OpenRouter"
+    case custom = "Custom"
     public var id: String { rawValue }
     public static var isAppStoreBuild: Bool {
         Bundle.main.object(forInfoDictionaryKey: "DeepReaderAppStoreBuild") as? Bool == true
     }
-    public static func available(appStore: Bool = isAppStoreBuild) -> [Self] {
-        appStore ? [.deepSeek] : allCases
-    }
+    public static func available(appStore: Bool = isAppStoreBuild) -> [Self] { allCases }
     public var endpoint: URL {
         switch self {
         case .deepSeek: return URL(string: "https://api.deepseek.com/chat/completions")!
-        case .openRouter: return URL(string: "https://openrouter.ai/api/v1/chat/completions")!
+        case .openAI: return URL(string: "https://api.openai.com/v1/chat/completions")!
+        case .claude: return URL(string: "https://api.anthropic.com/v1/messages")!
         case .gemini: return URL(string: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions")!
+        case .qwen: return URL(string: "https://dashscope-us.aliyuncs.com/compatible-mode/v1/chat/completions")!
+        case .kimi: return URL(string: "https://api.moonshot.ai/v1/chat/completions")!
+        case .glm: return URL(string: "https://api.z.ai/api/paas/v4/chat/completions")!
+        case .doubao: return URL(string: "https://ark.cn-beijing.volces.com/api/v3/chat/completions")!
+        case .miniMax: return URL(string: "https://api.minimax.io/v1/chat/completions")!
+        case .grok: return URL(string: "https://api.x.ai/v1/chat/completions")!
+        case .mistral: return URL(string: "https://api.mistral.ai/v1/chat/completions")!
+        case .openRouter: return URL(string: "https://openrouter.ai/api/v1/chat/completions")!
+        case .custom: return URL(string: "https://example.invalid/v1/chat/completions")!
         }
     }
     public var models: [String] {
         switch self {
         case .deepSeek: return ["deepseek-flash", "deepseek-v4-pro"]
+        case .openAI: return ["gpt-4.1-mini"]
+        case .claude: return ["claude-sonnet-5-5", "claude-haiku-5-5"]
         case .gemini: return ["gemini-3.8-flash"]
-        case .openRouter: return ["openrouter/free", "openai/gpt-6.1-sol", "anthropic/claude-sonnet-5.5",
-            "google/gemini-3.8-flash", "deepseek/deepseek-v4.1-flash", "qwen/qwen3.5-plus-20260420", "moonshotai/kimi-k2.5"]
+        case .qwen: return ["qwen-plus"]
+        case .kimi: return ["kimi-k2.6"]
+        case .glm: return ["glm-4.7"]
+        case .doubao: return []
+        case .miniMax: return ["MiniMax-M3", "MiniMax-M3.1-Flash-Preview"]
+        case .grok: return ["grok-4.7"]
+        case .mistral: return ["mistral-small-latest"]
+        case .openRouter: return ["openrouter/free"]
+        case .custom: return []
         }
     }
     public var keyURL: URL {
         switch self {
         case .deepSeek: return URL(string: "https://platform.deepseek.com/api_keys")!
-        case .openRouter: return URL(string: "https://openrouter.ai/settings/keys")!
+        case .openAI: return URL(string: "https://platform.openai.com/api-keys")!
+        case .claude: return URL(string: "https://platform.claude.com/settings/keys")!
         case .gemini: return URL(string: "https://aistudio.google.com/apikey")!
+        case .qwen: return URL(string: "https://modelstudio.console.alibabacloud.com/")!
+        case .kimi: return URL(string: "https://platform.kimi.ai/console/api-keys")!
+        case .glm: return URL(string: "https://z.ai/manage-apikey/apikey-list")!
+        case .doubao: return URL(string: "https://console.volcengine.com/ark/")!
+        case .miniMax: return URL(string: "https://platform.minimax.io/")!
+        case .grok: return URL(string: "https://console.x.ai/")!
+        case .mistral: return URL(string: "https://console.mistral.ai/")!
+        case .openRouter: return URL(string: "https://openrouter.ai/settings/keys")!
+        case .custom: return URL(string: "https://github.com/BaoshiSun/DeepReader")!
         }
+    }
+    public var requiresAdultConfirmation: Bool { self == .gemini || self == .openRouter }
+    public var termsURL: URL? {
+        if self == .gemini { return URL(string: "https://ai.google.dev/gemini-api/terms") }
+        if self == .openRouter { return URL(string: "https://openrouter.ai/terms") }
+        return nil
     }
 }
 
@@ -39,6 +84,9 @@ public struct Settings: Codable {
     public var english = false
     public var onboardingSeen = false
     public var models: [String: String] = [:]
+    // Optional additions preserve decoding of libraries written by older releases.
+    public var endpoints: [String: String]?
+    public var adultConfirmed: Bool?
     public var archiveFolder = ""
     public var sidebarWidth: Double = 420
     public var floating = false
@@ -46,10 +94,33 @@ public struct Settings: Codable {
     public var floatingHeight: Double = 760
     public var lookupSplit: Double = 0.5
     public init() {}
-    public var model: String { models[provider.rawValue] ?? provider.models[0] }
+    public var model: String { models[provider.rawValue] ?? provider.models.first ?? "" }
+    public var endpointText: String { endpoints?[provider.rawValue] ?? (provider == .custom ? "" : provider.endpoint.absoluteString) }
+    public mutating func setEndpoint(_ value: String) {
+        var values = endpoints ?? [:]
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty || trimmed == provider.endpoint.absoluteString { values.removeValue(forKey: provider.rawValue) }
+        else { values[provider.rawValue] = trimmed }
+        endpoints = values
+    }
+    public var recipientID: String { provider.rawValue + "|" + endpointText }
+    public func requestEndpoint() throws -> URL {
+        guard Self.validEndpoint(endpointText), let url = URL(string: endpointText) else {
+            throw ReaderError("请输入完整的 HTTPS 接口地址，不能包含账号、查询参数或片段。", "Enter a full HTTPS endpoint without credentials, query or fragment.")
+        }
+        return url
+    }
+    public static func validEndpoint(_ text: String) -> Bool {
+        guard text.utf8.count <= 2048, !text.contains(where: { $0.isWhitespace }),
+              let parts = URLComponents(string: text), parts.scheme == "https",
+              let host = parts.host, !host.isEmpty, host != "example.invalid",
+              parts.user == nil, parts.password == nil, parts.query == nil, parts.fragment == nil,
+              !parts.path.isEmpty, parts.path != "/" else { return false }
+        return parts.url != nil
+    }
     public var freeModel: Bool { provider == .openRouter && (model == "openrouter/free" || model.hasSuffix(":free")) }
     public func validated() throws -> Self {
-        guard models.values.allSatisfy(Self.validModel), archiveFolder.utf8.count <= 16384,
+        guard models.values.allSatisfy(Self.validModel), (endpoints ?? [:]).values.allSatisfy(Self.validEndpoint), archiveFolder.utf8.count <= 16384,
               sidebarWidth.isFinite, floatingWidth.isFinite, floatingHeight.isFinite, lookupSplit.isFinite else {
             throw ReaderError("设置无效。", "Invalid settings.")
         }

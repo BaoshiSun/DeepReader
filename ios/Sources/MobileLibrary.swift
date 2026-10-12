@@ -16,6 +16,7 @@ struct MobileState: Codable {
     var records: [ReadingRecord] = []
     var settings = Settings()
     // Optional so libraries created before remembered consent still decode safely.
+    var aiConsentRecipient: String?
     var aiConsentVersion: Int?
     // Optional fields preserve compatibility with existing on-device libraries.
     var assistantPresentation: String?
@@ -37,7 +38,6 @@ final class MobileLibrary: @unchecked Sendable {
                   state.records.allSatisfy(\.valid) else { throw MobileDocument.invalid }
             storedState.settings = try storedState.settings.validated()
         } else { storedState = MobileState() }
-        storedState.settings.provider = .deepSeek
     }
     static func validFilename(_ name: String) -> Bool {
         !name.isEmpty && name == (name as NSString).lastPathComponent && !name.contains("\\") && !name.contains(":") && !name.hasPrefix(".")

@@ -36,7 +36,7 @@ struct PendingAI: Identifiable {
     @Published var assistantWidthFraction = 0.38
     @Published var hasKey = false
     @Published private(set) var hasAIConsent = false
-    static let aiConsentVersion = 1
+    static let aiConsentVersion = 2
     private(set) var library: MobileLibrary?
     private let credentials: Credentials
     private let ai: AIClient
@@ -54,8 +54,7 @@ struct PendingAI: Identifiable {
             library = try MobileLibrary(root: root); refresh(); settings = library!.state.settings
             assistantPresentation = AssistantPresentation(rawValue: library?.state.assistantPresentation ?? "") ?? .sidebar
             assistantWidthFraction = ReaderSplitLayout.validFraction(library?.state.assistantWidthFraction ?? 0.38)
-            hasAIConsent = library?.state.aiConsentVersion == Self.aiConsentVersion
-            hasKey = !(try credentials.read(.deepSeek)).isEmpty
+            refreshProviderState()
         } catch { report(error) }
     }
     func refresh() { books = library?.state.books ?? []; records = library?.state.records ?? [] }
@@ -63,17 +62,45 @@ struct PendingAI: Identifiable {
         error = (failure as? ReaderError)?.message(english) ?? t("操作失败，请检查文件或可用存储空间。", "Operation failed. Check the file or available storage.")
     }
     func persistSettings() {
-        settings.provider = .deepSeek
-        do { try library?.update { $0.settings = settings } } catch { report(error) }
+        do {
+            try library?.update { $0.settings = settings }
+            pending = nil
+            refreshProviderState()
+        } catch { report(error) }
+    }
+    private func refreshProviderState() {
+        hasAIConsent = library?.state.aiConsentVersion == Self.aiConsentVersion && library?.state.aiConsentRecipient == settings.recipientID
+        hasKey = false
+        if (try? settings.requestEndpoint()) != nil {
+            do { hasKey = !(try credentials.read(settings)).isEmpty } catch { report(error) }
+        }
+    }
+    func chooseProvider(_ provider: Provider) {
+        guard !busy else { return }
+        settings.provider = provider
+        persistSettings()
+    }
+    func saveAIConfiguration(model: String, endpoint: String, key: String) -> Bool {
+        do {
+            var next = settings
+            next.models[next.provider.rawValue] = model.trimmingCharacters(in: .whitespacesAndNewlines)
+            next.setEndpoint(endpoint)
+            next = try next.validated()
+            _ = try next.requestEndpoint()
+            if !key.isEmpty { try credentials.save(key.trimmingCharacters(in: .whitespacesAndNewlines), for: next) }
+            try library?.update { $0.settings = next }
+            settings = next; pending = nil; error = nil; refreshProviderState()
+            return true
+        } catch { report(error); return false }
     }
     @discardableResult func key(_ value: String) -> Bool {
         do {
-            try credentials.save(value.trimmingCharacters(in: .whitespacesAndNewlines), for: .deepSeek)
+            try credentials.save(value.trimmingCharacters(in: .whitespacesAndNewlines), for: settings)
             hasKey = true; error = nil
             return true
         } catch { report(error); return false }
     }
-    func removeKey() { do { try credentials.remove(.deepSeek); hasKey = false } catch { report(error) } }
+    func removeKey() { do { try credentials.remove(settings); hasKey = false } catch { report(error) } }
     func dismissAssistant() { showAI = false; pending = nil }
     func setAssistantPresentation(_ presentation: AssistantPresentation) {
         assistantPresentation = presentation
@@ -92,15 +119,15 @@ struct PendingAI: Identifiable {
     func revokeAIConsent() {
         do {
             guard let library else { return }
-            try library.update { $0.aiConsentVersion = nil }
+            try library.update { $0.aiConsentVersion = nil; $0.aiConsentRecipient = nil }
             hasAIConsent = false; pending = nil; cancel()
         } catch { report(error) }
     }
     func authorizeAndSend(_ request: PendingAI) {
-        guard pending?.id == request.id, request.book.id == book?.id, !busy else { return }
+        guard pending?.id == request.id, request.book.id == book?.id, request.settings.recipientID == settings.recipientID, !busy else { return }
         do {
             guard let library else { return }
-            try library.update { $0.aiConsentVersion = Self.aiConsentVersion }
+            try library.update { $0.aiConsentVersion = Self.aiConsentVersion; $0.aiConsentRecipient = request.settings.recipientID }
             hasAIConsent = true
             send(request)
         } catch { report(error) }
@@ -170,20 +197,20 @@ struct PendingAI: Identifiable {
     }
     private func prepare(_ task: AITask, source: String, previous: ReadingRecord? = nil) {
         guard !busy, let book else { return }
-        guard hasKey else { error = t("请先在设置中保存您自己的 DeepSeek API Key。", "Save your own DeepSeek API key in Settings first."); return }
+        guard hasKey else { error = t("请先在设置中保存所选服务商的 API Key。", "Save your selected provider’s API key in Settings first."); return }
         showAI = true
         let request = PendingAI(task: task, source: source, selection: selected, context: context, book: book, settings: settings, previous: previous, question: question, page: position + 1)
         if hasAIConsent { send(request) } else { pending = request }
     }
     private func send(_ request: PendingAI) {
-        guard !busy, hasAIConsent else { return }
-        pending = nil; busy = true; progress = t("正在请求 DeepSeek…", "Requesting DeepSeek…"); showAI = true
+        guard !busy, hasAIConsent, request.settings.recipientID == settings.recipientID else { return }
+        pending = nil; busy = true; progress = t("正在请求 ", "Requesting ") + request.settings.provider.rawValue + "…"; showAI = true
         work = Task {
             defer { busy = false; work = nil; progress = "" }
             do {
                 try Task.checkCancellation()
                 guard hasAIConsent else { return }
-                let key = try credentials.read(.deepSeek)
+                let key = try credentials.read(request.settings)
                 let output: String
                 if request.task == .document {
                     output = try await ai.summarize(settings: request.settings, key: key, source: request.source, review: false) { [weak self] done, total in
@@ -196,7 +223,7 @@ struct PendingAI: Identifiable {
                 record.selected = request.previous?.selected ?? request.selection
                 record.context = request.previous?.context ?? request.context
                 record.answer = output; record.kind = request.task == .document ? "file" : "explain"
-                record.provider = Provider.deepSeek.rawValue; record.model = request.settings.model
+                record.provider = request.settings.provider.rawValue; record.model = request.settings.model
                 record.language = request.settings.english ? "en" : "zh"; record.page = request.page
                 if request.task == .followup {
                     let prompt = "Q: " + TextLimits.prefix(request.question, 1000) + "\n\n"

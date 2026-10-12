@@ -2,6 +2,20 @@
 
 更新日期 / Updated: 2026-10-11。适用于 Mac App Store 版 1.2.1（构建 5 起），以及 iOS / iPadOS 版 1.0.0。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
 
+## 未发布多模型开发版 / Unreleased multi-provider development builds
+
+2026-10-12：以下补充适用于新的开发源码，不替换已经送审的 DeepSeek 首发构建。后文关于“仅 DeepSeek”的描述指这些首发构建。
+
+开发版在用户主动执行 AI 操作时，将相同范围的文字发送给设置中选定的服务商及完整 HTTPS 地址。可选 DeepSeek、OpenAI、Anthropic Claude、Google Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、xAI Grok、Mistral、OpenRouter 或用户配置的兼容服务器。DeepReader 不运营 AI 代理服务器。自定义服务器的运营者及其下游服务可能接收内容；OpenRouter 将请求路由到模型供应商。不要向不信任的地址填写 Key 或发送文档。
+
+服务商接收认证 Key、发送的文字、IP 地址及连接所需信息。保存、训练、日志、账号关联和跨境处理由实际接收方的政策与账户设置决定；本应用不承诺各家均不保存或不训练。用户应先在服务商网站查看条款和隐私政策。服务商保存的数据需向该服务商申请删除。
+
+Apple 版 Key 按服务商与地址隔离保存于本机钥匙串；模型 ID 与接口地址保存在本机设置中。iOS 的发送授权绑定服务商和地址，改变接收方需要新授权，可在设置中撤销；旧版全局授权不自动用于新服务商。macOS 仍逐次确认。仅修改设置或选择文字不会发起模型请求。Gemini 与 OpenRouter 的成人使用确认不替代对服务条款、整体受众和上架年龄分级的复核。
+
+This supplement applies to unreleased development source. The DeepSeek-only statements below describe the submitted launch builds. On an explicit AI action, development builds send the same text scopes to the selected provider and full HTTPS endpoint: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, xAI Grok, Mistral, OpenRouter, or a user-configured compatible server. DeepReader operates no AI proxy. OpenRouter forwards requests to model providers; custom server operators may also use downstream services.
+
+Recipients receive authentication credentials, submitted text, IP addresses and connection information. Retention, training, logging, account linkage and international processing depend on the actual recipient’s policies and account settings. Review those policies before sharing; contact the recipient to delete provider-held data. Apple builds isolate Keychain credentials by provider and endpoint. iOS remembers permission for a recipient, supports revocation and requires fresh permission for changed recipients; legacy global consent is not reused. macOS asks per operation. Selecting text or editing settings sends no AI request. Age confirmation for Gemini and OpenRouter does not by itself establish compliance with all provider terms or store requirements.
+
 ## macOS — 中文
 
 ### 本机阅读和保存

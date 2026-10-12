@@ -21,7 +21,7 @@ public enum AISharingKind: Equatable {
         let routing = settings.provider == .openRouter
             ? (en ? " OpenRouter also forwards requests to the model providers it selects." : " OpenRouter 还会将请求转发给其选用的模型供应商。") : ""
         alert.informativeText = kind.description(english: en) + "\n\n" +
-            (en ? "Recipient: " : "接收方：") + settings.provider.rawValue + "\n" +
+            (en ? "Recipient: " : "接收方：") + settings.provider.rawValue + "\n" + settings.endpointText + "\n" +
             (en ? "Model: " : "模型：") + settings.model + "\n\n" +
             (en ? "Your API key authenticates the request. The service receives your IP address and may retain the submitted content under its own policy. Provider fees or quotas apply." : "请求使用您的 API Key 验证身份。服务商会收到 IP 地址，并可能按其政策保留提交的内容；费用和额度由服务商决定。") + routing + "\n\n" +
             (en ? "Consent applies only to this operation. Cancel to keep reading offline. Cancelling a request later cannot recall data already sent." : "同意仅适用于本次操作。取消后仍可离线阅读。发送后再取消请求，无法撤回已经传出的数据。")

@@ -41,7 +41,7 @@ int wmain(int argc,WCHAR** argv) {
     auto bounded=Context(std::wstring(5000,L'a'),std::wstring(2200,L'b'),std::wstring(5000,L'c'));
     Check(bounded.size()<=3000 && bounded.find(std::wstring(2200,L'b'))!=std::wstring::npos,"bounded context preserves selection");
     Check(Context(L"",std::wstring(2201,L'x'),L"").empty() && Context(L"text",L"",L"text").empty(),"empty and oversize selections rejected");
-    Config c; Contract direct;
+    Config c; c.adultConfirmed=true; Contract direct;
     auto defaultBody=RequestBody(c,Task::Explain,marked,L"bank");
     Check(c.provider==DeepSeek && std::wstring(Service(c.provider).host)==L"api.deepseek.com" &&
         std::wstring(Service(c.provider).path)==L"/chat/completions" && c.keys[DeepSeek].empty() &&
@@ -89,6 +89,32 @@ int wmain(int argc,WCHAR** argv) {
         FollowupTranscript(L"answer",question,std::wstring(20000,L'x'),false,L"model").empty(),
         "invalid requests and oversized replies cannot silently truncate or replace a conversation");
     Check(!ValidModel("bad model\r\n") && ValidModel("anthropic/claude-sonnet-5.5"),"invalid model identifiers rejected");
+    for (int provider=0; provider<ProviderCount; ++provider) {
+        Config settings; settings.provider=provider; settings.adultConfirmed=true;
+        if (settings.models[provider].empty()) settings.models[provider]="offline-model";
+        if (provider==Custom) settings.endpoints[provider]="https://offline.example.test/v1/chat/completions";
+        Endpoint endpoint;
+        Check(ParseEndpoint(EndpointURL(settings),endpoint),"every provider has a valid configurable HTTPS endpoint");
+        auto request=RequestBody(settings,Task::Explain,L"context",L"selection");
+        Check(!request.empty() && request.find("offline-secret")==std::string::npos,"provider payload omits credentials");
+        if (provider==OpenAI) Check(request.find("max_completion_tokens")!=std::string::npos && request.find("max_tokens")==std::string::npos,"OpenAI completion budget");
+        if (provider==Claude) Check(request.find("\"system\":")!=std::string::npos && request.find("\"role\":\"system\"")==std::string::npos,"Claude uses top-level system");
+    }
+    Endpoint endpoint;
+    for (auto invalid : {"http://api.test/v1", "https://key@api.test/v1", "https://api.test/v1?key=secret", "https://api.test/v1#fragment", "https://api.test"})
+        Check(!ParseEndpoint(invalid,endpoint),"unsafe endpoint rejected");
+    Config scoped; Check(KeyMatchesEndpoint(scoped),"legacy keys remain bound to the default endpoint");
+    scoped.endpoints[DeepSeek]="https://other.example.test/v1/chat/completions";
+    Check(!KeyMatchesEndpoint(scoped),"changing endpoint never reuses a legacy key");
+    scoped.keyEndpoints[DeepSeek]=EndpointURL(scoped);
+    Check(KeyMatchesEndpoint(scoped),"explicitly rebound key is usable");
+    Config age; age.provider=Gemini;
+    Check(RequestBody(age,Task::Explain,L"sample").empty(),"Gemini age gate precedes network");
+    age.provider=OpenRouter;
+    Check(RequestBody(age,Task::Explain,L"sample").empty(),"OpenRouter age gate precedes network");
+    auto claude=Response("{\"content\":[{\"type\":\"thinking\",\"thinking\":\"hidden\"},{\"type\":\"text\",\"text\":\"Answer\"}],\"stop_reason\":\"end_turn\"}",200,true,Claude);
+    Check(claude.ok && claude.text==L"Answer","Claude text blocks parsed without reasoning");
+    Check(!Response("{\"content\":[{\"type\":\"text\",\"text\":\"Partial\"}],\"stop_reason\":\"max_tokens\"}",200,true,Claude).ok,"truncated Claude response rejected");
     Check(Response("{\"choices\":[{\"message\":{\"content\":\"此处指银行。\"}}],\"model\":\"actual-free-model\"}",200,false).ok,"chat completion response accepted");
     Check(Response("{\"choices\":[{\"message\":{\"content\":\"text\"},\"finish_reason\":\"length\"}]}",200,false).ok==false,"truncated answers are never saved as complete");
     Check(!Response("{bad json",200,true).ok && !Response("{\"error\":{\"message\":\"secret\"}}",200,true).ok,"malformed and embedded API errors fail closed");

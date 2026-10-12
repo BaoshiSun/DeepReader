@@ -76,12 +76,12 @@ struct AssistantView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 if let request = model.pending {
-                    Text(model.t("允许将阅读内容发送到 DeepSeek？", "Allow reading content to be sent to DeepSeek?")).font(.headline)
+                    Text(model.t("允许将阅读内容发送到 ", "Allow reading content to be sent to ") + request.settings.provider.rawValue + "?").font(.headline)
                     Text(model.t("解释发送选文和附近语境；追问还发送先前回答和问题；点击“总结全文”会发送可提取的全文，长文分段处理。", "Explanations send your selection and nearby context; follow-ups also send the previous answer and question. Summarize sends all extractable text, split for long documents."))
-                    Text("api.deepseek.com · " + request.settings.model).font(.caption)
+                    Text(request.settings.endpointText + " · " + request.settings.model).font(.caption)
                     Text(model.t("本次预计请求数：", "Estimated requests now: ") + String(request.requests)).font(.caption)
-                    Text(model.t("内容和网络信息由 DeepSeek 按其政策处理，可能保存及用于训练；API 费用由您的账户承担。", "DeepSeek processes content and network information under its policy, potentially retaining or training on it. Your account pays API fees.")).font(.footnote)
-                    Link(model.t("DeepSeek 隐私政策", "DeepSeek privacy policy"), destination: URL(string: "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html")!)
+                    Text(model.t("内容和网络信息由所选服务商按其政策处理，可能保存及用于训练；API 费用由您的账户承担。", "The selected provider processes content and network information under its policy, potentially retaining or training on it. Your account pays API fees.")).font(.footnote)
+                    Text(model.t("OpenRouter 会将内容转发给模型供应商。自定义地址由该服务器运营者处理。请先查阅服务商的隐私政策与条款。", "OpenRouter forwards content to model providers. Custom endpoints are operated by their server owner. Review the provider’s privacy policy and terms first.")).font(.footnote)
                     Text(model.t("记住授权后，仅在您点击解释、追问或总结时发送，不再逐次询问。可在设置中撤销。", "Remembering permission skips future prompts when you tap Explain, Follow-up or Summarize. Revoke it in Settings at any time.")).font(.footnote)
                     Button { model.authorizeAndSend(request) } label: { Text(model.t("同意并记住，发送", "Allow, remember and send")).foregroundStyle(.white) }
                         .buttonStyle(.borderedProminent).tint(Color(red: 0.16, green: 0.43, blue: 0.32))
@@ -109,7 +109,7 @@ struct AssistantView: View {
                         TextField(model.t("继续追问…", "Ask a follow-up…"), text: $model.question, axis: .vertical).lineLimit(1...4).textFieldStyle(.roundedBorder).disabled(model.busy)
                         Button(model.t("发送追问", "Send follow-up")) { model.followup() }.disabled(model.busy || model.question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
-                    Text(model.hasAIConsent ? model.t("DeepSeek · 已记住发送授权", "DeepSeek · Sharing permission remembered") : model.t("首次发送前会征求授权", "Permission is requested before the first send")).font(.caption2).foregroundStyle(.secondary)
+                    Text(model.hasAIConsent ? model.settings.provider.rawValue + model.t(" · 已记住发送授权", " · Sharing permission remembered") : model.t("首次发送前会征求授权", "Permission is requested before the first send")).font(.caption2).foregroundStyle(.secondary)
                 }
                 if let error = model.error {
                     Text(error).font(.footnote).foregroundStyle(.red)
@@ -138,30 +138,50 @@ struct HistoryView: View {
 struct SettingsView: View {
     @EnvironmentObject var model: MobileModel
     @State private var key = ""
+    @State private var modelID = ""
+    @State private var endpoint = ""
     var body: some View {
         Form {
             Section(model.t("界面", "Interface")) {
                 Toggle("English", isOn: $model.settings.english).onChange(of: model.settings.english) { model.persistSettings() }
             }
-            Section("DeepSeek") {
-                Text(model.hasKey ? model.t("API Key 已保存在本机钥匙串", "API key saved in this device's Keychain") : model.t("尚未设置 API Key", "No API key configured"))
+            Section(model.t("AI 服务", "AI provider")) {
+                Picker(model.t("服务商", "Provider"), selection: Binding(get: { model.settings.provider }, set: {
+                    model.chooseProvider($0); loadDrafts()
+                })) { ForEach(Provider.available()) { Text($0.rawValue).tag($0) } }
+                Text(model.hasKey ? model.t("当前地址已有 Key；留空保留", "Key saved for this endpoint; leave empty to keep") : model.t("当前地址尚未设置 Key", "No key saved for this endpoint"))
                 SecureField("API Key", text: $key).textInputAutocapitalization(.never).autocorrectionDisabled()
-                Button(model.t("保存 Key", "Save key")) { if model.key(key) { key = "" } }.disabled(key.isEmpty)
-                Button(model.t("删除已存 Key", "Remove saved key"), role: .destructive) { model.removeKey() }.disabled(!model.hasKey)
-                Picker(model.t("模型", "Model"), selection: Binding(get: { model.settings.model }, set: { model.settings.models[Provider.deepSeek.rawValue] = $0; model.persistSettings() })) { ForEach(Provider.deepSeek.models, id: \.self) { Text($0) } }
-                Text(model.t("本地阅读免费且不需要 Key。AI 需您自己的账户，费用和额度由 DeepSeek 决定。", "Local reading needs no key. AI uses your own account; DeepSeek sets fees and quotas.")).font(.footnote)
+                if !model.settings.provider.models.isEmpty {
+                    Picker(model.t("常用模型", "Model preset"), selection: Binding(get: { model.settings.provider.models.contains(modelID) ? modelID : "custom" }, set: { if $0 != "custom" { modelID = $0 } })) {
+                        ForEach(model.settings.provider.models, id: \.self) { Text($0).tag($0) }
+                        Text(model.t("自定义", "Custom")).tag("custom")
+                    }
+                }
+                TextField(model.t("模型 ID / 推理接入点 ID", "Model ID / deployment ID"), text: $modelID).textInputAutocapitalization(.never).autocorrectionDisabled()
+                TextField(model.t("完整 HTTPS 接口地址", "Full HTTPS endpoint"), text: $endpoint).textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
+                Text(model.t("支持文字对话模型。地址需包含 /chat/completions（Claude 为 /messages）；不同地区的 Key 和地址必须匹配。修改地址后需为新地址保存 Key。", "Text chat models are supported. Include /chat/completions (Claude: /messages). Match your key’s region to the endpoint. A new endpoint needs its own saved key.")).font(.footnote)
+                if model.settings.provider.requiresAdultConfirmation {
+                    Toggle(model.t("我已满 18 岁", "I am 18 or older"), isOn: Binding(get: { model.settings.adultConfirmed == true }, set: { model.settings.adultConfirmed = $0; model.persistSettings() }))
+                    Link(model.t("服务商条款", "Provider terms"), destination: model.settings.provider.termsURL!)
+                }
+                Button(model.t("保存 AI 设置", "Save AI settings")) {
+                    if model.saveAIConfiguration(model: modelID, endpoint: endpoint, key: key) { loadDrafts() }
+                }
+                Button(model.t("删除当前已存 Key", "Remove current saved key"), role: .destructive) { model.removeKey() }.disabled(!model.hasKey)
+                if model.settings.provider != .custom { Link(model.t("服务商控制台", "Provider console"), destination: model.settings.provider.keyURL) }
+                Text(model.t("本地阅读不需要 Key。AI 使用您的服务商账户和额度；聊天订阅通常不包含 API 费用。", "Local reading needs no key. AI uses your provider account and quota; chat subscriptions generally do not include API fees.")).font(.footnote)
             }.disabled(model.busy)
             Section(model.t("数据与隐私", "Data and privacy")) {
                 Link(model.t("DeepReader 隐私政策", "DeepReader privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-native/docs/app-store/privacy-policy.md")!)
                 if model.hasAIConsent {
-                    Label(model.t("已允许发送到 DeepSeek", "DeepSeek sharing allowed"), systemImage: "checkmark.shield")
+                    Label(model.settings.provider.rawValue + model.t(" · 已授权", " · Sharing allowed"), systemImage: "checkmark.shield")
                     Button(model.t("撤销 AI 发送授权", "Revoke AI sharing permission"), role: .destructive) { model.revokeAIConsent() }
                 } else {
                     Text(model.t("尚未授权 AI 发送；首次使用时会询问。", "AI sharing is not authorized; you will be asked on first use."))
                 }
                 Text(model.t("文件导入后存为本机副本。书库、阅读位置、高亮和历史保存在应用容器；不自动同步 Mac。系统备份可能包含这些资料。AI 首次发送时征求授权并记住；之后仅在点击解释、追问或总结时发送，可随时撤销授权。", "Imported files are local copies. Books, position, highlights and history stay in the app container; there is no automatic Mac sync. System backups may include these data. AI sharing permission is requested once and remembered. Text is sent only when you tap Explain, Follow-up or Summarize; permission can be revoked."))
-                Text(model.t("可在书库长按删除副本，在历史中左滑删除记录，在此移除 Key。卸载应用不保证删除钥匙串中的 Key；服务商数据需向 DeepSeek 申请删除。", "Long-press a book to delete its copy, swipe history to delete records, and remove your key here. Uninstalling may leave Keychain data; contact DeepSeek to delete provider-held data."))
-                Link(model.t("服务商隐私政策", "Provider privacy policy"), destination: URL(string: "https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html")!)
+                Text(model.t("可在书库长按删除副本，在历史中左滑删除记录，在此移除 Key。卸载应用不保证删除钥匙串中的 Key；服务商数据需向相应服务商申请删除。", "Long-press a book to delete its copy, swipe history to delete records, and remove your key here. Uninstalling may leave Keychain data; contact the selected provider to delete provider-held data."))
+                Text(model.t("切换接收方后需重新授权。OpenRouter 还会转发给模型供应商。", "A different recipient requires fresh permission. OpenRouter also forwards data to model providers."))
             }
             Section(model.t("关于", "About")) {
                 Text("DeepReader · iOS 1.0.0")
@@ -171,7 +191,10 @@ struct SettingsView: View {
                 NavigationLink(model.t("开源许可", "Open-source licenses")) { ScrollView { Text(licenses).font(.caption.monospaced()).padding().textSelection(.enabled) }.navigationTitle(model.t("许可", "Licenses")) }
                 Link(model.t("支持邮箱", "Support email"), destination: URL(string: "mailto:baoshi.sun@icloud.com")!)
             }
-        }.navigationTitle(model.t("设置", "Settings"))
+        }.navigationTitle(model.t("设置", "Settings")).onAppear { loadDrafts() }
+    }
+    private func loadDrafts() {
+        key = ""; modelID = model.settings.model; endpoint = model.settings.endpointText
     }
     private var licenses: String {
         ["LICENSE-AGPL-3.0", "ZIPFoundation-LICENSE", "THIRD-PARTY-NOTICES"].compactMap { name in

@@ -38,15 +38,18 @@ namespace SumatraDeepSeek {
 
     public sealed class SetupForm : Form {
         readonly Config config;
+        readonly Config original;
+        readonly ComboBox provider = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+        readonly TextBox endpoint = Style.Text(false);
         readonly TextBox key = Style.Text(false);
         readonly TextBox model = Style.Text(false);
         readonly TextBox settings = Style.Text(false);
         public bool Saved;
         public SetupForm(Config value, bool settingsOnly) {
-            config = value;
+            original = value; config = Json.Read<Config>(Json.Write(value));
             Style.Form(this);
-            Text = "Sumatra · DeepSeek 阅读助手设置";
-            ClientSize = new Size(630, settingsOnly ? 315 : 565);
+            Text = "Sumatra · AI 阅读助手设置";
+            ClientSize = new Size(630, settingsOnly ? 480 : 730);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             var panel = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(24), ColumnCount = 1, RowCount = 0 };
@@ -58,13 +61,23 @@ namespace SumatraDeepSeek {
             };
             add(Style.Label("读懂此处含义", 19, Style.Ink),42);
             add(Style.Label("在 PDF 中选中文字，按 Ctrl + Alt + D。",10,Style.Muted),32);
-            add(Style.Label("DeepSeek API Key",10,Style.Ink),25);
+            foreach (var item in AIProvider.All) provider.Items.Add(item.Name);
+            provider.SelectedItem=config.Provider;
+            add(provider,34);
+            add(Style.Label("完整 HTTPS 接口地址（需包含 /chat/completions，Claude 为 /messages）",9,Style.Muted),28);
+            endpoint.Text=config.Target; add(endpoint,34);
+            provider.SelectedIndexChanged += delegate {
+                config.Model=model.Text.Trim(); config.Endpoint=endpoint.Text.Trim();
+                config.Choose((string)provider.SelectedItem); key.Clear();
+                model.Text=config.Model; endpoint.Text=config.Target;
+            };
+            add(Style.Label("所选服务商 API Key",10,Style.Ink),25);
             key.UseSystemPasswordChar = true;
             key.Text = "";
             add(key,34);
             bool existing = false;
             try { existing = !String.IsNullOrWhiteSpace(config.Key()); } catch { }
-            add(Style.Label(existing ? "已有密钥；留空保留。新密钥将用当前 Windows 账户加密保存。" : "输入后保存在本机。API 调用使用 DeepSeek API 余额。",9,Style.Muted),32);
+            add(Style.Label(existing ? "留空保留当前服务 / 地址的密钥；新地址须填写新 Key。" : "输入后保存在本机。API 调用使用所选服务商的额度。",9,Style.Muted),32);
             var modelRow = new TableLayoutPanel { ColumnCount = 2, Dock = DockStyle.Fill, Margin = new Padding(0) };
             modelRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,75));
             modelRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
@@ -76,20 +89,28 @@ namespace SumatraDeepSeek {
             var save = Style.Button("保存设置", true);
             save.Click += delegate {
                 try {
+                    config.Endpoint=endpoint.Text.Trim();
+                    if (!Config.ValidEndpoint(config.Target) || !Config.ValidModel(model.Text.Trim())) throw new UserError("请检查模型 ID 和完整 HTTPS 地址。");
                     if (!String.IsNullOrWhiteSpace(key.Text)) config.SetKey(key.Text);
-                    if (String.IsNullOrWhiteSpace(config.Key())) throw new UserError("请填写 DeepSeek API Key。密钥只需在此窗口输入。");
+                    if (String.IsNullOrWhiteSpace(config.Key())) throw new UserError("请填写所选服务商的 API Key。密钥只需在此窗口输入。");
                     if (String.IsNullOrWhiteSpace(model.Text) || model.Text.Trim().IndexOfAny(new char[] {'\r','\n',' '}) >= 0)
                         throw new UserError("请填写有效的模型名称，例如 deepseek-flash。");
-                    config.Model = model.Text.Trim(); config.Save(); key.Clear(); Saved = true;
+                    config.Model = model.Text.Trim(); config.Save();
+                    original.Provider=config.Provider; original.Model=config.Model; original.Endpoint=config.Endpoint;
+                    original.Keys=config.Keys; original.Models=config.Models; original.Endpoints=config.Endpoints;
+                    key.Clear(); Saved = true;
                     if (settingsOnly) { DialogResult = DialogResult.OK; Close(); }
                     else MessageBox.Show(this,"设置已保存。可以接入 SumatraPDF 后开始阅读。","已保存",MessageBoxButtons.OK,MessageBoxIcon.Information);
                 } catch (Exception ex) { ShowError(ex); }
             };
             saveRow.Controls.Add(save);
             var getKey = Style.Button("获取 API Key", false);
-            getKey.Click += delegate { System.Diagnostics.Process.Start("https://platform.deepseek.com/api_keys"); };
+            getKey.Click += delegate { System.Diagnostics.Process.Start(AIProvider.Get(config.Provider).Console); };
             saveRow.Controls.Add(getKey);
             add(saveRow,50);
+            var revoke = Style.Button("撤销 AI 发送授权",false);
+            revoke.Click += delegate { original.SharingRecipient=""; config.SharingRecipient=""; original.Save(); MessageBox.Show(this,"已撤销，下次发送会询问。"); };
+            add(revoke,40);
             if (!settingsOnly) {
                 add(new Label { Text = "接入 SumatraPDF", Font = new Font(Font,FontStyle.Bold), TextAlign = ContentAlignment.BottomLeft },37);
                 add(Style.Label("先关闭 SumatraPDF。便携版可选择同目录的设置文件。",9,Style.Muted),30);
@@ -112,7 +133,7 @@ namespace SumatraDeepSeek {
                 install.Click += delegate { Apply(false); };
                 uninstall.Click += delegate { Apply(true); };
                 installRow.Controls.Add(install); installRow.Controls.Add(uninstall); add(installRow,50);
-                add(Style.Label("每次仅发送选文及附近段落给 DeepSeek。程序不保存阅读记录。\r\n完整解压并保留整个文件夹；移动后需要重新接入。",9,Style.Muted),55);
+                add(Style.Label("每次仅发送选文及附近段落给所选 AI 服务。程序不保存阅读记录。\r\n完整解压并保留整个文件夹；移动后需要重新接入。",9,Style.Muted),55);
             }
             Style.Scale(this);
         }
@@ -145,7 +166,7 @@ namespace SumatraDeepSeek {
         public ReaderForm(string document, int currentPage, string selection, Config settings, DeepSeekClient client) {
             file = document; page = currentPage; selected = selection; config = settings; api = client;
             Style.Form(this);
-            Text = "DeepSeek · 此处怎么理解";
+            Text = "AI · 此处怎么理解";
             ClientSize = new Size(660,515);
             MinimumSize = new Size(600,530);
             KeyPreview = true;
@@ -240,6 +261,15 @@ namespace SumatraDeepSeek {
                     using (var settings = new SetupForm(config,true)) {
                         if (settings.ShowDialog(this) != DialogResult.OK) { status.Text = "填写 API Key 后即可解释。"; return; }
                     }
+                }
+                if (config.SharingRecipient!=config.Recipient || (config.Provider=="Gemini" || config.Provider=="OpenRouter") && !config.AdultConfirmed) {
+                    string disclosure=config.Recipient+"\r\n\r\n将选文及附近语境发送给上述服务商；服务商会收到 IP 地址，并按其政策处理内容。API 费用由您的账户承担。OpenRouter 会转发给模型供应商。记住授权？可在设置中撤销。";
+                    if(config.Provider=="OpenRouter") disclosure+="\r\n同意还表示您已满 18 岁。条款：https://openrouter.ai/terms";
+                    if(config.Provider=="Gemini") disclosure+="\r\n同意还表示您已满 18 岁并阅读了 https://ai.google.dev/gemini-api/terms";
+                    if(MessageBox.Show(this,disclosure,"AI 发送授权",MessageBoxButtons.YesNo,MessageBoxIcon.Question,MessageBoxDefaultButton.Button2)!=DialogResult.Yes) return;
+                    config.SharingRecipient=config.Recipient;
+                    if(config.Provider=="Gemini" || config.Provider=="OpenRouter") config.AdultConfirmed=true;
+                    config.Save();
                 }
                 busy = true; explain.Enabled = false; copy.Enabled = false; choices.Enabled = false;
                 context.ReadOnly = true; settingsButton.Enabled = false;

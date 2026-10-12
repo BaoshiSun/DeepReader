@@ -10,6 +10,23 @@
 
 **macOS 1.2.1 测试版**：[下载 Mac 安装包（DMG / ZIP）](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.1-macos)。macOS 13+，支持 Apple Silicon 与 Intel，可打开 **PDF、EPUB、TXT、Markdown、MOBI 和 AZW3**，提供可调／悬浮 AI 侧栏、追问、历史、总结、评分、归档和书单。电子书提供章节切换及本地高亮，MOBI/AZW3 无需外部转换软件；暂不支持 DRM 保护文件。构建方法、格式限制、安装及未公证说明见 [Mac 版说明](macos/README.md)。Mac 与 Windows 使用独立配置。
 
+## 多模型开发版（2026-10-12，尚未发布）
+
+新源码的 iOS、macOS、Windows 原生阅读器和旧版 Windows 助手提供相同的服务选择：DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter，以及自定义 OpenAI 兼容接口。支持阅读所需的**文字对话**，不表示支持图像生成、视频、语音、工具调用，或每家所有专用 API。
+
+在设置中选择服务商 → 选择或填写模型 ID → 核对完整 HTTPS 接口地址 → 填入该服务的 Key → 保存。豆包须填写账户可用的模型 / 推理接入点 ID；自定义接口也须填写模型 ID。模型预设只是起点，可输入新 ID，实际可用性由服务商、账户权限和地区决定。OpenRouter 可接入其提供的其他模型，例如 Llama；DeepReader 不会自动切换服务商或付费线路。
+
+Qwen 默认地址属于美国 Virginia 地区，GLM 使用 Z.AI 国际接口，Kimi 和 MiniMax 使用国际接口。需要其他地区时，在服务商控制台复制**完整请求地址**并使用同地区的 Key。地址应包含 `/chat/completions`，Claude 原生接口包含 `/messages`；不要只填域名或 `/v1`，也不要在地址中放 Key。仅支持 HTTPS，不跟随重定向；不支持 Azure / Bedrock 等需要其他认证协议的接口，也不支持直接连接 HTTP localhost。
+
+Apple 版本使用钥匙串并按服务商和完整地址隔离 Key；已有官方 DeepSeek Key 继续可用。Windows 使用当前用户 DPAPI 加密；原生版修改地址会清除该服务原地址的 Key 槽，必须重新填写，旧助手则保留分别绑定各地址的加密 Key。模型、接口地址和非敏感偏好保存在本机配置。聊天产品订阅不等同于 API 额度。
+
+iOS / Windows 在首次向某接收方发送时请求授权，可在设置中撤销；macOS 仍按操作确认。提示显示实际接口和内容范围；OpenRouter 还会转发给模型供应商。Gemini 和 OpenRouter 有 18 岁要求，开发版加入年龄确认。重新上架前仍需复核整体受众、年龄分级、各服务条款、可用地区和隐私标签，年龄确认本身不代表已满足全部条款。
+
+本次只进行离线开发和测试，不创建 Key、不调用真实模型。已送审的 macOS 1.2.1 (5) 和 iOS 1.0.0 (1) 仍是原来的 DeepSeek 首发构建；开发源码改动不会自动上传或替换它们。Windows 新源码需在 Windows 上完成构建与原生界面验证后才能作为安装包发布。
+
+接口依据：[OpenAI Chat Completions](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create)、[Claude Messages](https://platform.claude.com/docs/en/api/overview)、[Gemini 兼容接口](https://ai.google.dev/gemini-api/docs/openai)、[Qwen 兼容接口](https://www.alibabacloud.com/help/en/model-studio/compatibility-of-openai-with-dashscope)、[Kimi](https://platform.kimi.ai/docs/guide/use-thinking-models)、[GLM](https://docs.z.ai/guides/llm/glm-4.7)、[Doubao](https://docs.volcengine.com/docs/ark/chat-api?lang=zh)、[MiniMax](https://platform.minimax.io/docs/api-reference/text-openai-api)、[Grok](https://docs.x.ai/developers/model-capabilities/legacy/chat-completions)、[Mistral](https://docs.mistral.ai/api)。
+
+
 ## AI 制作与维护声明
 
 DeepReader 的新增功能与项目文档主要由 AI 制作。项目日常开发和维护托管给 AI，管理者会不定期审查。本项目基于 SumatraPDF 等上游开源项目，上游作者的署名与许可证均予以保留。

@@ -219,15 +219,19 @@ struct Sidebar: View {
                     Text(m.t("自定义模型 ID", "Custom model ID")).tag("custom")
                 }
                 TextField(m.t("模型 ID", "Model ID"), text: $m.modelDraft)
+                TextField(m.t("完整 HTTPS 接口地址", "Full HTTPS endpoint"), text: $m.endpointDraft)
+                Text(m.t("不同地区的 Key 和地址需匹配；新地址需单独保存 Key。豆包填写模型或推理接入点 ID。", "Match the key and endpoint region; new endpoints need a separately saved key. Doubao accepts a model or deployment ID.")).font(.caption)
+                if m.settings.provider.requiresAdultConfirmation {
+                    Toggle(m.t("我已满 18 岁", "I am 18 or older"), isOn: Binding(get: { m.settings.adultConfirmed == true }, set: { m.settings.adultConfirmed = $0 }))
+                    Link(m.t("服务商条款", "Provider terms"), destination: m.settings.provider.termsURL!)
+                }
                 SecureField(m.t("API Key（留空保留已有密钥）", "API key (empty keeps saved key)"), text: $m.keyDraft)
                 HStack {
                     Button(m.t("获取 API Key", "Get API key")) { NSWorkspace.shared.open(m.settings.provider.keyURL) }
                     Spacer(); Button(m.t("保存设置", "Save settings")) { m.saveConfiguration() }.buttonStyle(.borderedProminent)
                 }
                 Button(m.t("删除此服务的已存密钥", "Remove this provider's saved key")) { m.removeKey() }
-                Text(Provider.isAppStoreBuild
-                     ? m.t("AI 功能需要您自己的 DeepSeek API Key；费用、额度与可用性由 DeepSeek 决定。密钥只保存到 macOS 钥匙串。本地阅读不需要密钥。", "AI features require your own DeepSeek API key; DeepSeek fees, quotas and availability apply. Keys are stored in macOS Keychain. Local reading does not require a key.")
-                     : m.t("默认 DeepSeek，需要您自行配置 API。OpenRouter 的免费模型也需要账户和密钥，额度与可用性由服务商决定。密钥只保存到 macOS 钥匙串。", "DeepSeek is the default and requires your own API key. OpenRouter free models also require an account and key; provider quotas and availability apply. Keys are stored in macOS Keychain.")).font(.caption).foregroundStyle(.secondary)
+                Text(m.t("AI 使用您自己的账户和额度，密钥按服务商和接口地址保存在钥匙串。支持文字对话模型；可填写新模型 ID。本地阅读不需要密钥。", "AI uses your own account and quota. Keys are isolated by provider and endpoint in Keychain. Text chat models are supported; new model IDs can be entered. Local reading needs no key.")).font(.caption).foregroundStyle(.secondary)
                 Divider()
                 Text(m.t("归档文件夹", "Archive folder")).font(.headline)
                 Text(m.settings.archiveFolder.isEmpty ? m.t("尚未选择", "Not selected") : m.settings.archiveFolder).font(.caption).textSelection(.enabled)

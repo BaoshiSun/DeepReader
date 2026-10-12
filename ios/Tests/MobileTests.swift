@@ -27,6 +27,43 @@ final class MobileTests: XCTestCase {
         try credentials.remove(.deepSeek)
         XCTAssertEqual(try credentials.read(.deepSeek), "")
     }
+    func testKeysAreIsolatedByProviderAndEndpointWithLegacyMigration() throws {
+        let credentials = KeychainCredentials(service: "org.deepreader.ios.tests." + UUID().uuidString)
+        var a = Settings(), b = Settings(), c = Settings()
+        b.provider = .openAI
+        c.setEndpoint("https://offline.example.test/v1/chat/completions")
+        defer { for settings in [a,b,c] { try? credentials.remove(settings) } }
+        try credentials.save("offline-deepseek", for: Provider.deepSeek)
+        XCTAssertEqual(try credentials.read(a), "offline-deepseek")
+        XCTAssertEqual(try credentials.read(b), "")
+        XCTAssertEqual(try credentials.read(c), "")
+        try credentials.save("offline-openai", for: b)
+        try credentials.save("offline-custom", for: c)
+        XCTAssertEqual(try credentials.read(a), "offline-deepseek")
+        XCTAssertEqual(try credentials.read(b), "offline-openai")
+        XCTAssertEqual(try credentials.read(c), "offline-custom")
+        try credentials.remove(c)
+        XCTAssertEqual(try credentials.read(a), "offline-deepseek")
+    }
+    @MainActor func testProviderChangeRequiresFreshConsentAndPersistsChoice() async throws {
+        OfflineAIProtocol.reset()
+        let configuration = URLSessionConfiguration.ephemeral; configuration.protocolClasses = [OfflineAIProtocol.self]
+        let credentials = FailingCredentials(); credentials.value = "offline-test"
+        let model = MobileModel(root: root, credentials: credentials, ai: AIClient(configuration: configuration))
+        let book = try model.library!.importFile(write("provider.txt", "The bank approved the loan."))
+        model.open(book); model.select("bank", surrounding: "The bank approved the loan."); model.explain()
+        let stale = try XCTUnwrap(model.pending)
+        model.chooseProvider(.openAI)
+        model.authorizeAndSend(stale)
+        XCTAssertFalse(model.hasAIConsent); XCTAssertEqual(OfflineAIProtocol.count, 0)
+        model.explain(); model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
+        XCTAssertEqual(model.records.first?.provider, Provider.openAI.rawValue)
+        XCTAssertEqual(OfflineAIProtocol.count, 1)
+        XCTAssertEqual(MobileModel(root: root, credentials: credentials).settings.provider, .openAI)
+        model.chooseProvider(.deepSeek)
+        XCTAssertFalse(model.hasAIConsent)
+        model.explain(); XCTAssertNotNil(model.pending); XCTAssertEqual(OfflineAIProtocol.count, 1)
+    }
     @MainActor func testFailedKeyReplacementPreservesSavedStateAndReportsFailure() throws {
         let credentials = FailingCredentials()
         let model = MobileModel(root: root, credentials: credentials)
@@ -137,8 +174,8 @@ final class MobileTests: XCTestCase {
         XCTAssertEqual(PDFDocument(url: url)?.page(at: 0)?.annotations.count, 1)
     }
     func testAIRequestAndLimitsOffline() throws {
-        var settings = Settings(); settings.provider = .openRouter
-        XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true))
+        var settings = Settings(); settings.provider = .openRouter; settings.adultConfirmed = true
+        XCTAssertEqual(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true).url?.host, "openrouter.ai")
         settings.provider = .deepSeek
         let request = try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true)
         XCTAssertEqual(request.url?.host, "api.deepseek.com")

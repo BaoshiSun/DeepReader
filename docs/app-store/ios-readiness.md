@@ -42,3 +42,7 @@ After owner sign-in, App Review Notes were updated with the recording details wh
 At 13:11 Asia/Riyadh, App Store Connect confirmed **Waiting for Review** for iOS **1.0.0 (1)** after updating the review item and resubmitting. The submission ID remains `ec13236a-878d-4e69-aa1f-0913d2fba681`, and the selected build remains `c0d0bc3f-38cb-4d1c-93ff-23aa27b0c522`. No binary change was needed for this information request.
 
 The six requested information sections are present in both the sent reply and App Review Notes. The private review key is retained only in App Store Connect. The video is an attachment to the reply, not a public repository asset. Local proof: `artifacts/ios-app-store/resubmitted-review.jpg`. The macOS submission was not modified.
+
+## Unreleased multi-provider changes — 2026-10-12
+
+New development source supports 12 named providers plus a custom compatible endpoint. No submitted binary or App Store metadata was changed by this development work. Before a new submission: complete real-account checks for intended providers and regions; review Gemini/OpenRouter 18+ terms and overall audience; update store descriptions, reviewer instructions, screenshots, age rating and privacy labels for actual recipients/downstream routing. The app’s age confirmation is only one control, not a legal compliance determination. Windows native/helper builds still require Windows compilation and UI verification. See the root README and privacy-policy supplement.

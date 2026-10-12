@@ -48,7 +48,7 @@ enum { Close = 9100, Selected, Answer, Status, ContextView, ContextToggle, Retry
        FollowupInput, FollowupSend, FollowupLabel, FloatToggle, DockGrip,
        BooksTab, Star1, Star2, Star3, Star4, Star5, ReadState, Archive, BookNotice,
        BooksSearch, BooksFilter, BooksStats, BooksList, BooksDetail, BookOpen, BooksExport,
-       ArchiveLabel, ArchiveFolder, ArchiveBrowse };
+       ArchiveLabel, ArchiveFolder, ArchiveBrowse, EndpointLabel, EndpointInput, RevokeSharing };
 enum class View { Lookup, History, Summary, Books, Preferences };
 struct Job {
     std::atomic<bool> stopped{false}, done{false};
@@ -133,7 +133,7 @@ void UpdateFonts(Panel* p) {
     auto font=CreateFontW(-MulDiv(14,dpi,96),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
     auto title=CreateFontW(-MulDiv(18,dpi,96),0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
     if (!font || !title) { DeleteObject(font); DeleteObject(title); return; }
-    for (int id=Close;id<=ArchiveBrowse;++id) SendMessageW(Item(p,id),WM_SETFONT,(WPARAM)(id==Title?title:font),TRUE);
+    for (int id=Close;id<=RevokeSharing;++id) SendMessageW(Item(p,id),WM_SETFONT,(WPARAM)(id==Title?title:font),TRUE);
     DeleteObject(p->font); DeleteObject(p->titleFont);
     p->font=font; p->titleFont=title; p->fontDpi=dpi;
 }
@@ -383,14 +383,17 @@ Result Call(const std::shared_ptr<Job>& job, Task task, const std::wstring& sour
         WINHTTP_NO_PROXY_NAME,WINHTTP_NO_PROXY_BYPASS,0));
     if (!session.handle || job->stopped) return failure;
     WinHttpSetTimeouts(session.handle,8000,10000,30000,60000);
-    auto endpoint=Service(job->config.provider);
-    Internet connection(WinHttpConnect(session.handle,endpoint.host,INTERNET_DEFAULT_HTTPS_PORT,0));
+    Endpoint endpoint;
+    if (!ParseEndpoint(EndpointURL(job->config),endpoint)) return failure;
+    Internet connection(WinHttpConnect(session.handle,endpoint.host.c_str(),endpoint.port,0));
     if (!connection.handle) return failure;
-    Internet req(WinHttpOpenRequest(connection.handle,L"POST",endpoint.path,nullptr,WINHTTP_NO_REFERER,WINHTTP_DEFAULT_ACCEPT_TYPES,WINHTTP_FLAG_SECURE));
+    Internet req(WinHttpOpenRequest(connection.handle,L"POST",endpoint.path.c_str(),nullptr,WINHTTP_NO_REFERER,WINHTTP_DEFAULT_ACCEPT_TYPES,WINHTTP_FLAG_SECURE));
     if (!req.handle) return failure;
     DWORD disable=WINHTTP_DISABLE_REDIRECTS;
     if (!WinHttpSetOption(req.handle,WINHTTP_OPTION_DISABLE_FEATURE,&disable,sizeof(disable))) return failure;
-    std::wstring headers=L"Content-Type: application/json\r\nAuthorization: Bearer "+Wide(job->key);
+    std::wstring headers=L"Content-Type: application/json\r\n";
+    headers += job->config.provider == Claude ? L"anthropic-version: 2023-06-01\r\nx-api-key: " : L"Authorization: Bearer ";
+    headers += Wide(job->key);
     if (job->stopped) { SecureZeroMemory(headers.data(),headers.size()*sizeof(WCHAR)); return failure; }
     BOOL sent=WinHttpSendRequest(req.handle,headers.c_str(),(DWORD)headers.size(),body.data(),(DWORD)body.size(),(DWORD)body.size(),0);
     SecureZeroMemory(headers.data(),headers.size()*sizeof(WCHAR));
@@ -401,7 +404,7 @@ Result Call(const std::shared_ptr<Job>& job, Task task, const std::wstring& sour
     while (!job->stopped) {
         char buffer[4096]; DWORD n=0;
         if (!WinHttpReadData(req.handle,buffer,sizeof(buffer),&n)) return failure;
-        if (!n) return Response(data,status,job->config.english);
+        if (!n) return Response(data,status,job->config.english,job->config.provider);
         data.append(buffer,n);
         if (data.size()>262144 || GetTickCount64()-start>120000) return failure;
     }
@@ -456,7 +459,7 @@ void ModelNotice(Panel* p) {
     Config check=p->editing; check.models[provider]=model;
     if (FreeModel(check)) Text(p,ModelHint,L(p,L"免费路由 · 需 OpenRouter Key，有调用限额。\r\n额度用尽时停止，不会自动改用付费模型。",L"Free route · OpenRouter key required; usage limits apply.\r\nNo automatic switch to paid models."));
     else if (provider==DeepSeek) Text(p,ModelHint,L(p,L"DeepSeek 官方 API · 需要 DeepSeek Key，按量计费。\r\n直连官方服务，无需 OpenRouter 账号。",L"DeepSeek official · API key required; billed by usage.\r\nDirect connection; no OpenRouter account needed."));
-    else if (provider==Gemini) Text(p,ModelHint,L(p,L"是否免费取决于模型和 Google 项目计费设置。\r\n请使用免费层项目，留意其额度与数据政策。",L"Price depends on the model and Google project billing.\r\nUse a free-tier project and check its data policy."));
+    else if (provider==Gemini) Text(p,ModelHint,L(p,L"使用者须满 18 岁并遵守 Gemini 条款。\r\n价格、额度和数据处理取决于项目计费设置。",L"Users must be 18+ and comply with Gemini terms.\r\nPricing and data policy depend on project billing."));
     else Text(p,ModelHint,L(p,L"付费 / 自定义模型 · 按所选服务价格计费。\r\n模型名称可编辑；请选择账户已开通的模型。",L"Paid / custom model · Provider pricing applies.\r\nModel IDs are editable; select one your key can access."));
 }
 void FillProvider(Panel* p) {
@@ -466,6 +469,7 @@ void FillProvider(Panel* p) {
     for (const auto& model:ModelChoices(provider)) SendMessageW(Item(p,ModelInput),CB_ADDSTRING,0,(LPARAM)model.c_str());
     Text(p,ModelInput,Wide(p->editing.models[provider]));
     Text(p,KeyInput,L"");
+    Text(p,EndpointInput,Wide(EndpointURL(p->editing)));
     Text(p,KeyLabel,Wide(ProviderName(provider))+L" API Key");
     SendMessageW(Item(p,KeyInput),EM_SETCUEBANNER,TRUE,(LPARAM)(p->editing.keys[provider].empty()
         ? L(p,L"输入此服务的 API Key",L"Enter this provider's API key")
@@ -474,13 +478,22 @@ void FillProvider(Panel* p) {
 }
 bool StageSettings(Panel* p) {
     std::string key=Utf8(Text(Item(p,KeyInput))), model=Utf8(Text(Item(p,ModelInput)));
-    if (!ValidModel(model)) { Text(p,Privacy,L(p,L"请填写有效的模型 ID。",L"Enter a valid model ID.")); return false; }
+    if (!model.empty() && !ValidModel(model)) { Text(p,Privacy,L(p,L"请填写有效的模型 ID。",L"Enter a valid model ID.")); return false; }
+    std::string endpoint=Utf8(Text(Item(p,EndpointInput))); Endpoint parsed;
+    if (!endpoint.empty() && !ParseEndpoint(endpoint,parsed)) { Text(p,Privacy,L(p,L"请输入完整 HTTPS 接口地址，不含账户、参数或片段。",L"Enter a full HTTPS endpoint without credentials, query or fragment.")); return false; }
+    if (endpoint != EndpointURL(p->editing)) {
+        p->editing.keys[p->editing.provider].clear();
+        p->editing.keyEndpoints[p->editing.provider].clear();
+        p->editing.sharingRecipient.clear();
+    }
+    p->editing.endpoints[p->editing.provider]=endpoint;
     if (!key.empty()) {
         bool valid=ValidKey(key);
         std::string encrypted=valid ? Protect(key) : "";
         SecureZeroMemory(key.data(),key.size());
         if (!valid || encrypted.empty()) { Text(p,Privacy,L(p,L"密钥格式无效或加密失败。",L"Invalid key format or encryption failed.")); return false; }
         p->editing.keys[p->editing.provider]=encrypted;
+        p->editing.keyEndpoints[p->editing.provider]=EndpointURL(p->editing);
     }
     p->editing.models[p->editing.provider]=model;
     p->editing.archiveFolder=Text(Item(p,ArchiveFolder));
@@ -508,12 +521,29 @@ void StartJob(Panel* p,std::shared_ptr<Job> job) {
     if (LookupTask(job->task)) ReadConfig(p->configPath,p->config);
     // A prepared summary uses the exact provider/model shown in its preview.
     job->config=LookupTask(job->task)?p->config:p->preparedConfig;
-    job->key=Unprotect(job->config.keys[job->config.provider]);
+    Endpoint target;
+    if (!ValidModel(job->config.models[job->config.provider]) || !ParseEndpoint(EndpointURL(job->config),target)) {
+        SettingsView(p,true); Text(p,Privacy,L(p,L"请先填写模型 ID 和完整 HTTPS 接口地址。",L"Enter a model ID and full HTTPS endpoint first.")); return;
+    }
+    job->key=KeyMatchesEndpoint(job->config) ? Unprotect(job->config.keys[job->config.provider]) : "";
     if (!ValidKey(job->key)) {
         SecureZeroMemory(job->key.data(),job->key.size());
         SettingsView(p,true);
         Text(p,Privacy,L(p,L"请打开当前服务的密钥页面，创建自己的 API Key，粘贴到上方并保存。",L"Open the provider's key page, create your API key, then paste it above and save."));
         return;
+    }
+    auto recipient=std::string(ProviderName(job->config.provider))+"|"+EndpointURL(job->config);
+    if (job->config.sharingRecipient!=recipient || ((job->config.provider==Gemini || job->config.provider==OpenRouter) && !job->config.adultConfirmed)) {
+        auto message=Wide(recipient)+L"\r\n\r\n"+L(p,
+            L"解释发送选文与语境；追问包含先前回答；全文/周期总结发送全文或历史。服务商收到 IP 地址并按其政策处理内容；API 费用由您的账户承担。OpenRouter 还会转发给模型供应商。\r\n\r\n记住此接收方的授权？可在设置中撤销。",
+            L"Explanations send selections and context; follow-ups include previous answers; summaries send full text or history. The provider receives your IP and handles content under its policies; your account pays API fees. OpenRouter also forwards to model providers.\r\n\r\nRemember permission for this recipient? Revoke in Settings.");
+        if (job->config.provider==OpenRouter) message+=L"\r\n18+ / Terms: https://openrouter.ai/terms";
+        if (job->config.provider==Gemini) message+=L(p,L"\r\n同意还表示您已满 18 岁，并已阅读 https://ai.google.dev/gemini-api/terms",L"\r\nAgreeing also confirms you are 18+ and have read https://ai.google.dev/gemini-api/terms");
+        if (MessageBoxW(p->hwnd,message.c_str(),L"AI sharing",MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2)!=IDYES) { SecureZeroMemory(job->key.data(),job->key.size()); return; }
+        job->config.sharingRecipient=recipient;
+        if (job->config.provider==Gemini || job->config.provider==OpenRouter) job->config.adultConfirmed=true;
+        p->config.sharingRecipient=recipient; p->config.adultConfirmed=job->config.adultConfirmed;
+        SaveConfig(p->configPath,p->config);
     }
     if (job->task!=Task::Followup) {
         job->record.provider=ProviderName(job->config.provider);
@@ -914,7 +944,7 @@ void Layout(Panel* p) {
     RECT r{}; GetClientRect(p->hwnd,&r);
     int dpi=DpiGet(p->hwnd); auto d=[dpi](int x){return MulDiv(x,dpi,96);};
     int bodyOffset=p->view==View::Preferences?0:d(80);
-    int minimum=d(p->view==View::Preferences?668:(p->view==View::Summary?570:560))+bodyOffset;
+    int minimum=d(p->view==View::Preferences?785:(p->view==View::Summary?570:560))+bodyOffset;
     int viewport=r.bottom,total=std::max(viewport,minimum),h=total-bodyOffset;
     ShowScrollBar(p->hwnd,SB_VERT,total>viewport);
     GetClientRect(p->hwnd,&r);
@@ -926,7 +956,7 @@ void Layout(Panel* p) {
         auto child=Item(p,id); ShowWindow(child,SW_SHOW); MoveWindow(child,x,y-p->scrollY,std::max(1,width),std::max(1,height),TRUE);
     };
     auto place=[&](int id,int x,int y,int width,int height) { fixed(id,x,y+bodyOffset,width,height); };
-    for (int id=Close;id<=ArchiveBrowse;++id)
+    for (int id=Close;id<=RevokeSharing;++id)
         if (id!=LookupSplitter || !p->dragging) ShowWindow(Item(p,id),SW_HIDE);
     fixed(Title,m,d(13),inner-d(204),d(29));
     fixed(FloatToggle,w-m-d(198),d(10),d(62),d(30));
@@ -948,13 +978,16 @@ void Layout(Panel* p) {
         place(ProviderInput,m,d(127),inner,d(220));
         place(KeyLabel,m,d(171),inner,d(22)); place(KeyInput,m,d(195),inner,d(30));
         place(ModelLabel,m,d(239),inner,d(22)); place(ModelInput,m,d(263),inner,d(250));
-        place(ModelHint,m,d(306),inner,d(56)); place(Privacy,m,d(373),inner,d(56));
-        place(KeyLink,m,d(435),inner,d(29));
-        place(ArchiveLabel,m,d(478),inner,d(22));
-        place(ArchiveFolder,m,d(506),inner-d(82),d(30));
-        place(ArchiveBrowse,w-m-d(74),d(506),d(74),d(30));
-        place(Save,m,d(572),inner-d(96),d(32)); place(Back,w-m-d(86),d(572),d(86),d(32));
-        place(ShowGuide,m,d(623),inner,d(29));
+        place(ModelHint,m,d(306),inner,d(56));
+        place(EndpointLabel,m,d(367),inner,d(22)); place(EndpointInput,m,d(392),inner,d(30));
+        place(Privacy,m,d(440),inner,d(56));
+        place(KeyLink,m,d(502),inner,d(29));
+        place(ArchiveLabel,m,d(545),inner,d(22));
+        place(ArchiveFolder,m,d(573),inner-d(82),d(30));
+        place(ArchiveBrowse,w-m-d(74),d(573),d(74),d(30));
+        place(Save,m,d(639),inner-d(96),d(32)); place(Back,w-m-d(86),d(639),d(86),d(32));
+        place(ShowGuide,m,d(690),inner,d(29));
+        place(RevokeSharing,m,d(733),inner,d(29));
     } else if (p->view==View::Books) {
         place(BooksSearch,m,d(104),inner-d(110),d(31));
         place(BooksFilter,w-m-d(102),d(104),d(102),d(150));
@@ -1041,6 +1074,8 @@ void Labels(Panel* p) {
     Text(p,SelectedLabel,L(p,L"选中内容 · Ctrl + Alt + D",L"Selected text · Ctrl + Alt + D"));
     HighlightUI(p);
     Text(p,Retry,p->job?L(p,L"停止等待",L"Stop waiting"):L(p,L"重新解释",L"Explain again"));
+    Text(p,EndpointLabel,L(p,L"完整 HTTPS 接口（新地址需重新填写 Key）",L"Full HTTPS endpoint (new address needs its own key)"));
+    Text(p,RevokeSharing,L(p,L"撤销 AI 发送授权",L"Revoke AI sharing permission"));
     Text(p,ProviderLabel,L(p,L"服务（每个服务使用各自的密钥）",L"Provider (each uses its own key)"));
     Text(p,ModelLabel,L(p,L"模型（可选择或输入模型 ID）",L"Model (select or enter an ID)"));
     Text(p,Privacy,L(p,L"密钥在本机加密保存。查询与总结保存至本地历史。\r\n解释、追问或生成总结时才会向所选服务发送材料。",L"Keys are encrypted locally; answers are saved in history.\r\nText is sent when you explain, ask a follow-up or summarize."));
@@ -1235,9 +1270,11 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
                     InvalidateSummary(p); SettingsView(p,false);
                     Text(p,Status,L(p,L"已保存。点击重新解释，或到总结页准备材料。",L"Saved. Explain again or prepare a summary."));
                     return 0;
+                case RevokeSharing:
+                    p->config.sharingRecipient.clear(); p->editing.sharingRecipient.clear();
+                    SaveConfig(p->configPath,p->config); Text(p,Privacy,L(p,L"已撤销，下次发送会询问。",L"Revoked. Permission will be requested on next send.")); return 0;
                 case KeyLink: {
-                    const wchar_t* urls[]={L"https://openrouter.ai/settings/keys",L"https://platform.deepseek.com/api_keys",L"https://aistudio.google.com/apikey"};
-                    if (HasPermission(Perm::InternetAccess)) ShellExecuteW(hwnd,L"open",urls[p->editing.provider],nullptr,nullptr,SW_SHOWNORMAL);
+                    if (HasPermission(Perm::InternetAccess)) ShellExecuteW(hwnd,L"open",ProviderURL(p->editing.provider),nullptr,nullptr,SW_SHOWNORMAL);
                     return 0;
                 }
                 case HistoryExport: Export(p,Text(Item(p,HistoryDetail))); return 0;
@@ -1312,7 +1349,7 @@ Panel* Ensure(MainWindow* win) {
         HWND control=CreateWindowExW(0,type,L"",WS_CHILD|style,0,0,1,1,hwnd,(HMENU)(INT_PTR)id,cls.hInstance,nullptr);
         SendMessageW(control,WM_SETFONT,(WPARAM)(id==Title?p->titleFont:p->font),TRUE); return control;
     };
-    for (int id:{Title,SelectedLabel,Status,KeyLabel,ModelLabel,Privacy,ProviderLabel,ModelHint,HistoryInfo,SummaryLabel,SummaryInfo,AnswerLabel,FollowupLabel,BookNotice,BooksStats,ArchiveLabel}) make(id,L"STATIC");
+    for (int id:{Title,SelectedLabel,Status,KeyLabel,ModelLabel,Privacy,ProviderLabel,ModelHint,HistoryInfo,SummaryLabel,SummaryInfo,AnswerLabel,FollowupLabel,BookNotice,BooksStats,ArchiveLabel,EndpointLabel}) make(id,L"STATIC");
     for (int id:{Close,Language,ContextToggle,Retry,Save,Back,KeyLink,HistoryExport,HistoryDelete,SummaryPrepare,SummaryRun,SummaryExport,Configure,DismissIntro,ShowGuide,SaveHighlights,FollowupSend,FloatToggle,Archive,BookOpen,BooksExport,ArchiveBrowse}) make(id,L"BUTTON",WS_TABSTOP);
     for (int id=Star1;id<=Star5;++id) make(id,L"BUTTON",WS_TABSTOP|BS_OWNERDRAW);
     for (int id:{LookupTab,HistoryTab,SummaryTab,BooksTab,Settings}) make(id,L"BUTTON",WS_TABSTOP|BS_AUTOCHECKBOX|BS_PUSHLIKE);
@@ -1323,6 +1360,8 @@ Panel* Ensure(MainWindow* win) {
     make(FollowupInput,L"EDIT",ES_MULTILINE|ES_AUTOVSCROLL|ES_WANTRETURN|WS_VSCROLL|WS_BORDER|WS_TABSTOP);
     SendMessageW(Item(p,FollowupInput),EM_SETLIMITTEXT,FollowupQuestionLimit,0);
     make(ModelInput,L"COMBOBOX",CBS_DROPDOWN|CBS_AUTOHSCROLL|WS_VSCROLL|WS_TABSTOP);
+    make(EndpointInput,L"EDIT",WS_BORDER|ES_AUTOHSCROLL|WS_TABSTOP);
+    make(RevokeSharing,L"BUTTON",WS_TABSTOP);
     make(ProviderInput,L"COMBOBOX",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP);
     for (int i=0;i<ProviderCount;++i) {
         auto name=Wide(ProviderName(i));
