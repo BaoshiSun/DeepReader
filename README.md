@@ -22,7 +22,9 @@ Apple 版本使用钥匙串并按服务商和完整地址隔离 Key；已有官�
 
 iOS / Windows 在首次向某接收方发送时请求授权，可在设置中撤销；macOS 仍按操作确认。提示显示实际接口和内容范围；OpenRouter 还会转发给模型供应商。Gemini 和 OpenRouter 有 18 岁要求，开发版加入年龄确认。重新上架前仍需复核整体受众、年龄分级、各服务条款、可用地区和隐私标签，年龄确认本身不代表已满足全部条款。
 
-本次只进行离线开发和测试，不创建 Key、不调用真实模型。已送审的 macOS 1.2.1 (5) 和 iOS 1.0.0 (1) 仍是原来的 DeepSeek 首发构建；开发源码改动不会自动上传或替换它们。Windows 新源码需在 Windows 上完成构建与原生界面验证后才能作为安装包发布。
+本次只进行离线开发和测试，不创建 Key、不调用真实模型。已送审的 macOS 1.2.1 (5) 和 iOS 1.0.0 (1) 仍是原来的 DeepSeek 首发构建；开发源码改动不会自动上传或替换它们。Windows CI 已通过原生 AI 面板编译和核心回归测试，以及旧版助手的编译与离线测试；完整安装包和人工界面回归仍需在发布前验证。
+
+离线验证：macOS 30 项、iOS 模拟器 21 项（包括新增的同服务商切换接口隔离测试）通过；Windows 原生核心 121 项、旧助手 67 项通过。Python 共 31 项，其中 3 项仅适用于 Windows 成品包的测试跳过。已在 iPad 模拟器检查服务商菜单及 OpenAI 切换后的模型、接口和空 Key 状态。真实模型账户、配额、区域权限及完整 Windows GUI 尚未验证。参见 [Windows 验证记录](https://github.com/BaoshiSun/DeepReader/actions/runs/38213582902)。
 
 接口依据：[OpenAI Chat Completions](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create)、[Claude Messages](https://platform.claude.com/docs/en/api/overview)、[Gemini 兼容接口](https://ai.google.dev/gemini-api/docs/openai)、[Qwen 兼容接口](https://www.alibabacloud.com/help/en/model-studio/compatibility-of-openai-with-dashscope)、[Kimi](https://platform.kimi.ai/docs/guide/use-thinking-models)、[GLM](https://docs.z.ai/guides/llm/glm-4.7)、[Doubao](https://docs.volcengine.com/docs/ark/chat-api?lang=zh)、[MiniMax](https://platform.minimax.io/docs/api-reference/text-openai-api)、[Grok](https://docs.x.ai/developers/model-capabilities/legacy/chat-completions)、[Mistral](https://docs.mistral.ai/api)。
 

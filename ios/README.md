@@ -64,3 +64,5 @@ Validation: all 18 iOS tests passed on the iPhone 16e simulator (iOS 26.3). Adde
 ### Multi-provider validation
 
 Run the shared macOS suite with `swift test --package-path macos` and this target’s simulator XCTest suite. All HTTP tests use synthetic credentials and an intercepted transport; they do not verify live accounts, quotas or model availability. New optional settings preserve older libraries. Sharing consent version 2 is bound to the provider and endpoint, so older global consent requires a fresh prompt.
+
+Validated on 2026-10-12: 20 simulator tests passed together, followed by the additional endpoint-change credential/consent test (21 total). The iPad simulator provider menu and switching to OpenAI were visually checked. No real provider credentials or inference requests were used.
