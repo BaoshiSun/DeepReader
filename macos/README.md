@@ -1,5 +1,8 @@
 # DeepReader for macOS · 1.2.1 preview
 
+> 未发布源码现已扩展为多服务商文字模型，配置、地区接口与验证限制见[多模型开发版](../README.md#多模型开发版2026-10-12尚未发布)。下面的旧发行包说明不代表其已获得新功能。
+
+
 macOS 13 Ventura 或更新版本，通用应用同时支持 Apple Silicon（M 系列）和 Intel。使用 Apple PDFKit、AppKit、SwiftUI 与 WebKit 实现阅读界面，无需 Python、Wine、Calibre 或外部助手。1.2.1 在原有 PDF 阅读功能上新增 EPUB、TXT、Markdown、MOBI 和 AZW3，继续共用 AI 解释、追问、历史、总结、评分、阅读状态、归档和书单。
 
 | 格式 | 阅读支持 |

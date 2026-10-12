@@ -46,7 +46,7 @@ final class CoreTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer test-credential")
         var body = try JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
         XCTAssertNotNil(body["thinking"])
-        settings.provider = .openRouter; settings.english = true
+        settings.provider = .openRouter; settings.english = true; settings.adultConfirmed = true
         request = try AIClient.request(settings: settings, key: "test-credential", task: .followup, source: "Question")
         body = try JSONSerialization.jsonObject(with: request.httpBody!) as! [String: Any]
         let provider = body["provider"] as! [String: Any], price = provider["max_price"] as! [String: Int]

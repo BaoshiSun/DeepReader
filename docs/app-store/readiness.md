@@ -73,3 +73,7 @@ The Mac binary does not link the Windows SumatraPDF/MuPDF engine. Assess the Mac
 - Store screenshots use the exact archived build 5 opening the original garden EPUB fixture. They contain no generated AI answer or credential. Full-window captures are proportionally scaled and padded to 2560×1600 without removing controls; originals and upload PNGs remain in ignored artifacts/app-store/screenshots.
 
 Both Chinese (Simplified) and English (U.S.) uploads completed with one 2560×1600 screenshot each. Apple’s Add for Review validation succeeded: version 1.2.1 (5) is Ready for Review and appears in Draft Submission as Item Ready to Submit. The final Submit for Review action has not been performed.
+
+## Unreleased multi-provider changes — 2026-10-12
+
+New development source supports 12 named providers plus a custom compatible endpoint. No submitted binary or App Store metadata was changed by this development work. Before a new submission: complete real-account checks for intended providers and regions; review Gemini/OpenRouter 18+ terms and overall audience; update store descriptions, reviewer instructions, screenshots, age rating and privacy labels for actual recipients/downstream routing. The app’s age confirmation is only one control, not a legal compliance determination. Windows CI compiled the native AI panel and passed 121 core checks; the legacy helper compiled and passed 67 offline checks. Complete Windows packaging and manual GUI verification remain. See the root README and privacy-policy supplement.

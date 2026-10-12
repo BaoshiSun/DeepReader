@@ -43,10 +43,11 @@ public final class AIClient: @unchecked Sendable {
 
     public static func request(settings: Settings, key: String, task: AITask, source: String,
                                appStore: Bool = Provider.isAppStoreBuild) throws -> URLRequest {
-        guard Provider.available(appStore: appStore).contains(settings.provider) else {
-            throw ReaderError("此版本不支持该服务商，请在设置中选择 DeepSeek。", "Choose DeepSeek in Settings; this provider is unavailable in this edition.")
-        }
         _ = try settings.validated()
+        guard Settings.validModel(settings.model) else { throw ReaderError("请填写服务商提供的模型 ID。", "Enter the model ID supplied by your provider.") }
+        guard !settings.provider.requiresAdultConfirmation || settings.adultConfirmed == true else {
+            throw ReaderError("使用此服务前，请在设置中确认年满 18 岁并阅读服务条款。", "Before using this provider, confirm you are 18 or older and review its terms in Settings.")
+        }
         guard Settings.validKey(key) else {
             throw ReaderError("请先在设置中填写所选服务的 API Key。", "Add an API key for the selected provider in Settings first.")
         }
@@ -75,19 +76,33 @@ public final class AIClient: @unchecked Sendable {
             "messages": [["role": "system", "content": system], ["role": "user", "content": source]]]
         switch settings.provider {
         case .deepSeek: payload["thinking"] = ["type": "disabled"]; payload["temperature"] = 0.2
+        case .openAI:
+            payload.removeValue(forKey: "max_tokens")
+            payload["max_completion_tokens"] = 4096
+        case .miniMax:
+            payload.removeValue(forKey: "max_tokens")
+            payload["max_completion_tokens"] = 4096
+            payload["reasoning_split"] = true
+            if settings.model == "MiniMax-M3" { payload["thinking"] = ["type": "disabled"] }
+        case .claude:
+            payload["system"] = system
+            payload["messages"] = [["role": "user", "content": source]]
         case .openRouter:
-            payload["reasoning"] = ["effort": "none", "exclude": true] as [String: Any]
             if settings.freeModel { payload["provider"] = ["max_price": ["prompt": 0, "completion": 0, "request": 0]] }
-        case .gemini: break
+            payload["max_tokens"] = 4096
+        default: payload["max_tokens"] = 4096
         }
-        var request = URLRequest(url: settings.provider.endpoint)
+        var request = URLRequest(url: try settings.requestEndpoint())
         request.httpMethod = "POST"
-        request.setValue("Bearer " + key, forHTTPHeaderField: "Authorization")
+        if settings.provider == .claude {
+            request.setValue(key, forHTTPHeaderField: "x-api-key")
+            request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        } else { request.setValue("Bearer " + key, forHTTPHeaderField: "Authorization") }
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         return request
     }
-    public static func decode(_ data: Data, status: Int) throws -> String {
+    public static func decode(_ data: Data, status: Int, provider: Provider = .deepSeek) throws -> String {
         guard status == 200 else {
             switch status {
             case 401, 403: throw ReaderError("API Key 无效或没有模型访问权限。请检查设置。", "The API key is invalid or lacks access to this model. Check Settings.")
@@ -97,12 +112,21 @@ public final class AIClient: @unchecked Sendable {
             }
         }
         guard data.count <= 262144,
-              let root = try JSONSerialization.jsonObject(with: data) as? [String: Any], root["error"] == nil,
-              let choices = root["choices"] as? [[String: Any]], let first = choices.first,
-              let message = first["message"] as? [String: Any], let content = message["content"] as? String else {
+              let root = try JSONSerialization.jsonObject(with: data) as? [String: Any], root["error"] == nil else {
             throw ReaderError("AI 返回了无法读取的内容，请重试。", "The AI returned an unreadable response. Please retry.")
         }
-        guard first["finish_reason"] as? String != "length" else {
+        let content: String
+        let truncated: Bool
+        if provider == .claude {
+            content = (root["content"] as? [[String: Any]] ?? []).filter { $0["type"] as? String == "text" }
+                .compactMap { $0["text"] as? String }.joined(separator: "\n")
+            truncated = root["stop_reason"] as? String == "max_tokens"
+        } else {
+            let first = (root["choices"] as? [[String: Any]])?.first
+            content = (first?["message"] as? [String: Any])?["content"] as? String ?? ""
+            truncated = first?["finish_reason"] as? String == "length"
+        }
+        guard !truncated else {
             throw ReaderError("回答被服务商截断，未保存，请缩小输入范围后重试。", "The provider truncated the answer; it was not saved. Use a shorter input and retry.")
         }
         let answer = content.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -124,7 +148,7 @@ public final class AIClient: @unchecked Sendable {
                 guard data.count < 262144 else { throw ReaderError("服务商响应过大。", "Provider response is too large.") }
                 data.append(byte)
             }
-            return try Self.decode(data, status: response.statusCode)
+            return try Self.decode(data, status: response.statusCode, provider: settings.provider)
         } catch is CancellationError { throw CancellationError() }
         catch let error as ReaderError { throw error }
         catch {

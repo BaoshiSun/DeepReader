@@ -41,3 +41,7 @@ Mac 1.2.1 新增 **libmobi 0.12**，Copyright Bartek Fabiszewski and contributor
 旧版 context-worker 分发包包含 Python（PSF 许可）及 PyMuPDF 等依赖，保留 PyInstaller 收集的 dist-info 与许可文件。PyInstaller 采用 GPL 及允许分发生成程序的引导加载器例外。
 
 相关名称和标志属于各自权利人。本项目不代表上述项目或模型服务商。
+
+## iOS / iPadOS edition
+
+The independent iOS target uses ZIPFoundation 0.9.20 by Thomas Zoechling and the ZIP Foundation project authors under the MIT License. Source: https://github.com/weichsel/ZIPFoundation/tree/0.9.20 . The full license is preserved in `ios/Resources/ZIPFoundation-LICENSE.txt` and bundled in Settings → Open-source licenses. The iOS target does not compile or link libmobi, libarchive, SumatraPDF or MuPDF. Existing icon attribution above also applies to the iOS icon.

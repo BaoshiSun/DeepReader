@@ -26,19 +26,54 @@ private final class MemoryCredentials: Credentials {
 }
 
 final class AITests: XCTestCase {
-    func testStoreEditionRejectsRestoredUnsupportedProvidersBeforeRequestCreation() throws {
-        var settings = Settings()
-        for (provider, host) in [(Provider.gemini, "generativelanguage.googleapis.com"),
-                                 (Provider.openRouter, "openrouter.ai")] {
-            settings.provider = provider
-            XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
-                                                     source: "sample", appStore: true))
-            XCTAssertEqual(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
-                                               source: "sample", appStore: false).url?.host, host)
+    func testAllProviderRequestContractsInBothEditions() throws {
+        for provider in Provider.allCases {
+            var settings = Settings(); settings.provider = provider; settings.adultConfirmed = true
+            if settings.model.isEmpty { settings.models[provider.rawValue] = "offline-model" }
+            if provider == .custom { settings.setEndpoint("https://models.example.test/v1/chat/completions") }
+            for store in [false, true] {
+                let request = try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: store)
+                XCTAssertEqual(request.url?.absoluteString, settings.endpointText)
+                let body = try XCTUnwrap(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: Any])
+                XCTAssertEqual(body["model"] as? String, settings.model)
+                XCTAssertFalse(String(data: request.httpBody!, encoding: .utf8)!.contains("offline-test"))
+                if provider == .claude {
+                    XCTAssertEqual(request.value(forHTTPHeaderField: "x-api-key"), "offline-test")
+                    XCTAssertEqual(request.value(forHTTPHeaderField: "anthropic-version"), "2023-06-01")
+                    XCTAssertNil(request.value(forHTTPHeaderField: "Authorization"))
+                    XCTAssertNotNil(body["system"])
+                    XCTAssertEqual((body["messages"] as? [[String: String]])?.count, 1)
+                } else {
+                    XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer offline-test")
+                    XCTAssertNil(body["system"])
+                }
+                if provider == .openAI { XCTAssertNil(body["max_tokens"]); XCTAssertNotNil(body["max_completion_tokens"]) }
+                if provider != .deepSeek && provider != .miniMax { XCTAssertNil(body["thinking"]); XCTAssertNil(body["temperature"]) }
+                if provider == .openRouter { XCTAssertNotNil(body["provider"]) }
+            }
         }
-        settings.provider = .deepSeek
-        XCTAssertEqual(try AIClient.request(settings: settings, key: "offline-test", task: .explain,
-                                           source: "sample", appStore: true).url?.host, "api.deepseek.com")
+    }
+    func testEndpointValidationAgeGateAndLegacySettings() throws {
+        var settings = Settings()
+        let legacy = try JSONEncoder().encode(settings)
+        XCTAssertEqual(try JSONDecoder().decode(Settings.self, from: legacy).endpointText, settings.endpointText)
+        for value in ["http://api.test/v1", "https://key@api.test/v1", "https://api.test/v1?key=secret", "https://api.test/v1#key", "https://api.test", "https://api.test/\nheader"] {
+            XCTAssertFalse(Settings.validEndpoint(value), value)
+        }
+        XCTAssertTrue(Settings.validEndpoint("https://models.example.test:8443/v1/chat/completions"))
+        settings.provider = .custom
+        XCTAssertThrowsError(try settings.requestEndpoint())
+        settings.provider = .gemini
+        XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "sample"))
+        settings.adultConfirmed = true
+        XCTAssertNoThrow(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "sample"))
+    }
+    func testClaudeResponseOnlyIncludesTextAndRejectsTruncation() throws {
+        let body = Data(#"{"content":[{"type":"thinking","thinking":"hidden"},{"type":"text","text":"First"},{"type":"text","text":"Second"}],"stop_reason":"end_turn"}"#.utf8)
+        XCTAssertEqual(try AIClient.decode(body, status: 200, provider: .claude), "First\nSecond")
+        let truncated = Data(#"{"content":[{"type":"text","text":"Partial"}],"stop_reason":"max_tokens"}"#.utf8)
+        XCTAssertThrowsError(try AIClient.decode(truncated, status: 200, provider: .claude))
+        XCTAssertThrowsError(try AIClient.decode(Data(#"{"content":[{"type":"thinking","thinking":"hidden"}]}"#.utf8), status: 200, provider: .claude))
     }
     @MainActor func testDeniedSharingNeverStartsNetworkAndConsentIsPerOperation() async throws {
         _ = NSApplication.shared
@@ -61,7 +96,7 @@ final class AITests: XCTestCase {
         allowed = true; MockProtocol.use { $0.respond("A bank lends money.") }
         model.explain(); try await waitUntilIdle(model); XCTAssertEqual(model.records.count, 1)
         allowed = false; MockProtocol.use { _ in XCTFail("Earlier consent authorized a later action") }
-        model.chooseProvider(.gemini); model.followup = "Why?"; model.ask(); try await waitUntilIdle(model)
+        model.chooseProvider(.gemini); model.settings.adultConfirmed = true; model.followup = "Why?"; model.ask(); try await waitUntilIdle(model)
         XCTAssertEqual(prompts.last?.0, .gemini); XCTAssertEqual(prompts.last?.1, .followup)
         XCTAssertEqual(model.records.count, 1); XCTAssertFalse(model.followup.isEmpty)
         model.summaryScope = 1; model.prepareSummary(); XCTAssertTrue(model.canSummarize)

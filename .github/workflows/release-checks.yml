@@ -15,3 +15,49 @@ jobs:
           python tools/public_release.py --check-tracked
           python -m unittest discover -s tests -p test_release.py -v
           python tools/public_release.py --source-zip
+
+  windows-ai:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and test legacy helper with synthetic credentials
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/windows-ai | Out-Null
+          $compiler = "$env:WINDIR/Microsoft.NET/Framework64/v4.0.30319/csc.exe"
+          $sources = Get-ChildItem src/*.cs | ForEach-Object { $_.FullName }
+          & $compiler /nologo /target:exe /platform:x64 /utf8output /out:artifacts/windows-ai/DeepSeekReader.exe /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Net.Http.dll /reference:System.Web.Extensions.dll /reference:System.Security.dll $sources
+          if ($LASTEXITCODE) { throw 'Helper compilation failed' }
+          & ./artifacts/windows-ai/DeepSeekReader.exe --self-test
+          Get-Content artifacts/windows-ai/self-test-result.txt
+          if ($LASTEXITCODE) { throw 'Offline provider tests failed' }
+      - name: Restore pinned native source
+        run: |
+          python native/prepare-source.py
+          python native/apply-native.py
+      - name: Compile native panel and run core tests offline
+        shell: pwsh
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe" -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vs/Common7/Tools/Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vs -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          $root = (Get-Location).Path
+          $source = "$root/build/native/sumatrapdf-3.6.1rel"
+          Push-Location $source
+          & ./bin/premake5.exe vs2022
+          if ($LASTEXITCODE) { throw 'Project generation failed' }
+          & msbuild vs2022/utils.vcxproj /nologo /m:2 /v:minimal /p:Configuration=Release /p:Platform=x64 /p:TreatWarningAsError=false
+          if ($LASTEXITCODE) { throw 'Utility library build failed' }
+          Pop-Location
+          Push-Location artifacts/windows-ai
+          & cl /nologo /c /std:c++20 /utf-8 /EHsc /DNDEBUG /DWIN32 /D_UNICODE /DUNICODE "/I$source/src" "/I$source/mupdf/include" "/I$root/native" "$root/native/DeepSeekPanel.cpp"
+          if ($LASTEXITCODE) { throw 'Native panel compilation failed' }
+          & cl /nologo /MT /std:c++20 /utf-8 /EHsc /DNDEBUG /DWIN32 /D_UNICODE /DUNICODE "/I$source/src" "/I$root/native" "$root/native/NativeCoreTests.cpp" "$root/native/DeepSeekCore.cpp" "$root/native/ReadingLibrary.cpp" "$root/native/BookLibrary.cpp" "$source/out/rel64/utils.lib" /Fe:NativeCoreTests.exe /link kernel32.lib user32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib gdiplus.lib comctl32.lib shlwapi.lib Version.lib wininet.lib winhttp.lib shcore.lib wintrust.lib crypt32.lib
+          if ($LASTEXITCODE) { throw 'Native core compilation failed' }
+          & ./NativeCoreTests.exe "$root/artifacts/windows-ai/synthetic-key.json"
+          if ($LASTEXITCODE) { throw "Native core tests failed (exit $LASTEXITCODE)" }
+          Pop-Location

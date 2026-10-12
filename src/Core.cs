@@ -14,28 +14,82 @@ namespace SumatraDeepSeek {
         public UserError(string message) : base(message) { }
     }
 
+    public sealed class AIProvider {
+        public string Name, Endpoint, Model, Console;
+        public AIProvider(string name, string endpoint, string model, string console) { Name=name; Endpoint=endpoint; Model=model; Console=console; }
+        public static readonly AIProvider[] All = new AIProvider[] {
+            new AIProvider("DeepSeek", "https://api.deepseek.com/chat/completions", "deepseek-flash", "https://platform.deepseek.com/api_keys"),
+            new AIProvider("OpenAI", "https://api.openai.com/v1/chat/completions", "gpt-4.1-mini", "https://platform.openai.com/api-keys"),
+            new AIProvider("Claude", "https://api.anthropic.com/v1/messages", "claude-sonnet-5-5", "https://platform.claude.com/settings/keys"),
+            new AIProvider("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", "gemini-3.8-flash", "https://aistudio.google.com/apikey"),
+            new AIProvider("Qwen", "https://dashscope-us.aliyuncs.com/compatible-mode/v1/chat/completions", "qwen-plus", "https://modelstudio.console.alibabacloud.com/"),
+            new AIProvider("Kimi", "https://api.moonshot.ai/v1/chat/completions", "kimi-k2.6", "https://platform.kimi.ai/console/api-keys"),
+            new AIProvider("GLM", "https://api.z.ai/api/paas/v4/chat/completions", "glm-4.7", "https://z.ai/manage-apikey/apikey-list"),
+            new AIProvider("Doubao", "https://ark.cn-beijing.volces.com/api/v3/chat/completions", "", "https://console.volcengine.com/ark/"),
+            new AIProvider("MiniMax", "https://api.minimax.io/v1/chat/completions", "MiniMax-M3", "https://platform.minimax.io/"),
+            new AIProvider("Grok", "https://api.x.ai/v1/chat/completions", "grok-4.7", "https://console.x.ai/"),
+            new AIProvider("Mistral", "https://api.mistral.ai/v1/chat/completions", "mistral-small-latest", "https://console.mistral.ai/"),
+            new AIProvider("OpenRouter", "https://openrouter.ai/api/v1/chat/completions", "openrouter/free", "https://openrouter.ai/settings/keys"),
+            new AIProvider("Custom", "", "", "https://github.com/BaoshiSun/DeepReader"),
+        };
+        public static AIProvider Get(string name) {
+            foreach (var provider in All) if (provider.Name==name) return provider;
+            throw new UserError("未知 AI 服务商，请重新选择。");
+        }
+    }
     public sealed class Config {
-        public string ProtectedKey = "";
+        public string ProtectedKey = ""; // Legacy DeepSeek slot, preserved for migration.
         public string Model = "deepseek-flash";
+        public string Provider = "DeepSeek";
+        public string Endpoint = "";
+        public bool AdultConfirmed;
+        public string SharingRecipient = "";
+        public Dictionary<string,string> Keys = new Dictionary<string,string>();
+        public Dictionary<string,string> Models = new Dictionary<string,string>();
+        public Dictionary<string,string> Endpoints = new Dictionary<string,string>();
         public static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
         static readonly byte[] Entropy = Encoding.UTF8.GetBytes("SumatraDeepSeek/1");
+        public string Target { get { return String.IsNullOrEmpty(Endpoint) ? AIProvider.Get(Provider).Endpoint : Endpoint; } }
+        public string Recipient { get { return Provider + "|" + Target; } }
         public static Config Load() {
             if (!File.Exists(FilePath)) return new Config();
             try {
                 Config result = Json.Read<Config>(File.ReadAllText(FilePath, Encoding.UTF8));
-                if (result == null || String.IsNullOrWhiteSpace(result.Model)) throw new Exception();
+                if (result == null || result.Keys == null || result.Models == null || result.Endpoints == null) throw new Exception();
+                AIProvider.Get(result.Provider);
                 return result;
             } catch { throw new UserError("本地设置文件无法读取，请移走 config.json 后重新设置。"); }
         }
+        public static bool ValidEndpoint(string value) {
+            Uri uri;
+            return value != null && value.Length<=2048 && value.IndexOfAny(new char[]{' ', '\t','\r','\n','?','#','@'})<0 &&
+                Uri.TryCreate(value,UriKind.Absolute,out uri) && uri.Scheme=="https" && !String.IsNullOrEmpty(uri.Host) &&
+                uri.Host!="example.invalid" && uri.AbsolutePath!="/" && String.IsNullOrEmpty(uri.UserInfo);
+        }
+        public static bool ValidModel(string value) {
+            if (String.IsNullOrEmpty(value) || value.Length>160) return false;
+            foreach (char c in value) if (!(c>='a'&&c<='z' || c>='A'&&c<='Z' || c>='0'&&c<='9' || "-_/.:".IndexOf(c)>=0)) return false;
+            return true;
+        }
+        public void Choose(string provider) {
+            Models[Provider]=Model; Endpoints[Provider]=Endpoint;
+            Provider=AIProvider.Get(provider).Name;
+            Model=Models.ContainsKey(provider) ? Models[provider] : AIProvider.Get(provider).Model;
+            Endpoint=Endpoints.ContainsKey(provider) ? Endpoints[provider] : "";
+        }
         public string Key() {
-            if (!String.IsNullOrWhiteSpace(ProtectedKey)) {
-                try { return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(ProtectedKey), Entropy, DataProtectionScope.CurrentUser)); }
+            string encrypted;
+            if (!Keys.TryGetValue(Recipient,out encrypted)) encrypted = Provider=="DeepSeek" && Target==AIProvider.Get("DeepSeek").Endpoint ? ProtectedKey : "";
+            if (!String.IsNullOrWhiteSpace(encrypted)) {
+                try { return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(encrypted), Entropy, DataProtectionScope.CurrentUser)); }
                 catch { throw new UserError("保存的密钥无法在当前 Windows 账户解密，请重新填写 API Key。"); }
             }
-            return Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY") ?? "";
+            return Provider=="DeepSeek" && Target==AIProvider.Get("DeepSeek").Endpoint ? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY") ?? "" : "";
         }
         public void SetKey(string value) {
-            ProtectedKey = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(value.Trim()), Entropy, DataProtectionScope.CurrentUser));
+            if (!ValidEndpoint(Target) || String.IsNullOrWhiteSpace(value) || value.Trim().Length>512) throw new UserError("请检查接口地址和 Key 格式。");
+            foreach(char c in value.Trim()) if(c<33 || c>126) throw new UserError("API Key 格式无效。");
+            Keys[Recipient] = Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(value.Trim()), Entropy, DataProtectionScope.CurrentUser));
         }
         public void Save() {
             string temp = FilePath + ".tmp";
@@ -118,55 +172,84 @@ namespace SumatraDeepSeek {
             http = new HttpClient(handler);
             http.Timeout = TimeSpan.FromSeconds(40);
         }
-        public static object Payload(string model, string selected, string context) {
-            return new {
-                model = model, stream = false, max_tokens = 350,
-                thinking = new { type = "disabled" },
-                messages = new object[] {
-                    new { role = "system", content = Prompt },
-                    new { role = "user", content = Json.Write(new { selected_text = selected, nearby_context = context }) }
-                }
+        public static object Payload(string model, string selected, string context) { return Payload(new Config { Model=model },selected,context); }
+        public static object Payload(Config config, string selected, string context) {
+            var body = new Dictionary<string,object> {
+                {"model",config.Model}, {"stream",false},
+                {(config.Provider=="OpenAI" || config.Provider=="MiniMax") ? "max_completion_tokens" : "max_tokens",config.Provider=="DeepSeek" ? 350 : 4096}
             };
+            string input=Json.Write(new { selected_text=selected, nearby_context=context });
+            if (config.Provider=="Claude") { body["system"]=Prompt; body["messages"]=new object[]{new {role="user",content=input}}; }
+            else body["messages"]=new object[]{new {role="system",content=Prompt},new {role="user",content=input}};
+            if (config.Provider=="MiniMax") {
+                body["reasoning_split"]=true;
+                if(config.Model=="MiniMax-M3") body["thinking"]=new {type="disabled"};
+            }
+            if (config.Provider=="DeepSeek") body["thinking"]=new {type="disabled"};
+            if (config.Provider=="OpenRouter" && (config.Model=="openrouter/free" || config.Model.EndsWith(":free")))
+                body["provider"]=new {max_price=new {prompt=0,completion=0,request=0}};
+            return body;
         }
         public async Task<string> Explain(Config config, string selected, string context, CancellationToken token) {
+            if (!Config.ValidEndpoint(config.Target) || !Config.ValidModel(config.Model)) throw new UserError("请检查模型 ID 和完整 HTTPS 接口地址。");
+            if ((config.Provider=="Gemini" || config.Provider=="OpenRouter") && !config.AdultConfirmed) throw new UserError("使用此服务前须确认年满 18 岁并阅读服务条款。");
             string key = config.Key().Trim();
-            if (key.Length == 0) throw new UserError("请先在设置中填写 DeepSeek API Key。");
+            if (key.Length == 0) throw new UserError("请先在设置中填写所选服务商的 API Key。");
             if (String.IsNullOrWhiteSpace(context)) throw new UserError("请先选择或粘贴文章上下文。");
             if (selected.Length > 2200 || context.Length > 3000) throw new UserError("文字过长，请缩小选文或上下文范围。");
-            using (var request = new HttpRequestMessage(HttpMethod.Post, Endpoint)) {
-                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
-                request.Content = new StringContent(Json.Write(Payload(config.Model, selected, context)), Encoding.UTF8, "application/json");
-                try {
-                    using (HttpResponseMessage response = await http.SendAsync(request, token)) {
-                        if (!response.IsSuccessStatusCode) throw new UserError(ErrorFor((int)response.StatusCode));
-                        string body = await response.Content.ReadAsStringAsync();
-                        try {
-                            var data = Json.Read<ApiResponse>(body);
-                            if (data == null || data.choices == null || data.choices.Count == 0
-                                || data.choices[0].message == null || String.IsNullOrWhiteSpace(data.choices[0].message.content))
-                                throw new Exception();
-                            string text = data.choices[0].message.content.Trim();
-                            if (data.choices[0].finish_reason == "length") text += "\r\n\r\n（回答达到长度上限，可重试。）";
-                            return text;
-                        } catch { throw new UserError("DeepSeek 没有返回有效解释，请重试。"); }
-                    }
-                } catch (TaskCanceledException) {
-                    token.ThrowIfCancellationRequested();
-                    throw new UserError("请求超时，请检查网络后重试。");
-                } catch (HttpRequestException) { throw new UserError("无法连接 DeepSeek，请检查网络或代理设置。"); }
+            using (var deadline = CancellationTokenSource.CreateLinkedTokenSource(token)) {
+                deadline.CancelAfter(TimeSpan.FromSeconds(90));
+                using (var request = new HttpRequestMessage(HttpMethod.Post, config.Target)) {
+                    if (config.Provider=="Claude") { request.Headers.Add("x-api-key",key); request.Headers.Add("anthropic-version","2023-06-01"); }
+                    else request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
+                    request.Content = new StringContent(Json.Write(Payload(config, selected, context)), Encoding.UTF8, "application/json");
+                    try {
+                        using (HttpResponseMessage response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token)) {
+                            if (!response.IsSuccessStatusCode) throw new UserError(ErrorFor((int)response.StatusCode));
+                            string body;
+                            using(var stream=await response.Content.ReadAsStreamAsync())
+                            using(var buffer=new MemoryStream()) {
+                                byte[] part=new byte[4096]; int count;
+                                while((count=await stream.ReadAsync(part,0,part.Length,deadline.Token))>0) {
+                                    if(buffer.Length+count>262144) throw new UserError("AI 响应过大，请缩小输入后重试。");
+                                    buffer.Write(part,0,count);
+                                }
+                                body=Encoding.UTF8.GetString(buffer.ToArray());
+                            }
+                            try {
+                                var data = Json.Read<ApiResponse>(body);
+                                if (data==null || data.error!=null) throw new Exception();
+                                string text="", finish="";
+                                if (config.Provider=="Claude") {
+                                    if (data.content!=null) foreach (var block in data.content) if (block.type=="text") text+=block.text+"\n";
+                                    finish=data.stop_reason;
+                                } else if (data.choices!=null && data.choices.Count>0 && data.choices[0].message!=null) {
+                                    text=data.choices[0].message.content; finish=data.choices[0].finish_reason;
+                                }
+                                if (String.IsNullOrWhiteSpace(text) || text.Length>20000 || finish=="length" || finish=="max_tokens") throw new Exception();
+                                text=text.Trim();
+                                return text;
+                            } catch { throw new UserError("AI 服务没有返回完整有效解释，请重试。"); }
+                        }
+                    } catch (TaskCanceledException) {
+                        token.ThrowIfCancellationRequested();
+                        throw new UserError("请求超时，请检查网络后重试。");
+                    } catch (HttpRequestException) { throw new UserError("无法连接 AI 服务，请检查网络或代理设置。"); }
+                }
             }
         }
         public static string ErrorFor(int status) {
             if (status == 401 || status == 403) return "API Key 无效或没有访问权限，请检查设置。";
-            if (status == 402) return "DeepSeek API 余额不足，请在 DeepSeek 平台充值。";
+            if (status == 402) return "服务商额度不足，请检查账户余额。";
             if (status == 429) return "请求过于频繁，请稍后重试。";
             if (status == 400 || status == 404 || status == 422) return "API 请求或模型名称不受支持，请检查设置中的模型名称。";
-            if (status >= 500) return "DeepSeek 服务暂时不可用，请稍后重试。";
-            return "DeepSeek 请求失败（HTTP " + status + "），请稍后重试。";
+            if (status >= 500) return "AI 服务暂时不可用，请稍后重试。";
+            return "AI 请求失败（HTTP " + status + "），请稍后重试。";
         }
         public void Dispose() { http.Dispose(); }
         public sealed class ApiMessage { public string content; }
         public sealed class ApiChoice { public ApiMessage message; public string finish_reason; }
-        public sealed class ApiResponse { public List<ApiChoice> choices; }
+        public sealed class ApiBlock { public string type; public string text; }
+        public sealed class ApiResponse { public List<ApiChoice> choices; public List<ApiBlock> content; public string stop_reason; public object error; }
     }
 }
