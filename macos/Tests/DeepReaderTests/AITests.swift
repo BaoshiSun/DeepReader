@@ -20,6 +20,7 @@ private final class MockProtocol: URLProtocol {
     }
 }
 private final class MemoryCredentials: Credentials {
+    func read(_ settings: Settings) throws -> String { "offline-test-credential" }
     func read(_ provider: Provider) throws -> String { "offline-test-credential" }
     func save(_ value: String, for provider: Provider) throws {}
     func remove(_ provider: Provider) throws {}
@@ -131,7 +132,7 @@ final class AITests: XCTestCase {
         let store = try LibraryStore(root: root)
         var allowed = false, prompts: [(Provider, AISharingKind)] = []
         let model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client()) { settings, kind in
-            prompts.append((settings.provider, kind)); return allowed
+            prompts.append((settings.provider, kind)); return allowed ? .sendOnce : .cancel
         }
         let url = root.appendingPathComponent("consent.pdf"); try SmokeTest.makePDF(at: url)
         try model.pdf.open(url); try model.didOpen()
@@ -144,6 +145,7 @@ final class AITests: XCTestCase {
         XCTAssertTrue(model.records.isEmpty); XCTAssertEqual(prompts.last?.1, .document)
         allowed = true; MockProtocol.use { $0.respond("A bank lends money.") }
         model.explain(); try await waitUntilIdle(model); XCTAssertEqual(model.records.count, 1)
+        XCTAssertFalse(model.hasAISharingConsent)
         allowed = false; MockProtocol.use { _ in XCTFail("Earlier consent authorized a later action") }
         model.chooseProvider(.gemini); model.settings.adultConfirmed = true; model.followup = "Why?"; model.ask(); try await waitUntilIdle(model)
         XCTAssertEqual(prompts.last?.0, .gemini); XCTAssertEqual(prompts.last?.1, .followup)
@@ -154,6 +156,68 @@ final class AITests: XCTestCase {
     }
     private func client() -> AIClient {
         let config = URLSessionConfiguration.ephemeral; config.protocolClasses = [MockProtocol.self]; return AIClient(configuration: config)
+    }
+    @MainActor func testRememberedSharingSurvivesRestartAndIsBoundToRecipient() async throws {
+        _ = NSApplication.shared
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-remember-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try LibraryStore(root: root)
+        var prompts = 0
+        let model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client()) { _, _ in
+            prompts += 1; return .rememberRecipient
+        }
+        let url = root.appendingPathComponent("consent.pdf"); try SmokeTest.makePDF(at: url)
+        try model.pdf.open(url); try model.didOpen()
+        let page = model.pdf.view.document!.page(at: 0)!, text = page.string! as NSString
+        model.pdf.view.setCurrentSelection(page.selection(for: text.range(of: "bank", options: .backwards)), animate: false)
+        MockProtocol.use { $0.respond("Offline answer") }
+        model.explain(); try await waitUntilIdle(model)
+        XCTAssertEqual(prompts, 1); XCTAssertTrue(model.hasAISharingConsent)
+        model.followup = "Why?"; model.ask(); try await waitUntilIdle(model)
+        model.prepareSummary(); model.summarize(); try await waitUntilIdle(model)
+        XCTAssertEqual(prompts, 1)
+        let reloaded = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client()) { _, _ in
+            prompts += 1; return .cancel
+        }
+        XCTAssertTrue(reloaded.hasAISharingConsent)
+        try reloaded.pdf.open(url); try reloaded.didOpen()
+        reloaded.pdf.view.setCurrentSelection(reloaded.pdf.view.document!.page(at: 0)!.selection(for: text.range(of: "bank", options: .backwards)), animate: false)
+        reloaded.explain(); try await waitUntilIdle(reloaded)
+        XCTAssertEqual(prompts, 1)
+        reloaded.settings.models[Provider.deepSeek.rawValue] = "another-model"
+        reloaded.setWorldKnowledge(true)
+        XCTAssertTrue(reloaded.hasAISharingConsent)
+        MockProtocol.use { _ in XCTFail("An unapproved recipient made a network request") }
+        reloaded.settings.setEndpoint("https://new-provider.test/chat/completions")
+        reloaded.followup = "Why?"; reloaded.ask(); try await waitUntilIdle(reloaded)
+        XCTAssertFalse(reloaded.hasAISharingConsent); XCTAssertEqual(prompts, 2)
+        reloaded.settings.setEndpoint(""); reloaded.chooseProvider(.openAI)
+        reloaded.ask(); try await waitUntilIdle(reloaded)
+        XCTAssertFalse(reloaded.hasAISharingConsent); XCTAssertEqual(prompts, 3)
+        reloaded.chooseProvider(.deepSeek); reloaded.revokeAISharingConsent()
+        reloaded.ask(); try await waitUntilIdle(reloaded)
+        XCTAssertEqual(prompts, 4); XCTAssertFalse(reloaded.hasAISharingConsent)
+        XCTAssertNil(try store.settings().aiSharingConsentRecipient)
+    }
+    @MainActor func testFailedConsentSaveDoesNotSendAndLegacySettingsHaveNoGrant() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-consent-save-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try LibraryStore(root: root)
+        let model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in .rememberRecipient })
+        var legacy = try JSONSerialization.jsonObject(with: JSONEncoder().encode(model.settings)) as! [String: Any]
+        legacy.removeValue(forKey: "aiSharingConsentVersion"); legacy.removeValue(forKey: "aiSharingConsentRecipient")
+        let decoded = try JSONDecoder().decode(Settings.self, from: JSONSerialization.data(withJSONObject: legacy))
+        XCTAssertNil(decoded.aiSharingConsentRecipient); XCTAssertNil(decoded.aiSharingConsentVersion)
+        let url = root.appendingPathComponent("consent.pdf"); try SmokeTest.makePDF(at: url)
+        try model.pdf.open(url); try model.didOpen()
+        let page = model.pdf.view.document!.page(at: 0)!, text = page.string! as NSString
+        model.pdf.view.setCurrentSelection(page.selection(for: text.range(of: "bank", options: .backwards)), animate: false)
+        let settingsFile = root.appendingPathComponent("settings.json")
+        try FileManager.default.removeItem(at: settingsFile)
+        try FileManager.default.createDirectory(at: settingsFile, withIntermediateDirectories: false)
+        MockProtocol.use { _ in XCTFail("Failed consent persistence made a network request") }
+        model.explain(); try await waitUntilIdle(model)
+        XCTAssertFalse(model.hasAISharingConsent); XCTAssertTrue(model.records.isEmpty)
     }
     func testOfflineTransportSuccess() async throws {
         MockProtocol.use { $0.respond("Contextual answer") }
@@ -185,7 +249,7 @@ final class AITests: XCTestCase {
         _ = NSApplication.shared
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-AI-tests-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
-        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in true })
+        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in .sendOnce })
         let url = root.appendingPathComponent("example.pdf"); try SmokeTest.makePDF(at: url)
         try model.pdf.open(url); try model.didOpen()
         let page = model.pdf.view.document!.page(at: 0)!, source = page.string! as NSString
@@ -199,7 +263,7 @@ final class AITests: XCTestCase {
         XCTAssertEqual(model.records.count, 1); XCTAssertEqual(model.records.first?.id, id)
         XCTAssertTrue(model.answer.contains("The loan")); XCTAssertEqual(ReadingStats(model.records).lookups, 1)
         XCTAssertTrue(model.followup.isEmpty)
-        let reloaded = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in true })
+        let reloaded = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in .sendOnce })
         XCTAssertTrue(reloaded.settings.english); XCTAssertEqual(reloaded.records.count, 1)
         XCTAssertEqual(reloaded.tab, 0, "Onboarding must not repeat")
     }
@@ -211,7 +275,7 @@ final class AITests: XCTestCase {
         _ = NSApplication.shared
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("DeepReader-Ebook-AI-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: root) }
-        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in true })
+        let store = try LibraryStore(root: root), model = ReaderModel(store: store, credentials: MemoryCredentials(), ai: client(), confirmSharing: { _, _ in .sendOnce })
         let book = try EBookDocument.load(EBookTests.fixtures.appendingPathComponent("garden.epub"))
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 850, height: 700), styleMask: [.titled], backing: .buffered, defer: false)
         window.contentView = model.reader.view; window.orderFront(nil); defer { window.orderOut(nil) }

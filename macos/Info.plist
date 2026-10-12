@@ -13,11 +13,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.3.0</string>
+	<string>1.3.1</string>
 	<key>CFBundleVersion</key>
-	<string>6</string>
+	<string>7</string>
 	<key>CFBundleGetInfoString</key>
-	<string>DeepReader 1.3.0 macOS preview — AGPL-3.0-or-later</string>
+	<string>DeepReader 1.3.1 macOS preview — AGPL-3.0-or-later</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>DeepReader contributors. AGPL-3.0-or-later. Development assisted by AI; periodically reviewed by the maintainer.</string>
 	<key>LSMinimumSystemVersion</key>

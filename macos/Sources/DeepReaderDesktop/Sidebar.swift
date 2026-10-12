@@ -240,6 +240,10 @@ struct Sidebar: View {
                     Spacer(); Button(m.t("保存设置", "Save settings")) { m.saveConfiguration() }.buttonStyle(.borderedProminent)
                 }
                 Button(m.t("删除此服务的已存密钥", "Remove this provider's saved key")) { m.removeKey() }
+                Text(m.hasAISharingConsent ? m.t("已记住此服务和地址的 AI 发送授权", "Sharing permission remembered for this provider and endpoint") : m.t("下次发送前会征求授权", "Permission will be requested before the next send")).font(.caption)
+                if m.settings.aiSharingConsentRecipient != nil {
+                    Button(m.t("撤销 AI 发送授权", "Revoke AI sharing permission")) { m.revokeAISharingConsent() }
+                }
                 Text(m.t("AI 使用您自己的账户和额度，密钥按服务商和接口地址保存在钥匙串。支持文字对话模型；可填写新模型 ID。本地阅读不需要密钥。", "AI uses your own account and quota. Keys are isolated by provider and endpoint in Keychain. Text chat models are supported; new model IDs can be entered. Local reading needs no key.")).font(.caption).foregroundStyle(.secondary)
                 Divider()
                 Text(m.t("归档文件夹", "Archive folder")).font(.headline)

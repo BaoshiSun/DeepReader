@@ -10,7 +10,7 @@ import DeepReaderCore
     public let reader = DocumentReader()
     public var pdf: PDFReader { reader.pdf }
     public let ai: AIClient
-    private let confirmSharing: @MainActor (Settings, AISharingKind) -> Bool
+    private let confirmSharing: @MainActor (Settings, AISharingKind) -> AISharingDecision
     @Published public var settings: Settings
     @Published public var tab = 0
     @Published public var status = ""
@@ -55,7 +55,7 @@ import DeepReaderCore
     public var filteredBooks: [Book] { books.filter { $0.matches(bookSearch, filter: bookFilter) } }
 
     public init(store: LibraryStore, credentials: Credentials = KeychainCredentials(), ai: AIClient = AIClient(),
-                confirmSharing: @escaping @MainActor (Settings, AISharingKind) -> Bool = AISharingKind.confirm) {
+                confirmSharing: @escaping @MainActor (Settings, AISharingKind) -> AISharingDecision = AISharingKind.confirm) {
         self.store = store; self.credentials = credentials; self.ai = ai
         self.fileAccess = FileAccessStore(root: store.root)
         self.confirmSharing = confirmSharing
@@ -296,11 +296,35 @@ import DeepReaderCore
         } catch { show(error) }
     }
     private func allowSharing(_ configuration: Settings, _ kind: AISharingKind) -> Bool {
-        guard confirmSharing(configuration, kind) else {
+        guard configuration.recipientID == settings.recipientID else { return false }
+        if hasAISharingConsent { return true }
+        switch confirmSharing(configuration, kind) {
+        case .cancel:
             status = t("已取消，未发送给 AI 服务。", "Cancelled. Nothing was sent to the AI service.")
             return false
+        case .sendOnce: return configuration.recipientID == settings.recipientID
+        case .rememberRecipient:
+            guard configuration.recipientID == settings.recipientID else { return false }
+            do {
+                var next = settings
+                next.aiSharingConsentRecipient = configuration.recipientID
+                next.aiSharingConsentVersion = AISharingKind.consentVersion
+                try store.saveSettings(next); settings = next
+                return true
+            } catch { show(error); return false }
         }
-        return true
+    }
+    public var hasAISharingConsent: Bool {
+        settings.aiSharingConsentVersion == AISharingKind.consentVersion &&
+            settings.aiSharingConsentRecipient == settings.recipientID
+    }
+    public func revokeAISharingConsent() {
+        do {
+            var next = settings
+            next.aiSharingConsentRecipient = nil; next.aiSharingConsentVersion = nil
+            try store.saveSettings(next); settings = next; cancel()
+            status = t("已撤销 AI 发送授权，下次发送前会重新询问。", "AI sharing permission revoked. The next send will ask again.")
+        } catch { show(error) }
     }
     public func export(_ text: String, name: String) {
         guard !text.isEmpty else { return }
