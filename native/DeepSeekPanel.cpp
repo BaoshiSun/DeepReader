@@ -48,7 +48,7 @@ enum { Close = 9100, Selected, Answer, Status, ContextView, ContextToggle, Retry
        FollowupInput, FollowupSend, FollowupLabel, FloatToggle, DockGrip,
        BooksTab, Star1, Star2, Star3, Star4, Star5, ReadState, Archive, BookNotice,
        BooksSearch, BooksFilter, BooksStats, BooksList, BooksDetail, BookOpen, BooksExport,
-       ArchiveLabel, ArchiveFolder, ArchiveBrowse, EndpointLabel, EndpointInput, RevokeSharing };
+       ArchiveLabel, ArchiveFolder, ArchiveBrowse, EndpointLabel, EndpointInput, RevokeSharing, KnowledgeScope };
 enum class View { Lookup, History, Summary, Books, Preferences };
 struct Job {
     std::atomic<bool> stopped{false}, done{false};
@@ -133,7 +133,7 @@ void UpdateFonts(Panel* p) {
     auto font=CreateFontW(-MulDiv(14,dpi,96),0,0,0,FW_NORMAL,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
     auto title=CreateFontW(-MulDiv(18,dpi,96),0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Microsoft YaHei UI");
     if (!font || !title) { DeleteObject(font); DeleteObject(title); return; }
-    for (int id=Close;id<=RevokeSharing;++id) SendMessageW(Item(p,id),WM_SETFONT,(WPARAM)(id==Title?title:font),TRUE);
+    for (int id=Close;id<=KnowledgeScope;++id) SendMessageW(Item(p,id),WM_SETFONT,(WPARAM)(id==Title?title:font),TRUE);
     DeleteObject(p->font); DeleteObject(p->titleFont);
     p->font=font; p->titleFont=title; p->fontDpi=dpi;
 }
@@ -362,6 +362,7 @@ void Cancel(Panel* p) {
     if (p->job) p->job->stopped=true;
     p->job.reset(); KillTimer(p->hwnd,1); KillTimer(p->hwnd,2);
     p->extracting=false; p->extraction.clear();
+    EnableWindow(Item(p,KnowledgeScope),TRUE);
     Text(p,Retry,L(p,L"重新解释",L"Explain again"));
     Text(p,SummaryRun,L(p,L"生成总结",L"Generate"));
     Text(p,SummaryPrepare,L(p,L"准备材料",L"Prepare"));
@@ -552,6 +553,7 @@ void StartJob(Panel* p,std::shared_ptr<Job> job) {
     }
     job->total=(int)(LookupTask(job->task) ? 1 : SummaryRequests(job->parts.size()));
     p->job=job;
+    EnableWindow(Item(p,KnowledgeScope),FALSE);
     if (!LookupTask(job->task)) { p->summaryResult.clear(); EnableWindow(Item(p,SummaryExport),FALSE); }
     if (job->task==Task::Explain) p->lookupRecord=Record();
     if (job->task!=Task::Followup) Text(p,LookupTask(job->task)?Answer:SummaryAnswer,L"");
@@ -725,6 +727,7 @@ void ExtractionStep(Panel* p) {
     ++p->extractPage;
     if (p->extractPage<=p->extractTotal) return;
     KillTimer(p->hwnd,2); p->extracting=false;
+    EnableWindow(Item(p,KnowledgeScope),TRUE);
     if (p->extraction.empty()) {
         Text(p,SummaryInfo,L(p,L"未找到可复制文字。扫描文件需要先做 OCR。",L"No text found. Scanned documents need OCR first."));
         Text(p,SummaryPrepare,L(p,L"准备材料",L"Prepare")); return;
@@ -943,7 +946,7 @@ void Layout(Panel* p) {
     p->layingOut=true;
     RECT r{}; GetClientRect(p->hwnd,&r);
     int dpi=DpiGet(p->hwnd); auto d=[dpi](int x){return MulDiv(x,dpi,96);};
-    int bodyOffset=p->view==View::Preferences?0:d(80);
+    int bodyOffset=p->view==View::Preferences?d(40):d(120);
     int minimum=d(p->view==View::Preferences?785:(p->view==View::Summary?570:560))+bodyOffset;
     int viewport=r.bottom,total=std::max(viewport,minimum),h=total-bodyOffset;
     ShowScrollBar(p->hwnd,SB_VERT,total>viewport);
@@ -956,7 +959,7 @@ void Layout(Panel* p) {
         auto child=Item(p,id); ShowWindow(child,SW_SHOW); MoveWindow(child,x,y-p->scrollY,std::max(1,width),std::max(1,height),TRUE);
     };
     auto place=[&](int id,int x,int y,int width,int height) { fixed(id,x,y+bodyOffset,width,height); };
-    for (int id=Close;id<=RevokeSharing;++id)
+    for (int id=Close;id<=KnowledgeScope;++id)
         if (id!=LookupSplitter || !p->dragging) ShowWindow(Item(p,id),SW_HIDE);
     fixed(Title,m,d(13),inner-d(204),d(29));
     fixed(FloatToggle,w-m-d(198),d(10),d(62),d(30));
@@ -967,11 +970,13 @@ void Layout(Panel* p) {
         fixed(tabs[i],m+i*inner/5,d(56),inner/5-d(3),d(32));
         SendMessageW(Item(p,tabs[i]),BM_SETCHECK,(int)p->view==i?BST_CHECKED:BST_UNCHECKED,0);
     }
-    if (bodyOffset) {
-        for (int i=0;i<5;++i) fixed(Star1+i,m+i*d(24),d(101),d(24),d(30));
-        fixed(ReadState,m+d(128),d(101),inner-d(212),d(130));
-        fixed(Archive,w-m-d(76),d(100),d(76),d(32));
-        fixed(BookNotice,m,d(137),inner,d(39));
+    fixed(KnowledgeScope,m,d(99),inner,d(160));
+    EnableWindow(Item(p,KnowledgeScope),!p->job && !p->extracting);
+    if (p->view!=View::Preferences) {
+        for (int i=0;i<5;++i) fixed(Star1+i,m+i*d(24),d(141),d(24),d(30));
+        fixed(ReadState,m+d(128),d(141),inner-d(212),d(130));
+        fixed(Archive,w-m-d(76),d(140),d(76),d(32));
+        fixed(BookNotice,m,d(177),inner,d(39));
     }
     if (p->view==View::Preferences) {
         place(ProviderLabel,m,d(103),inner,d(22));
@@ -1039,6 +1044,10 @@ void Layout(Panel* p) {
     p->layingOut=false;
 }
 void Labels(Panel* p) {
+    SendMessageW(Item(p,KnowledgeScope),CB_RESETCONTENT,0,0);
+    SendMessageW(Item(p,KnowledgeScope),CB_ADDSTRING,0,(LPARAM)L(p,L"回答依据：仅书中内容",L"Sources: book only"));
+    SendMessageW(Item(p,KnowledgeScope),CB_ADDSTRING,0,(LPARAM)L(p,L"回答依据：结合通用知识（不联网）",L"Book + general knowledge (no web)"));
+    SendMessageW(Item(p,KnowledgeScope),CB_SETCURSEL,p->config.useWorldKnowledge?1:0,0);
     Text(p,Title,L"DeepReader");
     Text(p,FloatToggle,p->floating?L(p,L"停靠",L"Dock"):L(p,L"悬浮",L"Float"));
     if (p->floatingHost) SetWindowTextW(p->floatingHost,L(p,L"DeepReader · AI 阅读侧栏",L"DeepReader · AI sidebar"));
@@ -1182,6 +1191,24 @@ LRESULT CALLBACK PanelProc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp) {
             if (id==BooksList && event==LBN_SELCHANGE) { BookSelection(p); return 0; }
             if (id==BooksList && event==LBN_DBLCLK) { OpenBook(p); return 0; }
             if (id==ReadState && event==CBN_SELCHANGE) { ChangeBook(p,0,Choice(p,ReadState)); return 0; }
+            if (id==KnowledgeScope && event==CBN_SELCHANGE) {
+                if (p->job || p->extracting || !HasPermission(Perm::SavePreferences)) {
+                    SendMessageW(Item(p,KnowledgeScope),CB_SETCURSEL,p->config.useWorldKnowledge?1:0,0); return 0;
+                }
+                Config next=p->config; ReadConfig(p->configPath,next);
+                next.useWorldKnowledge=Choice(p,KnowledgeScope)==1;
+                if (!SaveConfig(p->configPath,next)) {
+                    SendMessageW(Item(p,KnowledgeScope),CB_SETCURSEL,p->config.useWorldKnowledge?1:0,0);
+                    Text(p,Status,L(p,L"回答依据保存失败。",L"Could not save answer sources.")); return 0;
+                }
+                for (MainWindow* win:gWindows) {
+                    auto panel=Get(win); if (!panel) continue;
+                    panel->config.useWorldKnowledge=next.useWorldKnowledge;
+                    panel->editing.useWorldKnowledge=next.useWorldKnowledge;
+                    InvalidateSummary(panel); Labels(panel); Layout(panel);
+                }
+                Text(p,Status,L(p,L"用于之后的回答；通用知识不联网搜索。",L"Applies to future answers; no web search.")); return 0;
+            }
             if (id==ProviderInput && event==CBN_SELCHANGE) {
                 int next=Choice(p,ProviderInput);
                 if (next>=0 && next<ProviderCount && StageSettings(p)) { p->editing.provider=next; FillProvider(p); }
@@ -1363,6 +1390,7 @@ Panel* Ensure(MainWindow* win) {
     make(EndpointInput,L"EDIT",WS_BORDER|ES_AUTOHSCROLL|WS_TABSTOP);
     make(RevokeSharing,L"BUTTON",WS_TABSTOP);
     make(ProviderInput,L"COMBOBOX",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP);
+    make(KnowledgeScope,L"COMBOBOX",CBS_DROPDOWNLIST|WS_VSCROLL|WS_TABSTOP);
     for (int i=0;i<ProviderCount;++i) {
         auto name=Wide(ProviderName(i));
         SendMessageW(Item(p,ProviderInput),CB_ADDSTRING,0,(LPARAM)name.c_str());

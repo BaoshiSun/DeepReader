@@ -120,6 +120,15 @@ struct Sidebar: View {
                 Text(m.t("解释", "Ask")).tag(0); Text(m.t("历史", "Log")).tag(1)
                 Text(m.t("总结", "Summary")).tag(2); Text(m.t("书单", "Books")).tag(3); Text(m.t("设置", "Setup")).tag(4)
             }.pickerStyle(.segmented).labelsHidden()
+            if m.tab == 0 || m.tab == 2 || m.tab == 4 {
+                VStack(alignment: .leading, spacing: 3) {
+                    Picker(m.t("回答依据", "Answer sources"), selection: Binding(get: { m.settings.useWorldKnowledge == true }, set: { m.setWorldKnowledge($0) })) {
+                        Text(m.t("仅书中内容", "Book only")).tag(false)
+                        Text(m.t("结合通用知识", "Add general knowledge")).tag(true)
+                    }.disabled(m.busy)
+                    Text(m.t("用于之后的回答；通用知识不联网搜索。", "Applies to future answers; general knowledge does not browse the web.")).font(.caption).foregroundStyle(.secondary)
+                }
+            }
             Group {
                 switch m.tab {
                 case 0: lookup
