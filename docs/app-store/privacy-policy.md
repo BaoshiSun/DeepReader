@@ -1,20 +1,20 @@
 # DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-12。适用于 Mac App Store 版 1.2.1（构建 5 起），以及 iOS / iPadOS 版 1.0.0。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+更新日期 / Updated: 2026-10-13。适用于 macOS 1.3.1（包括 Mac App Store 构建 8），以及已提交的 iOS / iPadOS 1.0.0。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
 
-## 未发布多模型开发版 / Unreleased multi-provider development builds
+## macOS 1.3.1 多模型支持 / macOS 1.3.1 multiple providers
 
-2026-10-12：以下补充适用于新的开发源码，不替换已经送审的 DeepSeek 首发构建。后文关于“仅 DeepSeek”的描述指这些首发构建。
+2026-10-13：macOS 1.3.1 提供下述多模型支持。iOS / iPadOS 1.0.0 已提交构建仍仅支持 DeepSeek，详见文末专节。
 
-开发版在用户主动执行 AI 操作时，将相同范围的文字发送给设置中选定的服务商及完整 HTTPS 地址。可选 DeepSeek、OpenAI、Anthropic Claude、Google Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、xAI Grok、Mistral、OpenRouter 或用户配置的兼容服务器。DeepReader 不运营 AI 代理服务器。自定义服务器的运营者及其下游服务可能接收内容；OpenRouter 将请求路由到模型供应商。不要向不信任的地址填写 Key 或发送文档。
+macOS 1.3.1 在用户主动执行 AI 操作时，将相同范围的文字发送给设置中选定的服务商及完整 HTTPS 地址。可选 DeepSeek、OpenAI、Anthropic Claude、Google Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、xAI Grok、Mistral、OpenRouter 或用户配置的兼容服务器。DeepReader 不运营 AI 代理服务器。自定义服务器的运营者及其下游服务可能接收内容；OpenRouter 将请求路由到模型供应商。不要向不信任的地址填写 Key 或发送文档。
 
 服务商接收认证 Key、发送的文字、IP 地址及连接所需信息。保存、训练、日志、账号关联和跨境处理由实际接收方的政策与账户设置决定；本应用不承诺各家均不保存或不训练。用户应先在服务商网站查看条款和隐私政策。服务商保存的数据需向该服务商申请删除。
 
 Apple 版 Key 按服务商与地址隔离保存于本机钥匙串；模型 ID 与接口地址保存在本机设置中。iOS 的发送授权绑定服务商和地址，改变接收方需要新授权，可在设置中撤销；旧版全局授权不自动用于新服务商。macOS 新版支持绑定接收方的记住授权，并保留“仅本次发送”；旧版仍逐次确认。仅修改设置或选择文字不会发起模型请求。Gemini 与 OpenRouter 的成人使用确认不替代对服务条款、整体受众和上架年龄分级的复核。
 
-This supplement applies to unreleased development source. The DeepSeek-only statements below describe the submitted launch builds. On an explicit AI action, development builds send the same text scopes to the selected provider and full HTTPS endpoint: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, xAI Grok, Mistral, OpenRouter, or a user-configured compatible server. DeepReader operates no AI proxy. OpenRouter forwards requests to model providers; custom server operators may also use downstream services.
+This section applies to macOS 1.3.1, including the Mac App Store build. The submitted iOS / iPadOS 1.0.0 build remains DeepSeek-only, as described in its section below. On an explicit AI action, macOS 1.3.1 sends the same text scopes to the selected provider and full HTTPS endpoint: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, xAI Grok, Mistral, OpenRouter, or a user-configured compatible server. DeepReader operates no AI proxy. OpenRouter forwards requests to model providers; custom server operators may also use downstream services.
 
-Recipients receive authentication credentials, submitted text, IP addresses and connection information. Retention, training, logging, account linkage and international processing depend on the actual recipient’s policies and account settings. Review those policies before sharing; contact the recipient to delete provider-held data. Apple builds isolate Keychain credentials by provider and endpoint. iOS remembers permission for a recipient, supports revocation and requires fresh permission for changed recipients; legacy global consent is not reused. macOS asks per operation. Selecting text or editing settings sends no AI request. Age confirmation for Gemini and OpenRouter does not by itself establish compliance with all provider terms or store requirements.
+Recipients receive authentication credentials, submitted text, IP addresses and connection information. Retention, training, logging, account linkage and international processing depend on the actual recipient’s policies and account settings. Review those policies before sharing; contact the recipient to delete provider-held data. Apple builds isolate Keychain credentials by provider and endpoint. iOS remembers permission for a recipient, supports revocation and requires fresh permission for changed recipients; legacy global consent is not reused. macOS 1.3.1 supports remembered permission for the current provider and endpoint, one-operation permission and revocation in Setup; older store builds ask per operation. Selecting text or editing settings sends no AI request. Age confirmation for Gemini and OpenRouter does not by itself establish compliance with all provider terms or store requirements.
 
 ## macOS — 中文
 
@@ -32,7 +32,7 @@ API Key 单独保存在 macOS 钥匙串，不写入设置 JSON 或公开发行�
 
 macOS 1.3.1 起可选择“同意并记住，发送”，授权仅绑定当前服务商和完整接口地址，适用于后续主动发起的解释、追问、全文总结及阅读记录总结。授权保存在本机，重启后仍有效；可在设置中撤销，也可选择“仅本次发送”或取消。未授权的新接收方需要重新确认，旧版的单次同意不会自动升级为记住授权。
 
-商店版在每次 AI 操作发送前显示接收方、模型及内容范围，只有点击“同意并发送”才发送；取消仍可离线阅读。旧的 1.2.1 GitHub 预览版仅在主动触发 AI 操作时发送，尚无新增的逐次同意弹窗。数据直接由本机发送给所选服务的 API，而不是经过 DeepReader 自有服务器。
+旧商店构建 1.2.1（5）在每次 AI 操作前要求同意；macOS 1.3.1 在尚未授权当前接收方时显示接收方、模型及内容范围，选择允许后才发送；取消仍可离线阅读。旧的 1.2.1 GitHub 预览版仅在主动触发 AI 操作时发送，尚无新增的逐次同意弹窗。数据直接由本机发送给所选服务的 API，而不是经过 DeepReader 自有服务器。
 
 | 操作 | 发送内容 |
 | --- | --- |
@@ -43,9 +43,9 @@ macOS 1.3.1 起可选择“同意并记住，发送”，授权仅绑定当前�
 
 不会上传文档二进制文件；程序不主动将本机完整目录路径加入提示词。但原文本身可能包含个人信息，周期总结中的标题可能来自文件名。服务商也会接收网络连接所必需的信息，例如 IP 地址和请求时间。DeepSeek 可能将请求与 API Key 所属账户关联，保留使用量和技术诊断日志，并根据 IP 推断粗略位置用于安全与防滥用；DeepReader 不请求 GPS 位置。服务商可能为功能提供、分析和改进服务处理数据，包括其政策允许的模型训练。商店隐私标签因此申报用户内容、用户标识、使用数据、诊断数据和粗略位置；不将本地阅读视为上述数据的自动上传。
 
-商店首发版仅提供 DeepSeek（`api.deepseek.com`），不提供 OpenRouter 或 Google Gemini 直连。DeepSeek 的保存期限、日志、训练使用、跨境处理和删除机制由其适用条款及账号设置决定；DeepReader 不承诺零保存或不用于训练。请阅读 [DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)。数据可能在您所在地区以外处理；使用前请核对您的账户条款。
+旧商店构建 1.2.1（5）仅提供 DeepSeek；macOS 1.3.1 支持本政策开头列出的服务商及自定义兼容接口。DeepSeek 的保存期限、日志、训练使用、跨境处理和删除机制由其适用条款及账号设置决定；DeepReader 不承诺零保存或不用于训练。请阅读 [DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)。数据可能在您所在地区以外处理；使用前请核对您的账户条款。
 
-旧站外版另支持 OpenRouter 和 Google Gemini；商店内部候选构建 4 也支持 OpenRouter，但不会作为首发版本提交。OpenRouter 会根据所选模型及路由设置将请求转交模型提供商，免费路由的接收方可能变化，适用 [OpenRouter 隐私政策](https://openrouter.ai/privacy) 及其[模型供应商政策](https://openrouter.ai/providers)。旧站外版 Gemini 适用 [Gemini API 条款](https://ai.google.dev/gemini-api/terms) 和 [Google 隐私政策](https://policies.google.com/privacy)。
+macOS 1.3.1 中选择 OpenRouter 或 Google Gemini 时，也适用相应接收方的政策。OpenRouter 会根据所选模型及路由设置将请求转交模型提供商，免费路由的接收方可能变化，适用 [OpenRouter 隐私政策](https://openrouter.ai/privacy) 及其[模型供应商政策](https://openrouter.ai/providers)。Gemini 适用 [Gemini API 条款](https://ai.google.dev/gemini-api/terms) 和 [Google 隐私政策](https://policies.google.com/privacy)。
 
 AI 费用、额度和可用性由服务商决定。AI 回答可能不准确。不要提交您无权分享的文档或敏感内容。
 
@@ -75,13 +75,13 @@ The Mac App Store build stores data and file-access bookmarks in its system-assi
 
 Starting with macOS 1.3.1, you can choose “Allow and remember, send” for the current provider and full endpoint. This covers later explicitly requested explanations, follow-ups, document summaries and reading-history summaries. Permission is stored locally across restarts and can be revoked in Setup. You can also allow only the current operation or cancel. New recipients require consent; earlier one-time permissions are not automatically upgraded.
 
-The Mac App Store build asks for consent for each AI operation, naming the provider, model and content scope. Cancel keeps reading offline. The earlier 1.2.1 GitHub preview sends requests when an AI feature is invoked, without this new per-operation dialog. Requests go directly from your Mac to your selected provider, without a DeepReader-operated relay. Explanations send the selection and nearby context. Follow-ups add the question and conversation. Document summaries send extractable full text, with intermediate notes used to combine long sections. Period summaries send selected saved passages, answers, timestamps and record titles.
+The older 1.2.1 (5) store build asks for each operation. macOS 1.3.1 asks when the current recipient has not been authorized, naming the provider, model and content scope. Cancel keeps reading offline. The earlier 1.2.1 GitHub preview sends requests when an AI feature is invoked, without this new per-operation dialog. Requests go directly from your Mac to your selected provider, without a DeepReader-operated relay. Explanations send the selection and nearby context. Follow-ups add the question and conversation. Document summaries send extractable full text, with intermediate notes used to combine long sections. Period summaries send selected saved passages, answers, timestamps and record titles.
 
 The app does not upload document binaries or deliberately insert full local directory paths into prompts. Text can itself contain personal information, and period-summary titles may include filenames. Providers also receive network information such as your IP address and request time. DeepSeek may associate requests with the account owning the API key, retain usage and technical diagnostic logs, and infer coarse location from IP addresses for security and abuse prevention; DeepReader does not request GPS location. Provider processing may include functionality, analytics and service improvement, including model training permitted by its policy. The store privacy label therefore declares user content, user identifiers, usage data, diagnostic data and coarse location. Local reading does not automatically upload these data.
 
-The Mac App Store launch edition supports only DeepSeek (`api.deepseek.com`), with no OpenRouter or direct Google Gemini option. Retention, logging, training use, international processing and deletion depend on DeepSeek's applicable terms and account settings. DeepReader does not promise zero retention or no training use. Read the [DeepSeek privacy policy](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html). Processing may occur outside your country. Provider fees and quotas apply. AI answers may be inaccurate; share only content you are authorized to disclose.
+The older 1.2.1 (5) store build supports only DeepSeek. macOS 1.3.1 supports the providers and custom compatible endpoints listed at the beginning of this policy. Retention, logging, training use, international processing and deletion depend on DeepSeek's applicable terms and account settings. DeepReader does not promise zero retention or no training use. Read the [DeepSeek privacy policy](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html). Processing may occur outside your country. Provider fees and quotas apply. AI answers may be inaccurate; share only content you are authorized to disclose.
 
-The earlier direct-distribution edition also supports OpenRouter and Google Gemini. Internal store candidate build 4 supports OpenRouter but will not be submitted for launch. OpenRouter routes requests to model providers; recipients and data handling can vary. See the [OpenRouter privacy policy](https://openrouter.ai/privacy) and [model-provider policies](https://openrouter.ai/providers). The earlier direct-distribution Gemini option is governed by the [Gemini API terms](https://ai.google.dev/gemini-api/terms) and [Google privacy policy](https://policies.google.com/privacy).
+OpenRouter and Google Gemini are also available in macOS 1.3.1. OpenRouter routes requests to model providers; recipients and data handling can vary. See the [OpenRouter privacy policy](https://openrouter.ai/privacy) and [model-provider policies](https://openrouter.ai/providers). The Gemini option is governed by the [Gemini API terms](https://ai.google.dev/gemini-api/terms) and [Google privacy policy](https://policies.google.com/privacy).
 
 ### Retention and deletion
 
