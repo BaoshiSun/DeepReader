@@ -13,6 +13,77 @@ PRODUCT = "DeepReader"
 PUBLIC_PATHS = tuple("""
 .gitignore
 .github/workflows/release-checks.yml
+.github/workflows/macos-build.yml
+macos/Package.swift
+macos/Sources/DeepReaderCore/FileAccess.swift
+macos/Sources/DeepReaderDesktop/AISharing.swift
+macos/AppStore/DeepReader.entitlements
+macos/AppStore/README.md
+macos/AppStore/PrivacyInfo.xcprivacy
+macos/prepare_app_store.py
+macos/DeepReader.xcodeproj/project.pbxproj
+macos/DeepReader.xcodeproj/xcshareddata/xcschemes/DeepReaderStore.xcscheme
+macos/Sources/CArchive/module.modulemap
+macos/Sources/CArchive/shim.h
+macos/Sources/DeepReaderCore/BookArchive.swift
+macos/Sources/DeepReaderCore/BookMarkup.swift
+macos/Sources/DeepReaderCore/EBookDocument.swift
+macos/Sources/DeepReaderCore/EBookHighlights.swift
+macos/Sources/DeepReaderDesktop/DocumentReader.swift
+macos/Sources/DeepReaderDesktop/EBookReader.swift
+macos/Vendor/libmobi/AUTHORS
+macos/Vendor/libmobi/COPYING
+macos/Vendor/libmobi/COPYING.GPL3
+macos/Vendor/libmobi/opf.h
+macos/Vendor/libmobi/ORIGIN.json
+macos/Vendor/libmobi/README.md
+macos/Vendor/libmobi/buffer.c
+macos/Vendor/libmobi/buffer.h
+macos/Vendor/libmobi/compression.c
+macos/Vendor/libmobi/compression.h
+macos/Vendor/libmobi/config.h
+macos/Vendor/libmobi/debug.c
+macos/Vendor/libmobi/debug.h
+macos/Vendor/libmobi/include/libmobi.h
+macos/Vendor/libmobi/index.c
+macos/Vendor/libmobi/index.h
+macos/Vendor/libmobi/memory.c
+macos/Vendor/libmobi/memory.h
+macos/Vendor/libmobi/meta.c
+macos/Vendor/libmobi/meta.h
+macos/Vendor/libmobi/mobi.h
+macos/Vendor/libmobi/parse_rawml.c
+macos/Vendor/libmobi/parse_rawml.h
+macos/Vendor/libmobi/read.c
+macos/Vendor/libmobi/read.h
+macos/Vendor/libmobi/structure.c
+macos/Vendor/libmobi/structure.h
+macos/Vendor/libmobi/util.c
+macos/Vendor/libmobi/util.h
+macos/Vendor/libmobi/write.c
+macos/Vendor/libmobi/write.h
+macos/Info.plist
+macos/build.sh
+macos/distribute.sh
+macos/release_preflight.py
+macos/DISTRIBUTION.md
+macos/README.md
+macos/Sources/DeepReaderCore/Models.swift
+macos/Sources/DeepReaderCore/LibraryStore.swift
+macos/Sources/DeepReaderCore/Credentials.swift
+macos/Sources/DeepReaderCore/AIClient.swift
+macos/Sources/DeepReaderDesktop/PDFReader.swift
+macos/Sources/DeepReaderDesktop/ReaderModel.swift
+macos/Sources/DeepReaderDesktop/Sidebar.swift
+macos/Sources/DeepReaderDesktop/ReaderWindow.swift
+macos/Sources/DeepReaderDesktop/Application.swift
+macos/Sources/DeepReaderDesktop/SmokeTest.swift
+macos/Sources/DeepReader/DeepReader.swift
+macos/Tests/make_format_fixtures.py
+macos/Tests/DeepReaderTests/EBookTests.swift
+macos/Tests/DeepReaderTests/CoreTests.swift
+macos/Tests/DeepReaderTests/PDFTests.swift
+macos/Tests/DeepReaderTests/AITests.swift
 README.md
 LICENSE
 LICENSE-AGPL-3.0.txt
@@ -25,6 +96,12 @@ build.ps1
 requirements-build.txt
 docs/legacy-helper.md
 docs/RELEASING.md
+docs/app-store/README.md
+docs/app-store/listing.json
+docs/app-store/support.md
+docs/app-store/privacy-policy.md
+docs/app-store/review-notes.md
+docs/app-store/readiness.md
 docs/LICENSE-REVIEW.md
 docs/MODIFICATIONS.md
 native/README.md
@@ -66,6 +143,7 @@ tests/test-selection.ps1
 tests/test_context.py
 tests/test_packaged.py
 tests/test_release.py
+tests/test_distribution.py
 tools/public_release.py
 """.split())
 BINARY_ASSETS = {"assets/DeepReader-green.png": b"\x89PNG\r\n\x1a\n", "assets/DeepReader.ico": b"\x00\x00\x01\x00"}
@@ -115,7 +193,7 @@ def safe_name(name):
     path = PurePosixPath(name)
     if "\\" in name or path.is_absolute() or ".." in path.parts or ":" in name:
         raise ValueError("Unsafe archive path")
-    if any(p.lower() in {"aihistory", "booklibrary", ".git", ".env"} for p in path.parts):
+    if any(p.lower() in {"aihistory", "booklibrary", "bookhighlights", ".git", ".env"} for p in path.parts):
         raise ValueError(f"Private directory in archive: {name}")
     if path.name.lower() in PRIVATE_NAMES or path.suffix.lower() in {".lnk", ".log", ".tmp", ".pem", ".key"}:
         raise ValueError(f"Private file in archive: {name}")

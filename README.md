@@ -6,6 +6,8 @@
 
 这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.2.0**；[下载 Windows 便携版](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.0)。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
 
+**macOS 1.2.1 测试版**：[下载 Mac 安装包（DMG / ZIP）](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.1-macos)。macOS 13+，支持 Apple Silicon 与 Intel，可打开 **PDF、EPUB、TXT、Markdown、MOBI 和 AZW3**，提供可调／悬浮 AI 侧栏、追问、历史、总结、评分、归档和书单。电子书提供章节切换及本地高亮，MOBI/AZW3 无需外部转换软件；暂不支持 DRM 保护文件。构建方法、格式限制、安装及未公证说明见 [Mac 版说明](macos/README.md)。Mac 与 Windows 使用独立配置。
+
 ## AI 制作与维护声明
 
 DeepReader 的新增功能与项目文档主要由 AI 制作。项目日常开发和维护托管给 AI，管理者会不定期审查。本项目基于 SumatraPDF 等上游开源项目，上游作者的署名与许可证均予以保留。
