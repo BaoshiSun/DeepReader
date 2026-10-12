@@ -76,3 +76,7 @@ Requires macOS 13+, Apple Silicon or Intel. Version 1.2.1 supports PDF, EPUB, TX
 Open Setup, click EN, choose a provider and save your own API key. DeepSeek is the default; free OpenRouter models still require an account and key. Keys are stored in macOS Keychain. Open a document with **⌘O**, select text, press **⌘⇧D**, and ask follow-ups with **⌘Return**. Resize or float the AI sidebar; use **⌘⇧A** to show it again. Save PDF highlights with **⌘S**; ebook highlights save automatically in local BookHighlights data. Use the chapter menu or arrows to navigate ebooks; search applies to the current chapter. Remote resources and scripts are blocked. Rate and mark books as Reading/Finished, copy them in their original format into star-rating archive folders, and export your book list. Summary supports full extracted document text and daily/weekly/monthly reading records, with local statistics and a request preview before sending.
 
 The app stores its data in `~/Library/Application Support/DeepReader/`. It does not migrate Windows settings automatically. No OCR, telemetry, shared API keys or automatic paid fallback. AGPL-3.0-or-later; corresponding source and licenses are embedded in the app. Development and maintenance are primarily AI-assisted, with periodic human review.
+
+### AI 发送授权
+
+首次使用 AI 时可选择“同意并记住，发送”，之后向同一服务商和接口地址的解释、追问及总结不再反复弹窗，重启后仍有效。只在主动点击 AI 操作时发送。新接收方需要新授权；设置中可“撤销 AI 发送授权”。也可选择“仅本次发送”或取消，旧版本的单次同意不会自动转换成长期授权。

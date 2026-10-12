@@ -2,7 +2,10 @@
 import AppKit
 import DeepReaderCore
 
+public enum AISharingDecision { case cancel, sendOnce, rememberRecipient }
+
 public enum AISharingKind: Equatable {
+    public static let consentVersion = 1
     case selection, followup, document, history
 
     func description(english: Bool) -> String {
@@ -14,7 +17,7 @@ public enum AISharingKind: Equatable {
         }
     }
 
-    @MainActor public static func confirm(_ settings: Settings, _ kind: AISharingKind) -> Bool {
+    @MainActor public static func confirm(_ settings: Settings, _ kind: AISharingKind) -> AISharingDecision {
         let en = settings.english
         let alert = NSAlert()
         alert.messageText = en ? "Send this data to \(settings.provider.rawValue)?" : "将这些内容发送给 \(settings.provider.rawValue)？"
@@ -24,9 +27,14 @@ public enum AISharingKind: Equatable {
             (en ? "Recipient: " : "接收方：") + settings.provider.rawValue + "\n" + settings.endpointText + "\n" +
             (en ? "Model: " : "模型：") + settings.model + "\n\n" +
             (en ? "Your API key authenticates the request. The service receives your IP address and may retain the submitted content under its own policy. Provider fees or quotas apply." : "请求使用您的 API Key 验证身份。服务商会收到 IP 地址，并可能按其政策保留提交的内容；费用和额度由服务商决定。") + routing + "\n\n" +
-            (en ? "Consent applies only to this operation. Cancel to keep reading offline. Cancelling a request later cannot recall data already sent." : "同意仅适用于本次操作。取消后仍可离线阅读。发送后再取消请求，无法撤回已经传出的数据。")
+            (en ? "Choose Allow and remember to authorize future AI actions for this provider and endpoint: explanations send selections and context; follow-ups include the question and conversation; document summaries send extracted full text; reading summaries send saved passages, answers, titles and dates. Nothing is sent until you request an AI action. You can revoke permission in Setup. Changing the recipient requires new permission. Cancelling later cannot recall data already sent." : "选择“同意并记住”后，此服务商和接口地址的后续 AI 操作不再询问：解释发送选文及上下文；追问还包括问题与对话；全文总结发送提取的全文；阅读总结发送保存的选文、回答、标题和日期。仍只在您主动使用 AI 功能时发送。可在设置中撤销授权，更换接收方需重新确认。发送后取消无法撤回已传出的数据。")
         alert.addButton(withTitle: en ? "Cancel" : "取消")
-        alert.addButton(withTitle: en ? "Agree and send" : "同意并发送")
-        return alert.runModal() == .alertSecondButtonReturn
+        alert.addButton(withTitle: en ? "Allow and remember, send" : "同意并记住，发送")
+        alert.addButton(withTitle: en ? "Send this time only" : "仅本次发送")
+        switch alert.runModal() {
+        case .alertSecondButtonReturn: return .rememberRecipient
+        case .alertThirdButtonReturn: return .sendOnce
+        default: return .cancel
+        }
     }
 }

@@ -10,7 +10,7 @@
 
 服务商接收认证 Key、发送的文字、IP 地址及连接所需信息。保存、训练、日志、账号关联和跨境处理由实际接收方的政策与账户设置决定；本应用不承诺各家均不保存或不训练。用户应先在服务商网站查看条款和隐私政策。服务商保存的数据需向该服务商申请删除。
 
-Apple 版 Key 按服务商与地址隔离保存于本机钥匙串；模型 ID 与接口地址保存在本机设置中。iOS 的发送授权绑定服务商和地址，改变接收方需要新授权，可在设置中撤销；旧版全局授权不自动用于新服务商。macOS 仍逐次确认。仅修改设置或选择文字不会发起模型请求。Gemini 与 OpenRouter 的成人使用确认不替代对服务条款、整体受众和上架年龄分级的复核。
+Apple 版 Key 按服务商与地址隔离保存于本机钥匙串；模型 ID 与接口地址保存在本机设置中。iOS 的发送授权绑定服务商和地址，改变接收方需要新授权，可在设置中撤销；旧版全局授权不自动用于新服务商。macOS 新版支持绑定接收方的记住授权，并保留“仅本次发送”；旧版仍逐次确认。仅修改设置或选择文字不会发起模型请求。Gemini 与 OpenRouter 的成人使用确认不替代对服务条款、整体受众和上架年龄分级的复核。
 
 This supplement applies to unreleased development source. The DeepSeek-only statements below describe the submitted launch builds. On an explicit AI action, development builds send the same text scopes to the selected provider and full HTTPS endpoint: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, xAI Grok, Mistral, OpenRouter, or a user-configured compatible server. DeepReader operates no AI proxy. OpenRouter forwards requests to model providers; custom server operators may also use downstream services.
 
@@ -29,6 +29,8 @@ DeepReader 是文档与电子书阅读器，不要求创建 DeepReader 账户。
 API Key 单独保存在 macOS 钥匙串，不写入设置 JSON 或公开发行包。发起 AI 请求时，所选服务商会接收该服务的 Key 用于身份验证。
 
 ### 何时向 AI 服务发送数据
+
+macOS 1.3.1 起可选择“同意并记住，发送”，授权仅绑定当前服务商和完整接口地址，适用于后续主动发起的解释、追问、全文总结及阅读记录总结。授权保存在本机，重启后仍有效；可在设置中撤销，也可选择“仅本次发送”或取消。未授权的新接收方需要重新确认，旧版的单次同意不会自动升级为记住授权。
 
 商店版在每次 AI 操作发送前显示接收方、模型及内容范围，只有点击“同意并发送”才发送；取消仍可离线阅读。旧的 1.2.1 GitHub 预览版仅在主动触发 AI 操作时发送，尚无新增的逐次同意弹窗。数据直接由本机发送给所选服务的 API，而不是经过 DeepReader 自有服务器。
 
@@ -70,6 +72,8 @@ The app stores settings, document paths and titles, ratings, reading dates and s
 The Mac App Store build stores data and file-access bookmarks in its system-assigned app container, without automatically importing the direct version’s data. The current direct-distribution build stores these records in `~/Library/Application Support/DeepReader/`. The app does not separately encrypt these files. OS account permissions and any disk encryption you enable provide protection. Backups, synced folders, exports and archives can create additional copies. Provider API keys are stored separately in macOS Keychain and are sent to the selected provider to authenticate requests; they are not stored in settings JSON or public release packages.
 
 ### AI requests and recipients
+
+Starting with macOS 1.3.1, you can choose “Allow and remember, send” for the current provider and full endpoint. This covers later explicitly requested explanations, follow-ups, document summaries and reading-history summaries. Permission is stored locally across restarts and can be revoked in Setup. You can also allow only the current operation or cancel. New recipients require consent; earlier one-time permissions are not automatically upgraded.
 
 The Mac App Store build asks for consent for each AI operation, naming the provider, model and content scope. Cancel keeps reading offline. The earlier 1.2.1 GitHub preview sends requests when an AI feature is invoked, without this new per-operation dialog. Requests go directly from your Mac to your selected provider, without a DeepReader-operated relay. Explanations send the selection and nearby context. Follow-ups add the question and conversation. Document summaries send extractable full text, with intermediate notes used to combine long sections. Period summaries send selected saved passages, answers, timestamps and record titles.
 

@@ -89,6 +89,8 @@ public struct Settings: Codable {
     public var adultConfirmed: Bool?
     // Optional for libraries saved before knowledge-scope selection.
     public var useWorldKnowledge: Bool?
+    public var aiSharingConsentRecipient: String?
+    public var aiSharingConsentVersion: Int?
     public var knowledgeInstruction: String {
         if useWorldKnowledge == true {
             return " Knowledge scope: GENERAL_KNOWLEDGE. Actively use relevant established general knowledge to answer the current question, even when that information is absent from the supplied passages. Do not stop at saying the source lacks details when you can give a useful general explanation. This current mode overrides the scope of previous answers; reassess the question instead of repeating an earlier source-only refusal. For quantitative questions, distinguish the unknown measurement for this specific case from general mechanisms, calculation methods and conditional examples. Give a typical range only when you reliably know one for the same method and conditions, with units and assumptions. Otherwise give a clearly labeled hypothetical calculation or useful comparison and ask a focused clarification about the missing method or conditions. Never fabricate a precise value or universal range. Clearly distinguish source-supported statements from additional background or examples, labeling the latter as general knowledge in the response language. Do not attribute outside knowledge to the author. Summaries must faithfully summarize the source; keep any additional background separate, including in intermediate notes. State uncertainty; do not invent citations or claim web browsing, live verification or current information."
