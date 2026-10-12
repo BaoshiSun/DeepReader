@@ -40,6 +40,10 @@ namespace SumatraDeepSeek {
                     using(var client = new DeepSeekClient(fake)) { await client.Explain(scoped,"bank","The bank approved the loan.",CancellationToken.None); }
                     Assert(fake.Payload.Contains(general ? "Knowledge scope: GENERAL_KNOWLEDGE." : "Knowledge scope: SOURCE_ONLY."),"transport receives chosen scope");
                     Assert(!fake.Payload.Contains(general ? "Knowledge scope: SOURCE_ONLY." : "Knowledge scope: GENERAL_KNOWLEDGE."),"transport excludes opposite scope");
+                    if (general) {
+                        Assert(fake.Payload.Contains("even when that information is absent") && fake.Payload.Contains("clearly labeled hypothetical calculation") &&
+                            fake.Payload.Contains("Never fabricate a precise value"),"general knowledge requests useful reasoning without inventing measurements");
+                    }
                 }
             }
             var config = new Config(); config.SetKey("test-key-not-a-real-credential");

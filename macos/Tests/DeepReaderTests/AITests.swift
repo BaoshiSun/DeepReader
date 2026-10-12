@@ -26,6 +26,28 @@ private final class MemoryCredentials: Credentials {
 }
 
 final class AITests: XCTestCase {
+    func testGeneralKnowledgeEnergyFollowupDoesNotInheritSourceOnlyRefusal() throws {
+        let source = "Original selection: 耗能较高\nSource context: 机械清洗耗能较高。\nPrevious conversation: 原文没有数值，当前上下文不足。\nUser follow-up: 能耗较高是有多高"
+        var settings = Settings()
+        for general in [false, true] {
+            settings.useWorldKnowledge = general
+            let request = try AIClient.request(settings: settings, key: "offline-test", task: .followup, source: source)
+            let body = try XCTUnwrap(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: Any])
+            let messages = try XCTUnwrap(body["messages"] as? [[String: String]])
+            let system = try XCTUnwrap(messages.first?["content"])
+            XCTAssertEqual(messages.last?["content"], source)
+            if general {
+                XCTAssertTrue(system.contains("even when that information is absent"))
+                XCTAssertTrue(system.contains("reassess the question instead of repeating"))
+                XCTAssertTrue(system.contains("clearly labeled hypothetical calculation"))
+                XCTAssertTrue(system.contains("Never fabricate a precise value"))
+                XCTAssertFalse(system.contains("Knowledge scope: SOURCE_ONLY."))
+            } else {
+                XCTAssertTrue(system.contains("sole factual evidence"))
+                XCTAssertFalse(system.contains("clearly labeled hypothetical calculation"))
+            }
+        }
+    }
     func testKnowledgeScopeMigrationAndAllRequestTypes() throws {
         let legacy = try JSONEncoder().encode(Settings())
         XCTAssertFalse(String(decoding: legacy, as: UTF8.self).contains("useWorldKnowledge"))

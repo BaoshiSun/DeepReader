@@ -760,7 +760,7 @@ void Tick(Panel* p) {
     auto result=job->result;
     if (result.ok && following) {
         auto model=Wide(ProviderName(job->config.provider))+L" / "+Wide(result.model.empty()?job->config.models[job->config.provider]:result.model);
-        result.text=FollowupTranscript(job->record.answer,job->question,result.text,job->config.english,model);
+        result.text=FollowupTranscript(job->record.answer,job->question,result.text,job->config.english,model,job->config.useWorldKnowledge);
         if (result.text.empty()) {
             result.ok=false;
             result.text=L(p,L"回答过长，未改动原对话；请换用其他模型重试。",L"The reply was too long; your conversation is unchanged. Try another model.");

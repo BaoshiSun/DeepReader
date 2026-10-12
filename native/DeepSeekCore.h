@@ -40,7 +40,7 @@ enum class Task { Explain, Followup, Document, Review, Part, Merge };
 constexpr size_t FollowupQuestionLimit = 1200, FollowupConversationLimit = 12000;
 bool CanFollowup(const std::wstring& conversation, const std::wstring& question);
 std::wstring FollowupTranscript(const std::wstring& conversation, const std::wstring& question,
-    const std::wstring& answer, bool english, const std::wstring& model);
+    const std::wstring& answer, bool english, const std::wstring& model, bool useWorldKnowledge = false);
 std::string RequestBody(const Config& config, Task task, const std::wstring& data, const std::wstring& selected = L"",
     const std::wstring& conversation = L"", const std::wstring& question = L"");
 struct Result { bool ok = false; std::wstring text; std::string model; };
