@@ -78,9 +78,9 @@ bool ParseEndpoint(const std::string& value, Endpoint& endpoint) {
     if (value.size() > 2048 || value.find_first_of(" \t\r\n?#@") != std::string::npos || value.find("https://") != 0) return false;
     auto url = Wide(value);
     URL_COMPONENTS parts{}; parts.dwStructSize = sizeof(parts);
-    parts.dwHostNameLength = parts.dwUrlPathLength = parts.dwUserNameLength = parts.dwPasswordLength = parts.dwExtraInfoLength = (DWORD)-1;
-    if (!WinHttpCrackUrl(url.c_str(), (DWORD)url.size(), 0, &parts) || parts.nScheme != INTERNET_SCHEME_HTTPS ||
-        !parts.dwHostNameLength || parts.dwUrlPathLength <= 1 || parts.dwUserNameLength || parts.dwPasswordLength || parts.dwExtraInfoLength) return false;
+    parts.dwSchemeLength = parts.dwHostNameLength = parts.dwUrlPathLength = (DWORD)-1;
+    if (!WinHttpCrackUrl(url.c_str(), (DWORD)url.size(), ICU_REJECT_USERPWD, &parts) || parts.nScheme != INTERNET_SCHEME_HTTPS ||
+        !parts.lpszHostName || !parts.dwHostNameLength || !parts.lpszUrlPath || parts.dwUrlPathLength <= 1) return false;
     endpoint.host.assign(parts.lpszHostName, parts.dwHostNameLength);
     endpoint.path.assign(parts.lpszUrlPath, parts.dwUrlPathLength); endpoint.port = parts.nPort;
     return endpoint.host != L"example.invalid";

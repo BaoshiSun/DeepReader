@@ -1,6 +1,6 @@
 # DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-11。适用于 Mac App Store 版 1.2.1（构建 5 起），以及 iOS / iPadOS 版 1.0.0。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+更新日期 / Updated: 2026-10-12。适用于 Mac App Store 版 1.2.1（构建 5 起），以及 iOS / iPadOS 版 1.0.0。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
 
 ## 未发布多模型开发版 / Unreleased multi-provider development builds
 

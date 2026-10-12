@@ -34,6 +34,7 @@ struct Input : json::ValueVisitor {
     }
 };
 int wmain(int argc,WCHAR** argv) {
+    setvbuf(stdout,nullptr,_IONBF,0);
     using namespace deepseek;
     Check(Wide(Utf8(L"银行 🏦 中文\n\"test\""))==L"银行 🏦 中文\n\"test\"","Unicode round trip");
     auto marked=Context(L"The river bank was steep, but the ",L"bank",L" approved a loan.");

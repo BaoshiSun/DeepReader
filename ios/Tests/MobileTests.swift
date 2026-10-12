@@ -64,6 +64,30 @@ final class MobileTests: XCTestCase {
         XCTAssertFalse(model.hasAIConsent)
         model.explain(); XCTAssertNotNil(model.pending); XCTAssertEqual(OfflineAIProtocol.count, 1)
     }
+    @MainActor func testEndpointChangeDoesNotReuseKeyOrConsent() async throws {
+        OfflineAIProtocol.reset()
+        let transport = URLSessionConfiguration.ephemeral; transport.protocolClasses = [OfflineAIProtocol.self]
+        let credentials = KeychainCredentials(service: "org.deepreader.ios.tests." + UUID().uuidString)
+        let model = MobileModel(root: root, credentials: credentials, ai: AIClient(configuration: transport))
+        model.chooseProvider(.custom)
+        let a = "https://a.example.test/v1/chat/completions", b = "https://b.example.test/v1/chat/completions"
+        XCTAssertTrue(model.saveAIConfiguration(model: "offline-model", endpoint: a, key: "offline-a"))
+        let first = model.settings
+        defer { try? credentials.remove(first); try? credentials.remove(model.settings) }
+        let book = try model.library!.importFile(write("endpoint.txt", "A river bank."))
+        model.open(book); model.select("bank", surrounding: "A river bank."); model.explain()
+        model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
+        XCTAssertTrue(model.hasAIConsent); XCTAssertEqual(OfflineAIProtocol.count, 1)
+        XCTAssertTrue(model.saveAIConfiguration(model: "offline-model", endpoint: b, key: ""))
+        XCTAssertFalse(model.hasKey); XCTAssertFalse(model.hasAIConsent)
+        model.explain(); XCTAssertEqual(OfflineAIProtocol.count, 1)
+        XCTAssertTrue(model.saveAIConfiguration(model: "offline-model", endpoint: b, key: "offline-b"))
+        model.explain(); XCTAssertNotNil(model.pending); XCTAssertEqual(OfflineAIProtocol.count, 1)
+        model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
+        XCTAssertEqual(OfflineAIProtocol.count, 2)
+        XCTAssertEqual(try credentials.read(first), "offline-a")
+        XCTAssertEqual(try credentials.read(model.settings), "offline-b")
+    }
     @MainActor func testFailedKeyReplacementPreservesSavedStateAndReportsFailure() throws {
         let credentials = FailingCredentials()
         let model = MobileModel(root: root, credentials: credentials)

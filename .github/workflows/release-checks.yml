@@ -58,6 +58,6 @@ jobs:
           if ($LASTEXITCODE) { throw 'Native panel compilation failed' }
           & cl /nologo /MT /std:c++20 /utf-8 /EHsc /DNDEBUG /DWIN32 /D_UNICODE /DUNICODE "/I$source/src" "/I$root/native" "$root/native/NativeCoreTests.cpp" "$root/native/DeepSeekCore.cpp" "$root/native/ReadingLibrary.cpp" "$root/native/BookLibrary.cpp" "$source/out/rel64/utils.lib" /Fe:NativeCoreTests.exe /link kernel32.lib user32.lib gdi32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib gdiplus.lib comctl32.lib shlwapi.lib Version.lib wininet.lib winhttp.lib shcore.lib wintrust.lib crypt32.lib
           if ($LASTEXITCODE) { throw 'Native core compilation failed' }
-          & ./NativeCoreTests.exe synthetic-key.json
-          if ($LASTEXITCODE) { throw 'Native core tests failed' }
+          & ./NativeCoreTests.exe "$root/artifacts/windows-ai/synthetic-key.json"
+          if ($LASTEXITCODE) { throw "Native core tests failed (exit $LASTEXITCODE)" }
           Pop-Location
