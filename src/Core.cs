@@ -43,6 +43,7 @@ namespace SumatraDeepSeek {
         public string Provider = "DeepSeek";
         public string Endpoint = "";
         public bool AdultConfirmed;
+        public bool UseWorldKnowledge;
         public string SharingRecipient = "";
         public Dictionary<string,string> Keys = new Dictionary<string,string>();
         public Dictionary<string,string> Models = new Dictionary<string,string>();
@@ -179,8 +180,11 @@ namespace SumatraDeepSeek {
                 {(config.Provider=="OpenAI" || config.Provider=="MiniMax") ? "max_completion_tokens" : "max_tokens",config.Provider=="DeepSeek" ? 350 : 4096}
             };
             string input=Json.Write(new { selected_text=selected, nearby_context=context });
-            if (config.Provider=="Claude") { body["system"]=Prompt; body["messages"]=new object[]{new {role="user",content=input}}; }
-            else body["messages"]=new object[]{new {role="system",content=Prompt},new {role="user",content=input}};
+            string prompt = Prompt + (config.UseWorldKnowledge ?
+                " Knowledge scope: GENERAL_KNOWLEDGE. Use the supplied passages and relevant general knowledge to explain or answer. Clearly distinguish source-supported statements from additional background or examples, labeling the latter as general knowledge in the response language. Do not attribute outside knowledge to the author. State uncertainty; do not invent citations or claim web browsing, live verification or current information." :
+                " Knowledge scope: SOURCE_ONLY. Use the supplied source passages as the sole factual evidence. Language understanding is allowed, but do not add outside facts, background or examples. Previous AI answers and their general-knowledge additions are not source evidence. If the source does not answer the question, explicitly say the supplied text is insufficient. Do not invent missing facts.");
+            if (config.Provider=="Claude") { body["system"]=prompt; body["messages"]=new object[]{new {role="user",content=input}}; }
+            else body["messages"]=new object[]{new {role="system",content=prompt},new {role="user",content=input}};
             if (config.Provider=="MiniMax") {
                 body["reasoning_split"]=true;
                 if(config.Model=="MiniMax-M3") body["thinking"]=new {type="disabled"};

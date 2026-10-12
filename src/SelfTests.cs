@@ -28,6 +28,20 @@ namespace SumatraDeepSeek {
             }
         }
         static async Task ApiTests() {
+            Assert(!Json.Read<Config>("{}").UseWorldKnowledge,"legacy settings default to source-only");
+            foreach (string provider in new string[]{"DeepSeek","Claude"}) {
+                foreach (bool general in new bool[]{false,true}) {
+                    var scoped = new Config(); scoped.Choose(provider); scoped.UseWorldKnowledge=general;
+                    scoped=Json.Read<Config>(Json.Write(scoped));
+                    Assert(scoped.UseWorldKnowledge==general,"knowledge scope persists");
+                    var fake = new FakeHandler();
+                    if(provider=="Claude") fake.Response="{\"content\":[{\"type\":\"text\",\"text\":\"offline answer\"}],\"stop_reason\":\"end_turn\"}";
+                    scoped.SetKey("offline-scope-key");
+                    using(var client = new DeepSeekClient(fake)) { await client.Explain(scoped,"bank","The bank approved the loan.",CancellationToken.None); }
+                    Assert(fake.Payload.Contains(general ? "Knowledge scope: GENERAL_KNOWLEDGE." : "Knowledge scope: SOURCE_ONLY."),"transport receives chosen scope");
+                    Assert(!fake.Payload.Contains(general ? "Knowledge scope: SOURCE_ONLY." : "Knowledge scope: GENERAL_KNOWLEDGE."),"transport excludes opposite scope");
+                }
+            }
             var config = new Config(); config.SetKey("test-key-not-a-real-credential");
             Assert(config.Key() == "test-key-not-a-real-credential", "DPAPI round trip");
             Assert(!config.Keys[config.Recipient].Contains("test-key"), "stored secret is encrypted");

@@ -88,6 +88,7 @@ struct AssistantView: View {
                     Button(model.t("暂不发送", "Not now")) { model.pending = nil }
                 } else {
                     Text(model.t("AI 回答仅供参考，请结合原文核对。", "AI can make mistakes. Check the source.")).font(.caption).foregroundStyle(.secondary)
+                    KnowledgeScopePicker()
                     if !model.selected.isEmpty {
                         Text(model.selected).font(.subheadline).lineLimit(3).frame(maxWidth: .infinity, alignment: .leading)
                             .padding(10).background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
@@ -146,6 +147,7 @@ struct SettingsView: View {
                 Toggle("English", isOn: $model.settings.english).onChange(of: model.settings.english) { model.persistSettings() }
             }
             Section(model.t("AI 服务", "AI provider")) {
+                KnowledgeScopePicker()
                 Picker(model.t("服务商", "Provider"), selection: Binding(get: { model.settings.provider }, set: {
                     model.chooseProvider($0); loadDrafts()
                 })) { ForEach(Provider.available()) { Text($0.rawValue).tag($0) } }
@@ -201,5 +203,17 @@ struct SettingsView: View {
             guard let url = Bundle.main.url(forResource: name, withExtension: name == "THIRD-PARTY-NOTICES" ? "md" : "txt") else { return nil }
             return try? String(contentsOf: url, encoding: .utf8)
         }.joined(separator: "\n\n")
+    }
+}
+struct KnowledgeScopePicker: View {
+    @EnvironmentObject var model: MobileModel
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Picker(model.t("回答依据", "Answer sources"), selection: Binding(get: { model.settings.useWorldKnowledge == true }, set: { model.setWorldKnowledge($0) })) {
+                Text(model.t("仅书中内容", "Book only")).tag(false)
+                Text(model.t("结合通用知识", "Add general knowledge")).tag(true)
+            }.pickerStyle(.menu).disabled(model.busy)
+            Text(model.t("用于之后的回答；通用知识不联网搜索。", "Applies to future answers; general knowledge does not browse the web.")).font(.caption).foregroundStyle(.secondary)
+        }
     }
 }

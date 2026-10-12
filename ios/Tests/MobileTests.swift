@@ -45,6 +45,29 @@ final class MobileTests: XCTestCase {
         try credentials.remove(c)
         XCTAssertEqual(try credentials.read(a), "offline-deepseek")
     }
+    @MainActor func testKnowledgeScopePersistsWithoutSendingAndInvalidatesPendingRequest() async throws {
+        OfflineAIProtocol.reset()
+        let configuration = URLSessionConfiguration.ephemeral; configuration.protocolClasses = [OfflineAIProtocol.self]
+        let credentials = FailingCredentials(); credentials.value = "offline-test"
+        let model = MobileModel(root: root, credentials: credentials, ai: AIClient(configuration: configuration))
+        let book = try model.library!.importFile(write("knowledge.txt", "The bank approved the loan."))
+        model.open(book); model.select("bank", surrounding: "The bank approved the loan."); model.explain()
+        let obsolete = try XCTUnwrap(model.pending)
+        model.setWorldKnowledge(true)
+        XCTAssertNil(model.pending); XCTAssertEqual(model.selected, "bank"); XCTAssertEqual(model.book?.id, book.id)
+        XCTAssertEqual(OfflineAIProtocol.count, 0)
+        XCTAssertEqual(MobileModel(root: root, credentials: credentials).settings.useWorldKnowledge, true)
+        model.authorizeAndSend(obsolete); XCTAssertEqual(OfflineAIProtocol.count, 0)
+        model.explain(); model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
+        XCTAssertTrue(OfflineAIProtocol.lastPayload.contains("Knowledge scope: GENERAL_KNOWLEDGE."))
+        let answer = model.answer
+        model.setWorldKnowledge(false)
+        XCTAssertEqual(OfflineAIProtocol.count, 1); XCTAssertEqual(model.answer, answer); XCTAssertTrue(model.hasAIConsent)
+        model.question = "Explain the background"; model.followup(); await waitForAI(model)
+        XCTAssertTrue(OfflineAIProtocol.lastPayload.contains("Knowledge scope: SOURCE_ONLY."))
+        XCTAssertEqual(OfflineAIProtocol.count, 2)
+        XCTAssertEqual(MobileModel(root: root, credentials: credentials).settings.useWorldKnowledge, false)
+    }
     @MainActor func testProviderChangeRequiresFreshConsentAndPersistsChoice() async throws {
         OfflineAIProtocol.reset()
         let configuration = URLSessionConfiguration.ephemeral; configuration.protocolClasses = [OfflineAIProtocol.self]
@@ -408,12 +431,23 @@ private final class FailingCredentials: Credentials {
 private final class OfflineAIProtocol: URLProtocol {
     private static let lock = NSLock()
     private static var requests = 0
+    private static var payload = ""
+    static var lastPayload: String { lock.lock(); defer { lock.unlock() }; return payload }
     static var count: Int { lock.lock(); defer { lock.unlock() }; return requests }
-    static func reset() { lock.lock(); requests = 0; lock.unlock() }
+    static func reset() { lock.lock(); requests = 0; payload = ""; lock.unlock() }
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
-        Self.lock.lock(); Self.requests += 1; Self.lock.unlock()
+        var dataBody = request.httpBody ?? Data()
+        if let stream = request.httpBodyStream {
+            stream.open(); defer { stream.close() }
+            var buffer = [UInt8](repeating: 0, count: 4096)
+            while stream.hasBytesAvailable {
+                let count = stream.read(&buffer, maxLength: buffer.count)
+                if count <= 0 { break }; dataBody.append(contentsOf: buffer.prefix(count))
+            }
+        }
+        Self.lock.lock(); Self.requests += 1; Self.payload = String(decoding: dataBody, as: UTF8.self); Self.lock.unlock()
         let data = Data(#"{"choices":[{"finish_reason":"stop","message":{"content":"Offline test response."}}]}"#.utf8)
         client?.urlProtocol(self, didReceive: HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"])!, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: data)

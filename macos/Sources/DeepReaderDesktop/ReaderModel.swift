@@ -71,6 +71,13 @@ import DeepReaderCore
         status = (error as? ReaderError)?.message(settings.english) ?? t("操作失败，请检查文件权限或可用空间。", "Operation failed. Check file permissions or available disk space.")
     }
     public func persist() { do { try store.saveSettings(settings) } catch { show(error) } }
+    public func setWorldKnowledge(_ enabled: Bool) {
+        guard !busy else { return }
+        do {
+            var next = settings; next.useWorldKnowledge = enabled
+            try store.saveSettings(next); settings = next; clearSummary()
+        } catch { show(error) }
+    }
     public func reload() throws {
         let loaded = try store.records(), library = try store.books()
         records = loaded.items; books = library.items; badRecords = loaded.unreadable

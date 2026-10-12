@@ -159,6 +159,7 @@ namespace SumatraDeepSeek {
         readonly Button explain = Style.Button("解释",true);
         readonly Button copy = Style.Button("复制解释",false);
         readonly Button settingsButton = Style.Button("设置",false);
+        readonly ComboBox knowledgeScope = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Fill };
         readonly CheckBox inspect = new CheckBox { Text = "查看 / 补充上下文", AutoSize = true, ForeColor = Style.Muted, Margin = new Padding(0,7,0,0) };
         readonly TableLayoutPanel layout;
         bool busy;
@@ -167,13 +168,13 @@ namespace SumatraDeepSeek {
             file = document; page = currentPage; selected = selection; config = settings; api = client;
             Style.Form(this);
             Text = "AI · 此处怎么理解";
-            ClientSize = new Size(660,515);
-            MinimumSize = new Size(600,530);
+            ClientSize = new Size(660,551);
+            MinimumSize = new Size(600,566);
             KeyPreview = true;
             KeyDown += delegate(object sender,KeyEventArgs e) { if (e.KeyCode == Keys.Escape) { e.Handled = true; Close(); } };
             layout = new TableLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(24), ColumnCount = 1, RowCount = 9 };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));
-            foreach (int height in new int[] {40,26,74,36,28,0,30,0,54})
+            foreach (int height in new int[] {40,26,74,36,64,0,30,0,54})
                 layout.RowStyles.Add(new RowStyle(height == 0 && layout.RowStyles.Count == 7 ? SizeType.Percent : SizeType.Absolute,
                     height == 0 && layout.RowStyles.Count == 7 ? 100 : height));
             Controls.Add(layout);
@@ -191,7 +192,21 @@ namespace SumatraDeepSeek {
                     TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine);
                 e.DrawFocusRectangle();
             };
-            layout.Controls.Add(inspect,0,4);
+            var scopeRow = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2, Margin = new Padding(0) };
+            scopeRow.RowStyles.Add(new RowStyle(SizeType.Absolute,32));
+            scopeRow.RowStyles.Add(new RowStyle(SizeType.Absolute,28));
+            knowledgeScope.Items.AddRange(new object[]{"回答依据：仅书中内容", "回答依据：结合通用知识（不联网搜索）"});
+            knowledgeScope.SelectedIndex = config.UseWorldKnowledge ? 1 : 0;
+            knowledgeScope.SelectedIndexChanged += delegate {
+                bool previous = config.UseWorldKnowledge;
+                bool next = knowledgeScope.SelectedIndex == 1;
+                if (previous == next) return;
+                if (busy) { knowledgeScope.SelectedIndex = previous ? 1 : 0; return; }
+                try { config.UseWorldKnowledge = next; config.Save(); status.Text = "已保存，用于之后的回答；已有回答不变。"; }
+                catch { config.UseWorldKnowledge = previous; knowledgeScope.SelectedIndex = previous ? 1 : 0; status.Text = "回答依据保存失败，请检查设置文件权限。"; }
+            };
+            scopeRow.Controls.Add(knowledgeScope,0,0); scopeRow.Controls.Add(inspect,0,1);
+            layout.Controls.Add(scopeRow,0,4);
             context.MaxLength = 3000; context.Margin = new Padding(0,0,0,10);
             layout.Controls.Add(context,0,5);
             layout.Controls.Add(status,0,6);
@@ -272,19 +287,19 @@ namespace SumatraDeepSeek {
                     config.Save();
                 }
                 busy = true; explain.Enabled = false; copy.Enabled = false; choices.Enabled = false;
-                context.ReadOnly = true; settingsButton.Enabled = false;
+                context.ReadOnly = true; settingsButton.Enabled = false; knowledgeScope.Enabled = false;
                 answer.Clear(); status.Text = "正在结合上下文解释…";
                 string result = await api.Explain(config,selected,context.Text,lifetime.Token);
                 if (IsDisposed) return;
                 answer.Text = result;
-                status.Text = "解释依据当前选定的语境。";
+                status.Text = config.UseWorldKnowledge ? "依据书中语境及通用知识；补充背景请与原文区分。" : "解释仅依据当前提供的书中内容。";
                 copy.Enabled = true;
             } catch (OperationCanceledException) { }
             catch (Exception ex) {
                 if (!IsDisposed) { status.Text = ex is UserError ? ex.Message : "解释失败，请重试。"; }
             } finally {
                 busy = false;
-                if (!IsDisposed) { explain.Enabled = ready; choices.Enabled = true; context.ReadOnly = false; settingsButton.Enabled = true; }
+                if (!IsDisposed) { explain.Enabled = ready; choices.Enabled = true; context.ReadOnly = false; settingsButton.Enabled = true; knowledgeScope.Enabled = true; }
             }
         }
         public void Preview(string path) {

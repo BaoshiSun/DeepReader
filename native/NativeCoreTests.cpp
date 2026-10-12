@@ -43,6 +43,20 @@ int wmain(int argc,WCHAR** argv) {
     Check(bounded.size()<=3000 && bounded.find(std::wstring(2200,L'b'))!=std::wstring::npos,"bounded context preserves selection");
     Check(Context(L"",std::wstring(2201,L'x'),L"").empty() && Context(L"text",L"",L"text").empty(),"empty and oversize selections rejected");
     Config c; c.adultConfirmed=true; Contract direct;
+    Check(!c.useWorldKnowledge,"old/new configurations default to source-only knowledge");
+    for (int provider : {DeepSeek, Claude}) {
+        for (bool general : {false,true}) {
+            Config scoped; scoped.provider=provider; scoped.useWorldKnowledge=general;
+            for (auto task : {Task::Explain,Task::Followup,Task::Document,Task::Review,Task::Part,Task::Merge}) {
+                auto payload=RequestBody(scoped,task,L"Source text",L"selection",L"Earlier answer",L"Why?");
+                Check(payload.find(general ? "Knowledge scope: GENERAL_KNOWLEDGE." : "Knowledge scope: SOURCE_ONLY.")!=std::string::npos &&
+                    payload.find(general ? "Knowledge scope: SOURCE_ONLY." : "Knowledge scope: GENERAL_KNOWLEDGE.")==std::string::npos,
+                    "every task and protocol applies exactly the chosen knowledge scope");
+                Check(payload.find(general ? "keep any additional background separate" : "are not source evidence")!=std::string::npos,
+                    "outside knowledge is separated from source evidence");
+            }
+        }
+    }
     auto defaultBody=RequestBody(c,Task::Explain,marked,L"bank");
     Check(c.provider==DeepSeek && std::wstring(Service(c.provider).host)==L"api.deepseek.com" &&
         std::wstring(Service(c.provider).path)==L"/chat/completions" && c.keys[DeepSeek].empty() &&
@@ -168,12 +182,15 @@ int wmain(int argc,WCHAR** argv) {
     if (argc>1) {
         std::wstring path=argv[1];
         Config original; original.provider=OpenRouter; original.keys[DeepSeek]=encrypted; original.keys[OpenRouter]=Protect("other-synthetic-key"); original.english=true;
-        original.onboardingSeen=true; original.lookupSplit=65;
+        original.onboardingSeen=true; original.lookupSplit=65; original.useWorldKnowledge=true;
         original.panel.width=520; original.panel.floating=true;
         original.panel.floatingWidth=640; original.panel.floatingHeight=820;
         original.archiveFolder=L"D:\\阅读归档";
         Check(SaveConfig(path,original),"multi-provider settings written atomically");
         Config restored;
+        Check(ReadConfig(path,restored) && restored.useWorldKnowledge,"general knowledge preference survives reload");
+        original.useWorldKnowledge=false; SaveConfig(path,original);
+        Check(ReadConfig(path,restored) && !restored.useWorldKnowledge,"source-only preference survives reload");
         Check(ReadConfig(path,restored) && restored.english && restored.provider==OpenRouter &&
             Unprotect(restored.keys[DeepSeek])=="synthetic-test-key" && Unprotect(restored.keys[OpenRouter])=="other-synthetic-key","explicit OpenRouter choice, provider credentials and language survive reload without mixing");
         Check(restored.onboardingSeen && restored.lookupSplit==65,"guide completion and selected/explanation ratio survive restart");

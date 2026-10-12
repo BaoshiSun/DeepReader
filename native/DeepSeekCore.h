@@ -11,6 +11,7 @@ struct PanelPlacement {
 struct Config {
     int provider = DeepSeek;
     bool english = false;
+    bool useWorldKnowledge = false;
     bool adultConfirmed = false;
     std::string sharingRecipient;
     bool onboardingSeen = false;

@@ -68,6 +68,14 @@ struct PendingAI: Identifiable {
             refreshProviderState()
         } catch { report(error) }
     }
+    func setWorldKnowledge(_ enabled: Bool) {
+        guard !busy, let library else { return }
+        do {
+            var next = settings; next.useWorldKnowledge = enabled
+            try library.update { $0.settings = next }
+            settings = next; pending = nil
+        } catch { report(error) }
+    }
     private func refreshProviderState() {
         hasAIConsent = library?.state.aiConsentVersion == Self.aiConsentVersion && library?.state.aiConsentRecipient == settings.recipientID
         hasKey = false

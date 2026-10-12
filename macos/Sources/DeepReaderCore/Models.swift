@@ -87,6 +87,14 @@ public struct Settings: Codable {
     // Optional additions preserve decoding of libraries written by older releases.
     public var endpoints: [String: String]?
     public var adultConfirmed: Bool?
+    // Optional for libraries saved before knowledge-scope selection.
+    public var useWorldKnowledge: Bool?
+    public var knowledgeInstruction: String {
+        if useWorldKnowledge == true {
+            return " Knowledge scope: GENERAL_KNOWLEDGE. Use the supplied passages and relevant general knowledge to explain or answer. Clearly distinguish source-supported statements from additional background or examples, labeling the latter as general knowledge in the response language. Do not attribute outside knowledge to the author. Summaries must faithfully summarize the source; keep any additional background separate, including in intermediate notes. State uncertainty; do not invent citations or claim web browsing, live verification or current information."
+        }
+        return " Knowledge scope: SOURCE_ONLY. Use the supplied source passages as the sole factual evidence. Language understanding is allowed, but do not add outside facts, background or examples. Previous AI answers and their general-knowledge additions are not source evidence. If the source does not answer the question, explicitly say the supplied text is insufficient. Do not invent missing facts."
+    }
     public var archiveFolder = ""
     public var sidebarWidth: Double = 420
     public var floating = false
