@@ -44,6 +44,30 @@ int wmain(int argc,WCHAR** argv) {
     Check(Context(L"",std::wstring(2201,L'x'),L"").empty() && Context(L"text",L"",L"text").empty(),"empty and oversize selections rejected");
     Config c; c.adultConfirmed=true; Contract direct;
     Check(!c.useWorldKnowledge,"old/new configurations default to source-only knowledge");
+    {
+        Config scoped;
+        const auto prior=L"所给文本只写机械清洗耗能较高，没有给出数值，当前上下文不足。";
+        const auto question=L"能耗较高是有多高";
+        Contract sourceOnly, general;
+        Check(json::Parse(RequestBody(scoped,Task::Followup,L"机械清洗耗能较高。",L"耗能较高",prior,question).c_str(),&sourceOnly) &&
+            sourceOnly.system.find("Knowledge scope: SOURCE_ONLY.")!=std::string::npos,"energy follow-up starts in source-only mode");
+        scoped.useWorldKnowledge=true;
+        Check(json::Parse(RequestBody(scoped,Task::Followup,L"机械清洗耗能较高。",L"耗能较高",prior,question).c_str(),&general) &&
+            general.system.find("even when that information is absent")!=std::string::npos &&
+            general.system.find("reassess the question instead of repeating")!=std::string::npos &&
+            general.system.find("clearly labeled hypothetical calculation")!=std::string::npos &&
+            general.system.find("Never fabricate a precise value")!=std::string::npos,
+            "general energy follow-up requests useful conditional reasoning instead of repeating old refusal");
+        Check(general.system.find("say briefly when context is insufficient")==std::string::npos &&
+            general.system.find("Knowledge scope: SOURCE_ONLY.")==std::string::npos,"general prompt removes conflicting source-only fallback");
+        Input follow; Check(json::Parse(general.input.c_str(),&follow) && follow.question==Utf8(question) && follow.conversation==Utf8(prior),
+            "mode change retains the real question and prior context as data");
+        auto first=FollowupTranscript(prior,question,L"原文不足。",false,L"DeepSeek / test",false);
+        auto next=FollowupTranscript(first,question,L"通用知识补充：可根据平均功率和时间计算。",false,L"DeepSeek / test",true);
+        Check(next.find(L"AI · DeepSeek / test · 仅书中内容")!=std::wstring::npos &&
+            next.find(L"AI · DeepSeek / test · 结合通用知识（不联网）")!=std::wstring::npos,
+            "each saved follow-up labels its actual request scope without rewriting earlier turns");
+    }
     for (int provider : {DeepSeek, Claude}) {
         for (bool general : {false,true}) {
             Config scoped; scoped.provider=provider; scoped.useWorldKnowledge=general;
