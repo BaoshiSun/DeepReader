@@ -2,7 +2,6 @@
 #include "utils/BaseUtil.h"
 #include "utils/JsonParser.h"
 #include <wincrypt.h>
-#include <winhttp.h>
 #include <map>
 #include <string>
 #include <vector>
@@ -77,9 +76,11 @@ std::string EndpointURL(const Config& config) {
 bool ParseEndpoint(const std::string& value, Endpoint& endpoint) {
     if (value.size() > 2048 || value.find_first_of(" \t\r\n?#@") != std::string::npos || value.find("https://") != 0) return false;
     auto url = Wide(value);
+    // BaseUtil includes WinINet: use its parser and scheme enum together.
+    // WinHTTP uses different numeric scheme constants despite sharing type names.
     URL_COMPONENTS parts{}; parts.dwStructSize = sizeof(parts);
     parts.dwSchemeLength = parts.dwHostNameLength = parts.dwUrlPathLength = (DWORD)-1;
-    if (!WinHttpCrackUrl(url.c_str(), (DWORD)url.size(), ICU_REJECT_USERPWD, &parts) || parts.nScheme != INTERNET_SCHEME_HTTPS ||
+    if (!InternetCrackUrlW(url.c_str(), (DWORD)url.size(), 0, &parts) || parts.nScheme != INTERNET_SCHEME_HTTPS ||
         !parts.lpszHostName || !parts.dwHostNameLength || !parts.lpszUrlPath || parts.dwUrlPathLength <= 1) return false;
     endpoint.host.assign(parts.lpszHostName, parts.dwHostNameLength);
     endpoint.path.assign(parts.lpszUrlPath, parts.dwUrlPathLength); endpoint.port = parts.nPort;
