@@ -15,7 +15,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.3.1</string>
 	<key>CFBundleVersion</key>
-	<string>7</string>
+	<string>8</string>
 	<key>CFBundleGetInfoString</key>
 	<string>DeepReader 1.3.1 macOS preview — AGPL-3.0-or-later</string>
 	<key>NSHumanReadableCopyright</key>
