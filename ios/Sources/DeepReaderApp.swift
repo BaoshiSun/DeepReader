@@ -174,7 +174,7 @@ struct SettingsView: View {
                 Text(model.t("本地阅读不需要 Key。AI 使用您的服务商账户和额度；聊天订阅通常不包含 API 费用。", "Local reading needs no key. AI uses your provider account and quota; chat subscriptions generally do not include API fees.")).font(.footnote)
             }.disabled(model.busy)
             Section(model.t("数据与隐私", "Data and privacy")) {
-                Link(model.t("DeepReader 隐私政策", "DeepReader privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-native/docs/app-store/privacy-policy.md")!)
+                Link(model.t("DeepReader 隐私政策", "DeepReader privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy.md")!)
                 if model.hasAIConsent {
                     Label(model.settings.provider.rawValue + model.t(" · 已授权", " · Sharing allowed"), systemImage: "checkmark.shield")
                     Button(model.t("撤销 AI 发送授权", "Revoke AI sharing permission"), role: .destructive) { model.revokeAIConsent() }
@@ -186,9 +186,9 @@ struct SettingsView: View {
                 Text(model.t("切换接收方后需重新授权。OpenRouter 还会转发给模型供应商。", "A different recipient requires fresh permission. OpenRouter also forwards data to model providers."))
             }
             Section(model.t("关于", "About")) {
-                Text("DeepReader · iOS 1.0.0")
+                Text("DeepReader · iOS \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development")")
                 Text("© 2026 Baoshi Sun")
-                Link(model.t("源码与项目说明", "Source code and project"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/tree/codex/ios-native/ios")!)
+                Link(model.t("源码与项目说明", "Source code and project"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/tree/codex/main/ios")!)
                 Text(model.t("EPUB 初版采用纯文本章节阅读，暂不显示图片和原书排版；Markdown 显示源文本。暂不支持 MOBI、AZW3、DRM、OCR 或周期总结。", "EPUB uses chapter text; images and original book layout are not displayed yet. Markdown shows source text. MOBI, AZW3, DRM, OCR and period summaries are not supported yet.")).font(.footnote)
                 NavigationLink(model.t("开源许可", "Open-source licenses")) { ScrollView { Text(licenses).font(.caption.monospaced()).padding().textSelection(.enabled) }.navigationTitle(model.t("许可", "Licenses")) }
                 Link(model.t("支持邮箱", "Support email"), destination: URL(string: "mailto:baoshi.sun@icloud.com")!)
