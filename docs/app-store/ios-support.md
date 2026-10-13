@@ -4,16 +4,20 @@
 
 需要 iOS / iPadOS 17 或更新版本。通过书库“从文件导入”打开 PDF、EPUB、TXT 或 Markdown，或先打开内置示例。EPUB 以纯文本章节显示，Markdown 显示源文本；不支持 DRM、MOBI/AZW3、OCR 或 Mac 同步。
 
-在正文中长按选择文字，半透明阅读助手会出现。拖动标题移动，点减号收起，点叉关闭。点击“解释选文”才会请求 AI。首次发送需要同意；应用记住授权，可在设置中撤销。AI 需要您自己的 DeepSeek API Key，保存在设备钥匙串；服务商费用与额度另计。
+在正文中长按选择文字，半透明阅读助手会出现。拖动标题移动，点减号收起，点叉关闭。点击“解释选文”才会请求 AI。首次发送需要同意；应用记住授权，可在设置中撤销。AI 需要您自己的服务商 API Key，保存在设备钥匙串；服务商费用与额度另计。
+
+iOS 1.1.0 支持多家服务商及自定义兼容接口，发送授权和 Key 按服务商及地址隔离。宽屏可切换右侧 AI 栏并拖动分隔线调整空间，也可选悬浮模式。回答依据可选择“仅书中内容”或“结合通用知识（不联网）”；后者使用模型已有知识，不执行网页搜索。
 
 遇到问题请提供设备型号、iOS 版本和错误文字。不要发送 Key、私人文档或阅读历史。删除书籍副本不删除原文件或历史；历史可左滑删除，Key 可在设置中移除。
 
 Requires iOS / iPadOS 17 or later. Use Import from Files for PDF, EPUB, TXT or Markdown, or open the built-in sample. EPUB is chapter text; Markdown displays source. DRM, MOBI/AZW3, OCR and Mac sync are unsupported.
 
-Touch and hold to select text. Drag the assistant title to move it, collapse it with minus, or close it with X. Tap Explain to request AI. First-use permission is remembered and can be revoked in Settings. AI needs your own DeepSeek API key, stored in device Keychain; provider fees and quotas apply.
+Touch and hold to select text. Drag the assistant title to move it, collapse it with minus, or close it with X. Tap Explain to request AI. First-use permission is remembered and can be revoked in Settings. AI needs your own provider API key, stored in device Keychain; provider fees and quotas apply.
+
+iOS 1.1.0 supports multiple providers and custom compatible endpoints, with keys and sharing permission isolated by recipient. Wide screens offer a resizable right sidebar or floating mode. Choose Book only or General knowledge (no browsing); the latter uses learned model knowledge without web search.
 
 For support, include your device model, iOS version and error text. Do not send keys, private documents or reading history. Deleting an imported book leaves its original and history intact. Swipe history records to delete them; remove keys in Settings.
 
-[Privacy policy / 隐私政策](https://github.com/BaoshiSun/DeepReader/blob/codex/ios-native/docs/app-store/privacy-policy.md)
+[Privacy policy / 隐私政策](https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy.md)
 
-[Source / 源码](https://github.com/BaoshiSun/DeepReader/tree/codex/ios-native/ios)
+[Source / 源码](https://github.com/BaoshiSun/DeepReader/tree/codex/main/ios)

@@ -1,18 +1,18 @@
 # DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-13。适用于 macOS 1.3.1（包括 Mac App Store 构建 8），以及已提交的 iOS / iPadOS 1.0.0。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+更新日期 / Updated: 2026-10-13。适用于 macOS 1.3.1（包括 Mac App Store 构建 8），以及 iOS / iPadOS 1.1.0；同时保留旧版行为的说明。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
 
-## macOS 1.3.1 多模型支持 / macOS 1.3.1 multiple providers
+## macOS 1.3.1 与 iOS 1.1.0 多模型支持 / Multiple providers
 
-2026-10-13：macOS 1.3.1 提供下述多模型支持。iOS / iPadOS 1.0.0 已提交构建仍仅支持 DeepSeek，详见文末专节。
+2026-10-13：macOS 1.3.1 和 iOS / iPadOS 1.1.0 提供下述多模型支持；旧 iOS / iPadOS 1.0.0 构建仅支持 DeepSeek。
 
-macOS 1.3.1 在用户主动执行 AI 操作时，将相同范围的文字发送给设置中选定的服务商及完整 HTTPS 地址。可选 DeepSeek、OpenAI、Anthropic Claude、Google Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、xAI Grok、Mistral、OpenRouter 或用户配置的兼容服务器。DeepReader 不运营 AI 代理服务器。自定义服务器的运营者及其下游服务可能接收内容；OpenRouter 将请求路由到模型供应商。不要向不信任的地址填写 Key 或发送文档。
+macOS 1.3.1 和 iOS 1.1.0 在用户主动执行 AI 操作时，将相同范围的文字发送给设置中选定的服务商及完整 HTTPS 地址。可选 DeepSeek、OpenAI、Anthropic Claude、Google Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、xAI Grok、Mistral、OpenRouter 或用户配置的兼容服务器。DeepReader 不运营 AI 代理服务器。自定义服务器的运营者及其下游服务可能接收内容；OpenRouter 将请求路由到模型供应商。不要向不信任的地址填写 Key 或发送文档。
 
 服务商接收认证 Key、发送的文字、IP 地址及连接所需信息。保存、训练、日志、账号关联和跨境处理由实际接收方的政策与账户设置决定；本应用不承诺各家均不保存或不训练。用户应先在服务商网站查看条款和隐私政策。服务商保存的数据需向该服务商申请删除。
 
 Apple 版 Key 按服务商与地址隔离保存于本机钥匙串；模型 ID 与接口地址保存在本机设置中。iOS 的发送授权绑定服务商和地址，改变接收方需要新授权，可在设置中撤销；旧版全局授权不自动用于新服务商。macOS 新版支持绑定接收方的记住授权，并保留“仅本次发送”；旧版仍逐次确认。仅修改设置或选择文字不会发起模型请求。Gemini 与 OpenRouter 的成人使用确认不替代对服务条款、整体受众和上架年龄分级的复核。
 
-This section applies to macOS 1.3.1, including the Mac App Store build. The submitted iOS / iPadOS 1.0.0 build remains DeepSeek-only, as described in its section below. On an explicit AI action, macOS 1.3.1 sends the same text scopes to the selected provider and full HTTPS endpoint: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, xAI Grok, Mistral, OpenRouter, or a user-configured compatible server. DeepReader operates no AI proxy. OpenRouter forwards requests to model providers; custom server operators may also use downstream services.
+This section applies to macOS 1.3.1 and iOS / iPadOS 1.1.0, including the App Store builds. The older iOS / iPadOS 1.0.0 build is DeepSeek-only. On an explicit AI action, the current builds send the same text scopes to the selected provider and full HTTPS endpoint: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, xAI Grok, Mistral, OpenRouter, or a user-configured compatible server. DeepReader operates no AI proxy. OpenRouter forwards requests to model providers; custom server operators may also use downstream services.
 
 Recipients receive authentication credentials, submitted text, IP addresses and connection information. Retention, training, logging, account linkage and international processing depend on the actual recipient’s policies and account settings. Review those policies before sharing; contact the recipient to delete provider-held data. Apple builds isolate Keychain credentials by provider and endpoint. iOS remembers permission for a recipient, supports revocation and requires fresh permission for changed recipients; legacy global consent is not reused. macOS 1.3.1 supports remembered permission for the current provider and endpoint, one-operation permission and revocation in Setup; older store builds ask per operation. Selecting text or editing settings sends no AI request. Age confirmation for Gemini and OpenRouter does not by itself establish compliance with all provider terms or store requirements.
 
@@ -98,13 +98,13 @@ The operator is Baoshi Sun. Contact [baoshi.sun@icloud.com](mailto:baoshi.sun@ic
 
 iOS 版不要求创建 DeepReader 账户，没有广告、分析统计 SDK 或自有云同步。本地阅读不发送内容。应用将通过“文件”导入的 PDF、EPUB、TXT 和 Markdown 复制到本机应用容器；原文件不变。容器内保存文档副本、标题、评分、读完状态、阅读位置、文字高亮、语言设置、发送授权和成功的 AI 历史。历史可包含选文、语境、问题、回答、页码、时间、服务商和模型。操作系统备份可能包含这些数据；这不代表应用提供跨设备同步。
 
-API Key 单独保存在 iOS 钥匙串（仅限本设备的可访问性设置），不写入书库 JSON、源码或发行包。发起 AI 请求时，Key 直接发送给 DeepSeek 认证，不经过 DeepReader 服务器。
+API Key 单独保存在 iOS 钥匙串（仅限本设备的可访问性设置），不写入书库 JSON、源码或发行包。发起 AI 请求时，Key 直接发送给所选服务商和接口地址进行认证，不经过 DeepReader 服务器。iOS 1.1.0 按服务商及接口地址隔离保存 Key；模型 ID、接口地址和授权保存在本机设置中。
 
-选中文字只打开阅读浮窗，不触发网络请求。首次点击解释、追问或全文总结时，应用在浮窗内说明接收方及数据范围；选择“同意并记住，发送”后，将在本机保存授权。之后只有您主动点击相应 AI 操作才发送，不再逐次询问。可在“设置 → 数据与隐私”撤销授权；撤销不影响本地阅读，也不能收回已发送的数据。取消首次授权不发送任何内容。
+选中文字只打开阅读浮窗，不触发网络请求。首次点击解释、追问或全文总结时，应用在浮窗内说明接收方及数据范围；选择“同意并记住，发送”后，将在本机保存授权。iOS 1.1.0 的授权绑定服务商及完整接口地址，换接收方需重新授权，旧版全局授权不自动沿用。之后只有您主动点击相应 AI 操作才发送，不再逐次询问。可在“设置 → 数据与隐私”撤销授权；撤销不影响本地阅读，也不能收回已发送的数据。取消首次授权不发送任何内容。
 
 解释发送选文和附近语境；追问还发送原选文、语境、先前回答和新问题；全文总结发送可提取全文，长文会分段处理并发送中间摘要合并。不上传原始文档二进制文件，不自动附带设备上的完整文件路径，不支持日／周／月总结。
 
-接收方仅为 DeepSeek（api.deepseek.com）。其账户关联、网络与使用日志、IP 推断的粗略位置、保留、训练及跨境处理规则与本政策 macOS 部分所述相同；应用不请求 GPS 位置，不使用广告跟踪。详见 [DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)。API 费用和额度由用户的 DeepSeek 账户承担。
+iOS 1.1.0 的接收方可为本政策开头列出的服务商及自定义兼容接口，旧 1.0.0 仅为 DeepSeek（api.deepseek.com）。所选接收方及其下游服务的账户关联、网络与使用日志、IP 推断的粗略位置、保留、训练和跨境处理由其政策及账户设置决定，详见开头的多模型说明。应用不请求 GPS 位置，不使用广告跟踪。API 费用和额度由用户的服务商账户承担。
 
 可在书库长按删除导入副本，在历史列表左滑删除记录，在设置中移除 Key。删除书籍副本不会删除原文件或既有历史；需分别删除。卸载应用会移除本机应用容器，但系统备份和导出副本应单独管理；卸载不保证删除钥匙串 Key，建议先在应用中移除。服务商已接收的数据需联系服务商申请删除。通过系统分享功能导出的文件和回答由您选择的目标应用处理。
 
@@ -114,13 +114,13 @@ API Key 单独保存在 iOS 钥匙串（仅限本设备的可访问性设置）�
 
 The iOS edition has no DeepReader account, advertising, analytics SDK or developer-operated cloud sync. Local reading sends no content. PDF, EPUB, TXT and Markdown files imported from Files are copied into the app container; originals remain unchanged. Local data includes document copies, titles, ratings, finished status, reading position, highlights, language settings, sharing permission and successful AI history. History may include selections, context, questions, answers, page numbers, timestamps, provider and model. OS backups may include these data; the app does not provide cross-device sync.
 
-Your API key is stored separately in iOS Keychain with ThisDeviceOnly accessibility, never in library JSON, source code or distribution packages. Requests send the key directly to DeepSeek for authentication, without a developer-operated relay.
+Your API key is stored separately in iOS Keychain with ThisDeviceOnly accessibility, never in library JSON, source code or distribution packages. Requests send the key directly to the selected provider and endpoint for authentication, without a developer-operated relay. iOS 1.1.0 isolates credentials by provider and endpoint; model IDs, endpoints and sharing permission are stored in local settings.
 
-Selecting text only opens the floating assistant. Before the first Explain, Follow-up or Summary request, an inline disclosure names the recipient and data scope. Tapping Allow, remember and send stores permission locally. Subsequent requests occur only when you tap an AI action, without repeated prompts. Revoke permission in Settings → Data and privacy; this preserves local reading and cannot recall data already sent. Cancelling first-use permission sends nothing.
+Selecting text only opens the floating assistant. Before the first Explain, Follow-up or Summary request, an inline disclosure names the recipient and data scope. Tapping Allow, remember and send stores permission locally. In iOS 1.1.0, permission is bound to the provider and full endpoint; changed recipients require new permission, and older global consent is not reused. Subsequent requests occur only when you tap an AI action, without repeated prompts. Revoke permission in Settings → Data and privacy; this preserves local reading and cannot recall data already sent. Cancelling first-use permission sends nothing.
 
 Explanations send selected text and nearby context. Follow-ups add the original context, previous answer and new question. Summaries send extractable full text; long documents are split and intermediate notes are sent for merging. The app does not upload document binaries or automatically append full device file paths. The iOS edition has no daily, weekly or monthly summary feature.
 
-The only recipient is DeepSeek (api.deepseek.com). Account linkage, network/usage logs, IP-derived coarse location, retention, training and international processing follow the provider rules described in the macOS section above. The app does not request GPS location or use advertising tracking. See the [DeepSeek privacy policy](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html). Provider fees and quotas belong to your DeepSeek account.
+iOS 1.1.0 supports the providers and custom compatible endpoints listed at the beginning of this policy; the older 1.0.0 build uses only DeepSeek (api.deepseek.com). Account linkage, network/usage logs, IP-derived coarse location, retention, training and international processing depend on the actual recipient and its downstream providers, as explained in the multiple-provider section. The app does not request GPS location or use advertising tracking. Provider fees and quotas belong to your provider account.
 
 Long-press a library item to delete its imported copy, swipe in History to delete records, and remove the key in Settings. Deleting a book copy leaves the original file and existing history intact; delete them separately if desired. Uninstalling removes the local app container, but backups and exports require separate management. Uninstalling does not guarantee Keychain deletion; remove the key in-app first. Contact the provider to request deletion of data it already received. System sharing sends exported documents or answers to the destination app you choose.
 

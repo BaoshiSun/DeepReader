@@ -1,6 +1,6 @@
 # DeepReader for iPhone and iPad
 
-Native SwiftUI / UIKit first version, iOS and iPadOS 17 or later. Version 1.0.0 (1). Debug uses `org.deepreader.ios`; App Store Release uses `org.deepreader.macos` to join the existing DeepReader: Read with AI record (6821368213). Test-install libraries do not automatically migrate to the store app. iOS 1.0.0 (1) was submitted on 2026-10-11 and is Waiting for Review; the existing macOS 1.2.1 submission was not withdrawn. See [submission record](../docs/app-store/ios-readiness.md).
+Native SwiftUI / UIKit first version, iOS and iPadOS 17 or later. Current candidate: version 1.1.0 (2). Debug uses `org.deepreader.ios`; App Store Release uses `org.deepreader.macos` to join the existing DeepReader: Read with AI record (6821368213). Test-install libraries do not automatically migrate to the store app. iOS 1.1.0 (2) prepares the adaptive sidebar, multi-provider support and knowledge-scope fixes for App Review; 1.0.0 (1) was previously submitted. macOS 1.3.1 (8) is a separate submission. See [submission record](../docs/app-store/ios-readiness.md).
 
 ## Implemented
 
@@ -66,3 +66,9 @@ Validation: all 18 iOS tests passed on the iPhone 16e simulator (iOS 26.3). Adde
 Run the shared macOS suite with `swift test --package-path macos` and this target’s simulator XCTest suite. All HTTP tests use synthetic credentials and an intercepted transport; they do not verify live accounts, quotas or model availability. New optional settings preserve older libraries. Sharing consent version 2 is bound to the provider and endpoint, so older global consent requires a fresh prompt.
 
 Validated on 2026-10-12: 20 simulator tests passed together, followed by the additional endpoint-change credential/consent test (21 total). The iPad simulator provider menu and switching to OpenAI were visually checked. No real provider credentials or inference requests were used.
+
+## App Store update — 2026-10-13
+
+iOS 1.1.0 (2) packages the previously developed adaptive sidebar/floating layouts, multiple providers, recipient-bound consent and credentials, and corrected general-knowledge follow-ups. The privacy/source links now use the maintained default branch, and the About version reads the bundle metadata. No live AI account tests or new API keys are part of this update.
+
+Validation for this candidate: 22 iOS simulator tests passed with zero failures on iPhone 16e / iOS 26.3. The signed arm64 App Store archive succeeded and its version/bundle identity and code signature were verified. Tests use offline transports and synthetic isolated credentials; no live provider request was made.
