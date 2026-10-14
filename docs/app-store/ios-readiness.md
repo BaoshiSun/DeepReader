@@ -46,3 +46,14 @@ The six requested information sections are present in both the sent reply and Ap
 ## Unreleased multi-provider changes — 2026-10-12
 
 New development source supports 12 named providers plus a custom compatible endpoint. No submitted binary or App Store metadata was changed by this development work. Before a new submission: complete real-account checks for intended providers and regions; review Gemini/OpenRouter 18+ terms and overall audience; update store descriptions, reviewer instructions, screenshots, age rating and privacy labels for actual recipients/downstream routing. The app’s age confirmation is only one control, not a legal compliance determination. Windows CI compiled the native AI panel and passed 121 core checks; the legacy helper compiled and passed 67 offline checks. Complete Windows packaging and manual GUI verification remain. See the root README and privacy-policy supplement.
+
+
+## 2026-10-14: rejection and local provider-restriction candidate
+
+Apple rejected iOS 1.1.0 (2), submission `cbb9ec8c-6d42-495b-a460-69d73edb2921`, under Guideline 5 (China mainland / OpenAI functionality and metadata) and 3.1.1 (paid functionality enabled through third-party API keys). The user chose to retain the other AI providers and request clarification about 3.1.1, rather than remove all AI or implement billing now.
+
+Local store-edition changes remove OpenAI and Claude choices, OpenRouter/custom gateways and arbitrary endpoint overrides. Both Apple platforms share the restriction and validate it before creating requests. Saved unsupported provider selections fall back to DeepSeek; credentials and reading history are not deleted. Direct-distribution macOS builds retain the full provider list. Remaining direct endpoints and model availability must still be checked against provider regional requirements; these changes do not establish China compliance or resolve 3.1.1.
+
+The store listing JSON files are replacement-build drafts. No replacement binary, screenshots or live store descriptions have been uploaded in this change. The existing 99-second video demonstrates build 2 and must not be described as a recording of the modified candidate. Before resubmission, assign a new build number, update screenshots/Review Notes/privacy documentation to that exact candidate, and physically test it. Do not resubmit unchanged build 2 as though the provider restrictions were present.
+
+Validation: 35 macOS tests and 22 iOS tests passed, including the store policy, legacy settings, endpoint restrictions and retained direct-provider requests. iOS ran offline on an iPad Air 11-inch (M3) simulator with iOS 26.3, not a physical iPad. No live API calls or new keys were used. The 3.1.1 / China-service clarification was sent in the existing iOS review conversation on 2026-10-14 at 22:21 Asia/Riyadh; the page shows two messages. Screenshot and exact sent text are retained locally under `artifacts/ios-app-store/provider-restrictions/`.

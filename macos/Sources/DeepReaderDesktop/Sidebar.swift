@@ -229,7 +229,10 @@ struct Sidebar: View {
                 }
                 TextField(m.t("模型 ID", "Model ID"), text: $m.modelDraft)
                 TextField(m.t("完整 HTTPS 接口地址", "Full HTTPS endpoint"), text: $m.endpointDraft)
-                Text(m.t("不同地区的 Key 和地址需匹配；新地址需单独保存 Key。豆包填写模型或推理接入点 ID。", "Match the key and endpoint region; new endpoints need a separately saved key. Doubao accepts a model or deployment ID.")).font(.caption)
+                    .disabled(Provider.isAppStoreBuild)
+                Text(Provider.isAppStoreBuild
+                     ? m.t("商店版使用预设直连接口，请使用与该地址匹配的 Key。", "The store edition uses preset direct endpoints. Use a key for the displayed endpoint.")
+                     : m.t("不同地区的 Key 和地址需匹配；新地址需单独保存 Key。豆包填写模型或推理接入点 ID。", "Match the key and endpoint region; new endpoints need a separately saved key. Doubao accepts a model or deployment ID.")).font(.caption)
                 if m.settings.provider.requiresAdultConfirmation {
                     Toggle(m.t("我已满 18 岁", "I am 18 or older"), isOn: Binding(get: { m.settings.adultConfirmed == true }, set: { m.settings.adultConfirmed = $0 }))
                     Link(m.t("服务商条款", "Provider terms"), destination: m.settings.provider.termsURL!)

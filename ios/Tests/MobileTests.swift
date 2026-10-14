@@ -76,40 +76,38 @@ final class MobileTests: XCTestCase {
         let book = try model.library!.importFile(write("provider.txt", "The bank approved the loan."))
         model.open(book); model.select("bank", surrounding: "The bank approved the loan."); model.explain()
         let stale = try XCTUnwrap(model.pending)
-        model.chooseProvider(.openAI)
+        model.chooseProvider(.qwen)
         model.authorizeAndSend(stale)
         XCTAssertFalse(model.hasAIConsent); XCTAssertEqual(OfflineAIProtocol.count, 0)
         model.explain(); model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
-        XCTAssertEqual(model.records.first?.provider, Provider.openAI.rawValue)
+        XCTAssertEqual(model.records.first?.provider, Provider.qwen.rawValue)
         XCTAssertEqual(OfflineAIProtocol.count, 1)
-        XCTAssertEqual(MobileModel(root: root, credentials: credentials).settings.provider, .openAI)
+        XCTAssertEqual(MobileModel(root: root, credentials: credentials).settings.provider, .qwen)
         model.chooseProvider(.deepSeek)
         XCTAssertFalse(model.hasAIConsent)
         model.explain(); XCTAssertNotNil(model.pending); XCTAssertEqual(OfflineAIProtocol.count, 1)
     }
-    @MainActor func testEndpointChangeDoesNotReuseKeyOrConsent() async throws {
+    @MainActor func testStoreRejectsRemovedProvidersAndEndpointOverrides() throws {
         OfflineAIProtocol.reset()
-        let transport = URLSessionConfiguration.ephemeral; transport.protocolClasses = [OfflineAIProtocol.self]
-        let credentials = KeychainCredentials(service: "org.deepreader.ios.tests." + UUID().uuidString)
-        let model = MobileModel(root: root, credentials: credentials, ai: AIClient(configuration: transport))
-        model.chooseProvider(.custom)
-        let a = "https://a.example.test/v1/chat/completions", b = "https://b.example.test/v1/chat/completions"
-        XCTAssertTrue(model.saveAIConfiguration(model: "offline-model", endpoint: a, key: "offline-a"))
-        let first = model.settings
-        defer { try? credentials.remove(first); try? credentials.remove(model.settings) }
-        let book = try model.library!.importFile(write("endpoint.txt", "A river bank."))
-        model.open(book); model.select("bank", surrounding: "A river bank."); model.explain()
-        model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
-        XCTAssertTrue(model.hasAIConsent); XCTAssertEqual(OfflineAIProtocol.count, 1)
-        XCTAssertTrue(model.saveAIConfiguration(model: "offline-model", endpoint: b, key: ""))
-        XCTAssertFalse(model.hasKey); XCTAssertFalse(model.hasAIConsent)
-        model.explain(); XCTAssertEqual(OfflineAIProtocol.count, 1)
-        XCTAssertTrue(model.saveAIConfiguration(model: "offline-model", endpoint: b, key: "offline-b"))
-        model.explain(); XCTAssertNotNil(model.pending); XCTAssertEqual(OfflineAIProtocol.count, 1)
-        model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
-        XCTAssertEqual(OfflineAIProtocol.count, 2)
-        XCTAssertEqual(try credentials.read(first), "offline-a")
-        XCTAssertEqual(try credentials.read(model.settings), "offline-b")
+        let credentials = FailingCredentials(); credentials.failSave = false
+        let model = MobileModel(root: root, credentials: credentials)
+        for provider in [Provider.openAI, .claude, .openRouter, .custom] {
+            model.chooseProvider(provider)
+            XCTAssertEqual(model.settings.provider, .deepSeek)
+            var legacy = Settings(); legacy.provider = provider
+            legacy.setEndpoint("https://proxy.example.test/v1/chat/completions")
+            try model.library!.update { $0.settings = legacy; $0.aiConsentRecipient = legacy.recipientID; $0.aiConsentVersion = 2 }
+            let restored = MobileModel(root: root, credentials: credentials)
+            XCTAssertEqual(restored.settings.provider, .deepSeek)
+            XCTAssertEqual(restored.settings.endpointText, Provider.deepSeek.endpoint.absoluteString)
+            XCTAssertFalse(restored.hasAIConsent)
+        }
+        XCTAssertFalse(model.saveAIConfiguration(model: "deepseek-flash", endpoint: Provider.openAI.endpoint.absoluteString, key: "offline"))
+        XCTAssertFalse(model.saveAIConfiguration(model: "claude-test", endpoint: Provider.deepSeek.endpoint.absoluteString, key: "offline"))
+        model.settings.endpoints = [Provider.qwen.rawValue: Provider.openAI.endpoint.absoluteString]
+        model.chooseProvider(.qwen)
+        XCTAssertEqual(model.settings.endpointText, Provider.qwen.endpoint.absoluteString)
+        XCTAssertEqual(OfflineAIProtocol.count, 0)
     }
     @MainActor func testFailedKeyReplacementPreservesSavedStateAndReportsFailure() throws {
         let credentials = FailingCredentials()
@@ -222,7 +220,7 @@ final class MobileTests: XCTestCase {
     }
     func testAIRequestAndLimitsOffline() throws {
         var settings = Settings(); settings.provider = .openRouter; settings.adultConfirmed = true
-        XCTAssertEqual(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true).url?.host, "openrouter.ai")
+        XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true))
         settings.provider = .deepSeek
         let request = try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true)
         XCTAssertEqual(request.url?.host, "api.deepseek.com")

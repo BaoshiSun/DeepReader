@@ -52,6 +52,7 @@ struct PendingAI: Identifiable {
         self.credentials = credentials; self.ai = ai
         do {
             library = try MobileLibrary(root: root); refresh(); settings = library!.state.settings
+            settings.applyProviderAvailability()
             assistantPresentation = AssistantPresentation(rawValue: library?.state.assistantPresentation ?? "") ?? .sidebar
             assistantWidthFraction = ReaderSplitLayout.validFraction(library?.state.assistantWidthFraction ?? 0.38)
             refreshProviderState()
@@ -84,8 +85,9 @@ struct PendingAI: Identifiable {
         }
     }
     func chooseProvider(_ provider: Provider) {
-        guard !busy else { return }
+        guard !busy, Provider.available().contains(provider) else { return }
         settings.provider = provider
+        settings.applyProviderAvailability()
         persistSettings()
     }
     func saveAIConfiguration(model: String, endpoint: String, key: String) -> Bool {

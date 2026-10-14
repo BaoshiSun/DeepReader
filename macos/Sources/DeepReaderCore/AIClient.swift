@@ -44,6 +44,8 @@ public final class AIClient: @unchecked Sendable {
     public static func request(settings: Settings, key: String, task: AITask, source: String,
                                appStore: Bool = Provider.isAppStoreBuild) throws -> URLRequest {
         _ = try settings.validated()
+        // Enforce edition policy at the network boundary, including restored settings.
+        let endpoint = try settings.requestEndpoint(appStore: appStore)
         guard Settings.validModel(settings.model) else { throw ReaderError("请填写服务商提供的模型 ID。", "Enter the model ID supplied by your provider.") }
         guard !settings.provider.requiresAdultConfirmation || settings.adultConfirmed == true else {
             throw ReaderError("使用此服务前，请在设置中确认年满 18 岁并阅读服务条款。", "Before using this provider, confirm you are 18 or older and review its terms in Settings.")
@@ -92,7 +94,7 @@ public final class AIClient: @unchecked Sendable {
             payload["max_tokens"] = 4096
         default: payload["max_tokens"] = 4096
         }
-        var request = URLRequest(url: try settings.requestEndpoint())
+        var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         if settings.provider == .claude {
             request.setValue(key, forHTTPHeaderField: "x-api-key")

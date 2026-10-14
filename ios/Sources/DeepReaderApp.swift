@@ -160,8 +160,10 @@ struct SettingsView: View {
                     }
                 }
                 TextField(model.t("模型 ID / 推理接入点 ID", "Model ID / deployment ID"), text: $modelID).textInputAutocapitalization(.never).autocorrectionDisabled()
-                TextField(model.t("完整 HTTPS 接口地址", "Full HTTPS endpoint"), text: $endpoint).textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
-                Text(model.t("支持文字对话模型。地址需包含 /chat/completions（Claude 为 /messages）；不同地区的 Key 和地址必须匹配。修改地址后需为新地址保存 Key。", "Text chat models are supported. Include /chat/completions (Claude: /messages). Match your key’s region to the endpoint. A new endpoint needs its own saved key.")).font(.footnote)
+                TextField(model.t("完整 HTTPS 接口地址", "Full HTTPS endpoint"), text: $endpoint).textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL).disabled(Provider.isAppStoreBuild)
+                Text(Provider.isAppStoreBuild
+                     ? model.t("商店版使用服务商的预设直连接口；请使用与该地址匹配的 Key。", "The store edition uses preset direct provider endpoints. Use a key for the displayed endpoint.")
+                     : model.t("支持文字对话模型；地址需与服务商及 Key 匹配。修改地址后需为新地址保存 Key。", "Text chat models are supported. Match the endpoint to your provider and key. A new endpoint needs its own saved key.")).font(.footnote)
                 if model.settings.provider.requiresAdultConfirmation {
                     Toggle(model.t("我已满 18 岁", "I am 18 or older"), isOn: Binding(get: { model.settings.adultConfirmed == true }, set: { model.settings.adultConfirmed = $0; model.persistSettings() }))
                     Link(model.t("服务商条款", "Provider terms"), destination: model.settings.provider.termsURL!)
@@ -183,7 +185,7 @@ struct SettingsView: View {
                 }
                 Text(model.t("文件导入后存为本机副本。书库、阅读位置、高亮和历史保存在应用容器；不自动同步 Mac。系统备份可能包含这些资料。AI 首次发送时征求授权并记住；之后仅在点击解释、追问或总结时发送，可随时撤销授权。", "Imported files are local copies. Books, position, highlights and history stay in the app container; there is no automatic Mac sync. System backups may include these data. AI sharing permission is requested once and remembered. Text is sent only when you tap Explain, Follow-up or Summarize; permission can be revoked."))
                 Text(model.t("可在书库长按删除副本，在历史中左滑删除记录，在此移除 Key。卸载应用不保证删除钥匙串中的 Key；服务商数据需向相应服务商申请删除。", "Long-press a book to delete its copy, swipe history to delete records, and remove your key here. Uninstalling may leave Keychain data; contact the selected provider to delete provider-held data."))
-                Text(model.t("切换接收方后需重新授权。OpenRouter 还会转发给模型供应商。", "A different recipient requires fresh permission. OpenRouter also forwards data to model providers."))
+                Text(model.t("切换接收方后需重新授权。", "A different recipient requires fresh permission."))
             }
             Section(model.t("关于", "About")) {
                 Text("DeepReader · iOS \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development")")
