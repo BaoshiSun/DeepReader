@@ -83,3 +83,18 @@ App Store Connect confirmed **Waiting for Review** for **1.1.0 (3)** on
 iOS app version. No IAP was attached. Automatic release after approval
 remains selected. The separate macOS 1.3.1 submission was not replaced.
 Local submission proof: `artifacts/ios-offline-store/review-submitted.jpg`.
+
+### Offline physical-device recording added
+
+On 2026-10-15, the current App Review attachment was replaced with
+`DeepReader-Local-Qwen-iPhone14Pro-2026-10-15.mp4` (115.14 seconds).
+The file is an unchanged copy of the user-provided recording, with a lowercase
+`.mp4` extension for App Store Connect compatibility. SHA-256:
+`fd757fcfe2315c61bd1cc54f57f8c4754852ddfe0f26ed7a2648a8b9767c20fc`.
+
+The recording demonstrates launching the local variant on iPhone 14 Pro,
+reading, Qwen explanations, history, language/settings and floating layout.
+Review Notes explicitly distinguish this development variant from the exact
+App Store build-3 binary and explain that displayed documents are tester
+imports, not bundled content. The video is only an Apple review attachment;
+it is not published with the source repository.
