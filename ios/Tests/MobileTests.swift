@@ -49,14 +49,14 @@ final class MobileTests: XCTestCase {
         OfflineAIProtocol.reset()
         let configuration = URLSessionConfiguration.ephemeral; configuration.protocolClasses = [OfflineAIProtocol.self]
         let credentials = FailingCredentials(); credentials.value = "offline-test"
-        let model = MobileModel(root: root, credentials: credentials, ai: AIClient(configuration: configuration))
+        let model = MobileModel(root: root, storeQuestions: false, credentials: credentials, ai: AIClient(configuration: configuration, hosted: false))
         let book = try model.library!.importFile(write("knowledge.txt", "The bank approved the loan."))
         model.open(book); model.select("bank", surrounding: "The bank approved the loan."); model.explain()
         let obsolete = try XCTUnwrap(model.pending)
         model.setWorldKnowledge(true)
         XCTAssertNil(model.pending); XCTAssertEqual(model.selected, "bank"); XCTAssertEqual(model.book?.id, book.id)
         XCTAssertEqual(OfflineAIProtocol.count, 0)
-        XCTAssertEqual(MobileModel(root: root, credentials: credentials).settings.useWorldKnowledge, true)
+        XCTAssertEqual(MobileModel(root: root, storeQuestions: false, credentials: credentials).settings.useWorldKnowledge, true)
         model.authorizeAndSend(obsolete); XCTAssertEqual(OfflineAIProtocol.count, 0)
         model.explain(); model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
         XCTAssertTrue(OfflineAIProtocol.lastPayload.contains("Knowledge scope: GENERAL_KNOWLEDGE."))
@@ -66,13 +66,13 @@ final class MobileTests: XCTestCase {
         model.question = "Explain the background"; model.followup(); await waitForAI(model)
         XCTAssertTrue(OfflineAIProtocol.lastPayload.contains("Knowledge scope: SOURCE_ONLY."))
         XCTAssertEqual(OfflineAIProtocol.count, 2)
-        XCTAssertEqual(MobileModel(root: root, credentials: credentials).settings.useWorldKnowledge, false)
+        XCTAssertEqual(MobileModel(root: root, storeQuestions: false, credentials: credentials).settings.useWorldKnowledge, false)
     }
     @MainActor func testProviderChangeRequiresFreshConsentAndPersistsChoice() async throws {
         OfflineAIProtocol.reset()
         let configuration = URLSessionConfiguration.ephemeral; configuration.protocolClasses = [OfflineAIProtocol.self]
         let credentials = FailingCredentials(); credentials.value = "offline-test"
-        let model = MobileModel(root: root, credentials: credentials, ai: AIClient(configuration: configuration))
+        let model = MobileModel(root: root, storeQuestions: false, credentials: credentials, ai: AIClient(configuration: configuration, hosted: false))
         let book = try model.library!.importFile(write("provider.txt", "The bank approved the loan."))
         model.open(book); model.select("bank", surrounding: "The bank approved the loan."); model.explain()
         let stale = try XCTUnwrap(model.pending)
@@ -82,7 +82,7 @@ final class MobileTests: XCTestCase {
         model.explain(); model.authorizeAndSend(try XCTUnwrap(model.pending)); await waitForAI(model)
         XCTAssertEqual(model.records.first?.provider, Provider.qwen.rawValue)
         XCTAssertEqual(OfflineAIProtocol.count, 1)
-        XCTAssertEqual(MobileModel(root: root, credentials: credentials).settings.provider, .qwen)
+        XCTAssertEqual(MobileModel(root: root, storeQuestions: false, credentials: credentials).settings.provider, .qwen)
         model.chooseProvider(.deepSeek)
         XCTAssertFalse(model.hasAIConsent)
         model.explain(); XCTAssertNotNil(model.pending); XCTAssertEqual(OfflineAIProtocol.count, 1)
@@ -90,14 +90,14 @@ final class MobileTests: XCTestCase {
     @MainActor func testStoreRejectsRemovedProvidersAndEndpointOverrides() throws {
         OfflineAIProtocol.reset()
         let credentials = FailingCredentials(); credentials.failSave = false
-        let model = MobileModel(root: root, credentials: credentials)
+        let model = MobileModel(root: root, storeQuestions: true, credentials: credentials)
         for provider in [Provider.openAI, .claude, .openRouter, .custom] {
             model.chooseProvider(provider)
             XCTAssertEqual(model.settings.provider, .deepSeek)
             var legacy = Settings(); legacy.provider = provider
             legacy.setEndpoint("https://proxy.example.test/v1/chat/completions")
             try model.library!.update { $0.settings = legacy; $0.aiConsentRecipient = legacy.recipientID; $0.aiConsentVersion = 2 }
-            let restored = MobileModel(root: root, credentials: credentials)
+            let restored = MobileModel(root: root, storeQuestions: true, credentials: credentials)
             XCTAssertEqual(restored.settings.provider, .deepSeek)
             XCTAssertEqual(restored.settings.endpointText, Provider.deepSeek.endpoint.absoluteString)
             XCTAssertFalse(restored.hasAIConsent)
@@ -106,12 +106,12 @@ final class MobileTests: XCTestCase {
         XCTAssertFalse(model.saveAIConfiguration(model: "claude-test", endpoint: Provider.deepSeek.endpoint.absoluteString, key: "offline"))
         model.settings.endpoints = [Provider.qwen.rawValue: Provider.openAI.endpoint.absoluteString]
         model.chooseProvider(.qwen)
-        XCTAssertEqual(model.settings.endpointText, Provider.qwen.endpoint.absoluteString)
+        XCTAssertEqual(model.settings.endpointText, Provider.deepSeek.endpoint.absoluteString)
         XCTAssertEqual(OfflineAIProtocol.count, 0)
     }
     @MainActor func testFailedKeyReplacementPreservesSavedStateAndReportsFailure() throws {
         let credentials = FailingCredentials()
-        let model = MobileModel(root: root, credentials: credentials)
+        let model = MobileModel(root: root, storeQuestions: false, credentials: credentials)
         XCTAssertFalse(model.hasKey)
         XCTAssertFalse(model.key("sk-offline-test"))
         XCTAssertFalse(model.hasKey)
@@ -222,7 +222,8 @@ final class MobileTests: XCTestCase {
         var settings = Settings(); settings.provider = .openRouter; settings.adultConfirmed = true
         XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true))
         settings.provider = .deepSeek
-        let request = try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true)
+        XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true))
+        let request = try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: false)
         XCTAssertEqual(request.url?.host, "api.deepseek.com")
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: Any])
         XCTAssertEqual(json["stream"] as? Bool, false)
@@ -235,8 +236,8 @@ final class MobileTests: XCTestCase {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [OfflineAIProtocol.self]
         let credentials = FailingCredentials(); credentials.value = "offline-test"
-        let client = AIClient(configuration: configuration)
-        let model = MobileModel(root: root.appendingPathComponent("consent"), credentials: credentials, ai: client)
+        let client = AIClient(configuration: configuration, hosted: false)
+        let model = MobileModel(root: root.appendingPathComponent("consent"), storeQuestions: false, credentials: credentials, ai: client)
         let library = try XCTUnwrap(model.library)
         let book = try library.importFile(write("consent.txt", "The river bank is green."))
         model.open(book); model.select("bank", surrounding: "The river bank is green.")
@@ -261,14 +262,14 @@ final class MobileTests: XCTestCase {
         model.summary(); await waitForAI(model)
         XCTAssertNil(model.pending)
         XCTAssertEqual(OfflineAIProtocol.count, 3)
-        let restored = MobileModel(root: library.root, credentials: credentials, ai: client)
+        let restored = MobileModel(root: library.root, storeQuestions: false, credentials: credentials, ai: client)
         XCTAssertTrue(restored.hasAIConsent)
         restored.open(book); restored.select("bank", surrounding: "The river bank is green.")
         restored.explain(); await waitForAI(restored)
         XCTAssertEqual(OfflineAIProtocol.count, 4)
         restored.revokeAIConsent()
         XCTAssertFalse(restored.hasAIConsent)
-        XCTAssertFalse(MobileModel(root: library.root, credentials: credentials, ai: client).hasAIConsent)
+        XCTAssertFalse(MobileModel(root: library.root, storeQuestions: false, credentials: credentials, ai: client).hasAIConsent)
         restored.explain()
         XCTAssertNotNil(restored.pending)
         restored.dismissAssistant()
@@ -295,7 +296,7 @@ final class MobileTests: XCTestCase {
     }
     @MainActor func testReadingScreensAndMissingCredentialGate() async throws {
         let source = try write("Reading-Garden.txt", "阅读花园 · The Reading Garden\n\n慢下来，读懂一句话。\n\nThe river bank is green. The bank approved the loan.\n\n同一个词，在不同语境中含义不同。长按选择一句话，再打开阅读助手。\n\nRead at your own pace. Keep a question in mind and let context do the work.")
-        let model = MobileModel(root: root.appendingPathComponent("preview"), credentials: EmptyCredentials())
+        let model = MobileModel(root: root.appendingPathComponent("preview"), storeQuestions: false, credentials: EmptyCredentials())
         let library = try XCTUnwrap(model.library)
         let book = try library.importFile(source)
         model.refresh()
@@ -317,6 +318,14 @@ final class MobileTests: XCTestCase {
         await capture(reader, name: "iPhone-first-consent", size: CGSize(width: 393, height: 852)) {
             select(); model.hasKey = true; model.explain()
         }
+    }
+    @MainActor func testQuestionCreditsScreenWithoutGatewayCannotPurchase() async throws {
+        await QuestionCredits.shared.refresh(english: false)
+        XCTAssertNil(QuestionCredits.shared.product)
+        XCTAssertNil(QuestionCredits.shared.balance)
+        XCTAssertEqual(QuestionCredits.shared.message, OrdinaryQuestions.unavailable.chinese)
+        await capture(ScrollView { QuestionCreditsView(english: false).padding() },
+                      name: "iPhone-question-credits-unconfigured", size: CGSize(width: 393, height: 852))
     }
     func testSplitBoundsAcrossWindowSizes() {
         for width: CGFloat in [320, 393, 600, 663, 664, 700, 852, 1024, 1366] {
@@ -343,7 +352,7 @@ final class MobileTests: XCTestCase {
         OfflineAIProtocol.reset()
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [OfflineAIProtocol.self]
-        let model = MobileModel(root: root, credentials: EmptyCredentials(), ai: AIClient(configuration: config))
+        let model = MobileModel(root: root, storeQuestions: false, credentials: EmptyCredentials(), ai: AIClient(configuration: config))
         XCTAssertEqual(model.assistantPresentation, .sidebar)
         XCTAssertEqual(model.assistantWidthFraction, 0.38)
         let book = try XCTUnwrap(model.library).importFile(write("layout.txt", "The bank approved the loan."))
@@ -351,7 +360,7 @@ final class MobileTests: XCTestCase {
         model.answer = "Existing explanation"; model.question = "Why?"
         model.setAssistantPresentation(.floating)
         model.assistantWidthFraction = 0.52; model.persistReaderLayout()
-        let restored = MobileModel(root: root, credentials: EmptyCredentials())
+        let restored = MobileModel(root: root, storeQuestions: false, credentials: EmptyCredentials())
         XCTAssertEqual(restored.assistantPresentation, .floating)
         XCTAssertEqual(restored.assistantWidthFraction, 0.52)
         model.setAssistantPresentation(.sidebar)
@@ -365,10 +374,10 @@ final class MobileTests: XCTestCase {
         XCTAssertEqual(model.assistantWidthFraction, 0.52)
         // Older libraries have neither field; unknown modes safely fall back.
         try model.library?.update { $0.assistantPresentation = "future-mode"; $0.assistantWidthFraction = nil }
-        XCTAssertEqual(MobileModel(root: root, credentials: EmptyCredentials()).assistantPresentation, .sidebar)
+        XCTAssertEqual(MobileModel(root: root, storeQuestions: false, credentials: EmptyCredentials()).assistantPresentation, .sidebar)
     }
     @MainActor func testAdaptiveAssistantLayouts() async throws {
-        let model = MobileModel(root: root, credentials: EmptyCredentials())
+        let model = MobileModel(root: root, storeQuestions: false, credentials: EmptyCredentials())
         let book = try XCTUnwrap(model.library).importFile(write("Adaptive reading.txt", String(repeating: "The river bank is green. Read at your own pace.\n\n", count: 20)))
         model.open(book); model.settings.english = true
         let reader = NavigationStack { ReaderScreen() }.environmentObject(model)

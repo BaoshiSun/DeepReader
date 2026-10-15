@@ -32,7 +32,9 @@ private final class NoRedirect: NSObject, URLSessionTaskDelegate {
 
 public final class AIClient: @unchecked Sendable {
     private let session: URLSession
-    public init(configuration: URLSessionConfiguration = .ephemeral) {
+    private let hosted: Bool
+    public init(configuration: URLSessionConfiguration = .ephemeral, hosted: Bool = OrdinaryQuestions.enabled) {
+        self.hosted = hosted
         configuration.timeoutIntervalForRequest = 90
         configuration.timeoutIntervalForResource = 180
         configuration.urlCache = nil
@@ -43,6 +45,7 @@ public final class AIClient: @unchecked Sendable {
 
     public static func request(settings: Settings, key: String, task: AITask, source: String,
                                appStore: Bool = Provider.isAppStoreBuild) throws -> URLRequest {
+        guard !appStore else { throw ReaderError("商店版通过内购问答服务发送，不使用个人 API Key。", "Store editions use the purchased question service, not personal API keys.") }
         _ = try settings.validated()
         // Enforce edition policy at the network boundary, including restored settings.
         let endpoint = try settings.requestEndpoint(appStore: appStore)
@@ -139,7 +142,8 @@ public final class AIClient: @unchecked Sendable {
     }
     public func complete(settings: Settings, key: String, task: AITask, source: String) async throws -> String {
         try Task.checkCancellation()
-        let request = try Self.request(settings: settings, key: key, task: task, source: source)
+        if hosted { return try await QuestionCredits.shared.complete(settings: settings, task: task, source: source) }
+        let request = try Self.request(settings: settings, key: key, task: task, source: source, appStore: false)
         do {
             let (bytes, response) = try await session.bytes(for: request)
             guard let response = response as? HTTPURLResponse else { throw URLError(.badServerResponse) }

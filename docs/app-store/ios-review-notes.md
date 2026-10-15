@@ -1,25 +1,23 @@
-DeepReader iOS 1.1.0 (2) — Guideline 2.1 information
+# iOS 1.1.0 (3) — offline replacement review notes
 
-1. Physical-device demonstration
-Existing video of version 1.0.0: DeepReader-iPhone14Pro-demo.mp4 (attached to the review reply). Recorded on a physical iPhone 14 Pro; the developer reports iOS 26.6.2. It shows launch, settings, local reading, text selection, a successful AI explanation and History. Only the first 3 seconds of unrelated personal content were trimmed; the remaining flow is continuous. Books shown are user-imported, not supplied by the app.
+DeepReader iOS 1.1.0 (3) replaces the API-based build 2 with fully on-device AI.
 
-2. Purpose and audience
-DeepReader is a free local document reader for individual readers, students and researchers who want to understand their own documents without leaving the reading page. It reads PDF, EPUB, TXT and Markdown, with search, highlights, reading position, ratings and optional AI explanations, follow-ups and summaries in a movable translucent panel. It has no bookstore or enterprise-only access.
+1. Changes addressing Guidelines 3.1.1 and 5
+No API-key entry, remote model provider, custom endpoint, paid AI unlock, subscription, credit purchase or external payment is available in this iOS build. No API credentials are required or bundled. All AI explanations and follow-ups use the included Qwen3 0.6B Q4_K_M model through llama.cpp, on the device. There is no AI server, remote fallback, web search or model download at runtime. ChatGPT/OpenAI and Claude functionality is not available. iOS product descriptions and promotional text describe only the offline edition. The app and all included features are free. The previously prepared question-credit IAP is not used or submitted with this version.
+
+2. Purpose and target audience
+A document reader for individuals, students and researchers to understand their own documents. It combines local reading, highlights, explanations and saved history beside the source text. It is not enterprise-only and has no hosted bookstore or public feed.
 
 3. Setup and main features
-No DeepReader registration or login is required; there are no app accounts to delete. No in-app purchases or subscriptions are present. Local reading works without a provider key.
-On an empty Library, tap Read a sample (打开示例文章) to open the bundled original bilingual Reading-Garden.txt, or tap Import from Files for your own document. Settings has an English toggle. EPUB displays text-only chapters; Markdown displays source. DRM, MOBI/AZW3, OCR and sync are unsupported.
-Touch and hold text to select it. The assistant opens without sending data. Tap Explain; approve the first-use disclosure to send. Drag its title, use minus to collapse or X to close it. Ask a follow-up below a response, or use Summary → Send full text and summarize. Successful responses appear in History. Revoke AI sharing in Settings → Data and privacy. Highlight selected text; PDF highlights can be exported from the reader menu. Long-press a library card to delete its local copy; swipe a History row to delete that record.
-Wide windows offer a right AI sidebar with a draggable divider and a floating-mode toggle; narrow windows use the floating panel. Choose Book only or General knowledge (no browsing) for the answer scope. The latter adds learned background knowledge, without web search. Sharing permission and keys are bound to the selected provider and endpoint; changing the recipient requires new permission.
-For AI, save a valid provider API key in Settings. DeepSeek remains the default review path. Review-only access is provided privately below. Keys use iOS Keychain. DeepSeek fees/quotas apply; the app sells no AI credits.
+No account, sign-in or credentials are needed. In the empty Library tap Read a sample / 打开示例文章, or import PDF, EPUB, TXT or Markdown from Files. Select a short sentence, open the reading assistant and tap Explain. Ask a follow-up below the answer. Settings switches English/Chinese and Book only / General knowledge (no web browsing). Wide screens offer an adjustable sidebar; narrow screens use a draggable, collapsible floating panel. Successful answers are saved in History. Original files are not modified by import. Full-document summaries, DRM and OCR are not supported in this edition.
+AI answers may be inaccurate or incomplete. This warning is visible above the answer controls, in Settings and in both store descriptions. The small model has short-input/output limits; first initialization can take several seconds. All main reading and AI features can be tested without Internet access.
 
-4. Services and dependencies
-Version 1.1.0 offers DeepSeek, OpenAI, Claude, Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, Grok, Mistral, OpenRouter and custom compatible endpoints for text chat models. User-initiated requests go directly to the selected provider/endpoint; OpenRouter forwards to downstream model providers. No developer backend or relay exists. Explanations send selection/context, follow-ups add prior answers/questions, and summaries send extracted full text in sections. No document binary is uploaded. Local reading uses Apple PDFKit, SwiftUI/UIKit, Files and Keychain; ZIPFoundation 0.9.20 locally extracts EPUB archives. GitHub hosts public source, support and privacy documents. No external authentication, payments, advertising, tracking or analytics SDK is included.
+4. Libraries, services and data
+Qwen3 0.6B (Apache 2.0), llama.cpp (MIT), ZIPFoundation (MIT), Apple SwiftUI/UIKit/PDFKit/Files. No remote AI, developer backend, analytics, advertising or tracking SDK. License texts are bundled in Settings. Books and history stay in the app container; system backups may include them. Optional sharing/export and external support links are user initiated. The shared app privacy policy distinguishes this offline iOS build from the separate macOS edition.
 
-5. Regions
-The same binary and features are supplied in all selected regions; there is no region-specific catalog or developer-controlled feature restriction. Chinese/English UI is user-selectable. Provider availability, terms, account quotas and network access can differ independently by region. Offline reading remains available without AI.
+5. QA and regional behavior
+The offline engine and reading workflow have been tested on a physical iPhone 14 Pro running iOS 26.6.2, including real explanations, follow-ups, cancellation and history. Simulator QA also covers the local inference path and iPhone/iPad layouts. The same offline functionality is included in all selected storefronts: mainland China, Hong Kong, Macao, Taiwan, Saudi Arabia, UAE, Qatar, Kuwait, Bahrain and Oman. No provider account or regional remote service is needed.
+The earlier build-2 video shows the superseded online edition; it is not a recording of build 3.
 
 6. Content and rights
-The app does not provide medical, financial or other regulated professional services. It has no public posts, user profiles, messaging or hosted user-content feed. Imported documents and AI history are private local data; the app does not distribute users' documents to other users. The bundled Reading Garden sample is original project content. Original Swift code is AGPL-3.0-or-later; ZIPFoundation is MIT; the existing icon is attributed to Alex under CC BY 3.0 with modification notices. Licenses/attribution are in Settings → Open-source licenses and the public source. iOS does not link SumatraPDF, MuPDF or libmobi. DeepReader is independent of DeepSeek and SumatraPDF.
-
-Review-only provider access follows in the private App Store Connect field.
+No regulated professional service, public posting, messaging or account creation exists. Users provide their own documents; the bundled Reading Garden sample is original project content. No third-party book catalog is included. Source is AGPL-3.0-or-later; model/library licenses and icon attribution are provided in the app. This is an independent reader.

@@ -82,7 +82,7 @@ final class AITests: XCTestCase {
             if settings.model.isEmpty { settings.models[provider.rawValue] = "offline-model" }
             if provider == .custom { settings.setEndpoint("https://models.example.test/v1/chat/completions") }
             for store in [false, true] {
-                if store && [.openAI, .claude, .openRouter, .custom].contains(provider) {
+                if store {
                     XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true))
                     continue
                 }

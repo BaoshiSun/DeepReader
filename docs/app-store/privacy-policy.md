@@ -1,8 +1,38 @@
 # DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-13。适用于 macOS 1.3.1（包括 Mac App Store 构建 8），以及 iOS / iPadOS 1.1.0；同时保留旧版行为的说明。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+更新日期 / Updated: 2026-10-15。适用于 macOS 1.3.1（包括 Mac App Store 构建 8），以及 iOS / iPadOS 1.1.0；同时保留旧版行为的说明。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
 
-## macOS 1.3.1 与 iOS 1.1.0 多模型支持 / Multiple providers
+## iOS / iPadOS 1.1.0（构建 3）：离线 AI / Offline AI
+
+本节优先适用于 iOS / iPadOS 1.1.0（构建 3）及 DeepReader Local 离线版。下文联网模型、API Key 和开发中的内购服务器说明不适用于此离线版本；macOS 和旧构建仍按各自对应章节说明。
+
+本版内置 Qwen3 0.6B 量化模型，解释和追问完全在设备上处理。无需注册、登录、API Key、内购或远程 AI 服务，不上传文档、选文、问题或回答供 AI 推理，不采集这些内容用于训练。没有开发者后端、广告、追踪或分析 SDK。模型随安装包提供，不在首次使用时联网下载。
+
+用户导入的书籍副本、阅读位置、高亮、偏好和问答历史保存在本机应用容器，系统备份可能包含这些资料。可在书库删除导入副本，在历史中删除记录；原始文件保持不变。卸载应用会移除应用容器，但不会自动删除已有系统备份。主动使用分享、导出或打开支持链接时，所选择的系统应用、网站或收件人可能接收相关资料；请按自己的意愿操作。Apple 的商店下载和系统服务适用 Apple 的政策。若主动通过邮箱联系支持，运营者只使用您提供的信息处理请求；请勿发送私人文档或凭据。
+
+This section takes precedence for iOS/iPadOS 1.1.0 build 3 and the DeepReader Local offline edition. Descriptions below of network providers, personal API keys and the unreleased purchase backend do not apply to this edition. macOS and older builds retain their separately described behavior.
+
+A bundled, quantized Qwen3 0.6B model generates explanations and follow-ups on the device. There is no registration, login, API key, in-app purchase or remote AI service. Documents, selections, questions and answers are not uploaded for AI inference or collected for training. There is no developer backend, advertising, tracking or analytics SDK, and no first-use model download.
+
+Imported copies, reading positions, highlights, preferences and answer history stay in the local app container and may be included in system backups. Delete copies in Library and records in History; original files are preserved. Uninstalling removes the app container, not existing system backups. Optional sharing, export and external support links use the apps, sites or recipients you explicitly choose, which may receive the selected information. Apple download/system services are covered by Apple's policies. Information voluntarily emailed to support is used to address that request; please do not send private documents or credentials.
+
+## 普通问答内购版（开发中，尚未发布） / Purchased-question edition (unreleased)
+
+2026-10-15：以下说明仅适用于未发布的实验性内购分支，不适用于 iOS 构建 3；原计划的 Apple 商店内购版本，并取代下文旧版本中的“自带 API Key”“直接连接多服务商”和“不运营代理服务器”的描述。部署地点与正式生效版本尚待确定，发布前必须补全；下文旧版本行为继续适用于对应旧构建和站外版本。
+
+普通问答由 DeepReader 服务器转发至 DeepSeek Flash。用户主动同意后，解释发送有限长度的选文和附近语境，追问还发送当前问题和上一条回答。不会上传整个书库或文档文件，不提供套餐内全文总结。运营者的 API Key 只保存在服务器，用户无需提供 Key。Apple 处理内购付款，DeepReader 不接收银行卡号。
+
+为了校验购买、恢复跨设备余额、防止重复发放次数，服务器接收 Apple 签名的 App 下载与购买凭据，保存不可直接识别姓名的账户关联标识、交易编号、购买次数、余额、请求时间及状态。不会读取 Apple 账户密码或邮箱。购买与账户标识属于关联用户的购买历史／标识数据，应更新 App Store 隐私标签。退款可能撤销相应次数。
+
+提问原文只在服务器内存中转发，不写入应用数据库。成功回答加密暂存约 24 小时用于断线找回，可在 App 中立即清除；用户本机已保存的历史不会随服务器副本清除。账务与防滥用记录单独保留；具体法定保留期限和托管日志政策须在正式部署前确定并告知用户。服务器不记录 API Key、Apple 签名凭据、授权请求头或原文。临时网络限流使用哈希 IP，约一小时后清除。托管方可能处理连接 IP 等网络数据。
+
+DeepSeek 会收到提交的阅读内容和服务器的网络信息，按其政策处理；用户本机 IP 由 DeepReader 服务器接收。DeepReader 不承诺 DeepSeek 零保存或不训练。处理地区与跨境情况需结合部署地点说明。隐私与删除请求仍联系 baoshi.sun@icloud.com。
+
+For the unreleased Apple in-app-purchase edition, this section supersedes legacy descriptions of personal keys, direct multi-provider requests and no developer relay. Deployment location and the effective release version must be specified before launch. DeepReader forwards limited, explicitly requested reading passages/context and follow-up questions/previous answers to DeepSeek Flash. Full libraries and document files are not uploaded; document summaries are excluded. The developer key remains server-side. Apple processes payment; DeepReader does not receive card numbers.
+
+The service verifies Apple-signed app and purchase proofs, retaining a pseudonymous account association, transaction IDs, purchased credits, balances, request times and state for delivery, cross-device balance recovery and fraud prevention. No Apple password or email is collected. These linked identifiers and purchase-history data require updated App Store privacy disclosures. Refunds may revoke credits. Question text is forwarded in memory; encrypted answers are retained for approximately 24 hours for recovery and can be cleared in-app immediately. Local history is separate. Accounting-record retention and hosting/logging policies must be finalized before deployment. No raw proofs, authorization headers, keys or question text are logged by the application. Temporary hashed-IP limit records are deleted after approximately one hour. DeepSeek's own retention/processing policies apply; no zero-retention or no-training promise is made. Contact the operator for privacy/deletion requests.
+
+## macOS 1.3.1 与旧 iOS 1.1.0 构建 2 多模型支持 / Multiple providers
 
 2026-10-13：macOS 1.3.1 和 iOS / iPadOS 1.1.0 提供下述多模型支持；旧 iOS / iPadOS 1.0.0 构建仅支持 DeepSeek。
 

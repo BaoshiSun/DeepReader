@@ -36,6 +36,10 @@
 	<string>2</string>
 	<key>DeepReaderAppStoreBuild</key>
 	<true/>
+	<key>DeepReaderGatewayURL</key>
+	<string></string>
+	<key>DeepReaderSandboxGatewayURL</key>
+	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>

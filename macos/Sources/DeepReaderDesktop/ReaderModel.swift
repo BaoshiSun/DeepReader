@@ -65,6 +65,7 @@ import DeepReaderCore
         do { _ = try store.settings(); try reload() }
         catch { show(error) }
         if !settings.onboardingSeen { tab = 4; guide() }
+        QuestionCredits.shared.start()
     }
     public func t(_ zh: String, _ en: String) -> String { settings.english ? en : zh }
     public func show(_ error: Error) {
@@ -94,6 +95,10 @@ import DeepReaderCore
         try reload(); status = t("选中文字后按 ⌘⇧D 解释。", "Select text and press ⌘⇧D to explain.")
     }
     public func guide() {
+        if OrdinaryQuestions.enabled {
+            status = t("打开书籍、选择文字即可解释。普通问答在设置中购买次数，无需填写 API Key。", "Open a book and select text to explain it. Purchase ordinary question credits in Settings; no API key is needed.")
+            settings.onboardingSeen = true; persist(); return
+        }
         status = t("① 选择服务和模型，填写自己的 API Key 并保存。② 打开文档或电子书，选词后按 ⌘⇧D。③ 可继续追问、评分和归档。AI 请求会发送所选文字及上下文；全文总结会发送提取的全文。", "1. Choose a provider and model, add your own API key and save. 2. Open a document or ebook, select text and press ⌘⇧D. 3. Ask follow-ups, rate and archive books. AI lookups send your selection and context; document summaries send extracted document text.")
         settings.onboardingSeen = true; persist()
     }
@@ -145,8 +150,8 @@ import DeepReaderCore
     public func explain() {
         guard !busy, !opening else { return }
         do {
-            let configuration = try settings.validated(), key = try credentials.read(settings)
-            _ = try AIClient.request(settings: configuration, key: key, task: .explain, source: "validate")
+            let configuration = try settings.validated(), key = OrdinaryQuestions.enabled ? "" : try credentials.read(settings)
+            if !OrdinaryQuestions.enabled { _ = try AIClient.request(settings: configuration, key: key, task: .explain, source: "validate") }
             let file = reader.url?.path ?? "", title = reader.url?.lastPathComponent ?? ""
             begin { [weak self] id in
                 guard let self = self else { return }
@@ -155,7 +160,7 @@ import DeepReaderCore
                 guard self.allowSharing(configuration, .selection) else { return }
                 self.captured = selection; self.selected = selection.text; self.answer = ""; self.followup = ""; self.currentRecord = nil; self.tab = 0
                 let response = try await self.ai.complete(settings: configuration, key: key, task: .explain,
-                    source: "Selected text:\n\(selection.text)\n\nSource context (⟦…⟧ marks the selection):\n\(selection.context)")
+                    source: OrdinaryQuestions.enabled ? OrdinaryQuestions.source(selection: selection.text, context: selection.context) : "Selected text:\n\(selection.text)\n\nSource context (⟦…⟧ marks the selection):\n\(selection.context)")
                 try Task.checkCancellation(); guard self.job == id else { return }
                 var record = ReadingRecord(); record.file = file; record.title = title; record.page = selection.page
                 record.selected = selection.text; record.context = selection.context; record.answer = response
@@ -173,12 +178,12 @@ import DeepReaderCore
             guard !question.isEmpty, question.utf16.count <= 1200, original.answer.utf16.count <= 12000 else {
                 throw ReaderError("追问限 1200 字符；对话过长时请重新选词。", "Follow-ups allow 1,200 characters. Start a new lookup if the conversation is too long.")
             }
-            let configuration = settings, key = try credentials.read(settings)
+            let configuration = settings, key = OrdinaryQuestions.enabled ? "" : try credentials.read(settings)
             guard allowSharing(configuration, .followup) else { return }
             begin { [weak self] id in
                 guard let self = self else { return }
                 let response = try await self.ai.complete(settings: configuration, key: key, task: .followup,
-                    source: "Original selection:\n\(original.selected)\nSource context:\n\(original.context)\nPrevious conversation:\n\(original.answer)\nUser follow-up:\n\(question)")
+                    source: OrdinaryQuestions.enabled ? OrdinaryQuestions.source(selection: original.selected, context: original.context, previous: original.answer, question: question) : "Original selection:\n\(original.selected)\nSource context:\n\(original.context)\nPrevious conversation:\n\(original.answer)\nUser follow-up:\n\(question)")
                 try Task.checkCancellation(); guard self.job == id else { return }
                 var record = original
                 record.answer += "\n\n— \(self.t("追问", "Follow-up")) —\n\(question)\n[\(configuration.provider.rawValue) / \(configuration.model)]\n\(response)"
@@ -276,6 +281,7 @@ import DeepReaderCore
         } catch { clearSummary(); show(error) }
     }
     public func summarize() {
+        guard !OrdinaryQuestions.enabled else { show(OrdinaryQuestions.unsupported); return }
         guard !busy, let snapshot = prepared else { return }
         do {
             let key = try credentials.read(snapshot.settings)
@@ -297,18 +303,18 @@ import DeepReaderCore
         } catch { show(error) }
     }
     private func allowSharing(_ configuration: Settings, _ kind: AISharingKind) -> Bool {
-        guard configuration.recipientID == settings.recipientID else { return false }
+        guard configuration.sharingRecipient() == settings.sharingRecipient() else { return false }
         if hasAISharingConsent { return true }
         switch confirmSharing(configuration, kind) {
         case .cancel:
             status = t("已取消，未发送给 AI 服务。", "Cancelled. Nothing was sent to the AI service.")
             return false
-        case .sendOnce: return configuration.recipientID == settings.recipientID
+        case .sendOnce: return configuration.sharingRecipient() == settings.sharingRecipient()
         case .rememberRecipient:
-            guard configuration.recipientID == settings.recipientID else { return false }
+            guard configuration.sharingRecipient() == settings.sharingRecipient() else { return false }
             do {
                 var next = settings
-                next.aiSharingConsentRecipient = configuration.recipientID
+                next.aiSharingConsentRecipient = configuration.sharingRecipient()
                 next.aiSharingConsentVersion = AISharingKind.consentVersion
                 try store.saveSettings(next); settings = next
                 return true
@@ -317,7 +323,7 @@ import DeepReaderCore
     }
     public var hasAISharingConsent: Bool {
         settings.aiSharingConsentVersion == AISharingKind.consentVersion &&
-            settings.aiSharingConsentRecipient == settings.recipientID
+            settings.aiSharingConsentRecipient == settings.sharingRecipient()
     }
     public func revokeAISharingConsent() {
         do {

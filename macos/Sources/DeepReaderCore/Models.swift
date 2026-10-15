@@ -21,7 +21,7 @@ public enum Provider: String, Codable, CaseIterable, Identifiable {
     }
     public static func available(appStore: Bool = isAppStoreBuild) -> [Self] {
         // Store editions cannot expose the removed providers through a gateway either.
-        allCases.filter { !appStore || ![.openAI, .claude, .openRouter, .custom].contains($0) }
+        appStore ? [.deepSeek] : allCases
     }
     public var endpoint: URL {
         switch self {
@@ -117,6 +117,7 @@ public struct Settings: Codable {
         endpoints = values
     }
     public var recipientID: String { provider.rawValue + "|" + endpointText }
+    public func sharingRecipient(appStore: Bool = Provider.isAppStoreBuild) -> String { appStore ? OrdinaryQuestions.recipient : recipientID }
     public func requestEndpoint(appStore: Bool = Provider.isAppStoreBuild) throws -> URL {
         if appStore {
             guard Provider.available(appStore: true).contains(provider),
@@ -136,7 +137,10 @@ public struct Settings: Codable {
     public mutating func applyProviderAvailability(appStore: Bool = Provider.isAppStoreBuild) {
         let previousRecipient = recipientID
         if !Provider.available(appStore: appStore).contains(provider) { provider = .deepSeek }
-        if appStore { endpoints?.removeValue(forKey: provider.rawValue) }
+        if appStore {
+            endpoints?.removeValue(forKey: provider.rawValue)
+            models[Provider.deepSeek.rawValue] = "deepseek-flash"
+        }
         guard recipientID != previousRecipient else { return }
         aiSharingConsentRecipient = nil
         aiSharingConsentVersion = nil

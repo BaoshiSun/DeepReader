@@ -1,5 +1,12 @@
 # DeepReader for iPhone and iPad
 
+**Current App Store candidate: 1.1.0 (3), bundled offline Qwen.** Use the
+[offline build instructions](LOCAL-QWEN.md#app-store-variant-110-3), not the
+regular online project below. The offline edition is free and requires no
+API key or purchase; AI answers may be inaccurate or incomplete.
+
+The following describes the earlier online source/build configuration.
+
 Native SwiftUI / UIKit first version, iOS and iPadOS 17 or later. Current candidate: version 1.1.0 (2). Debug uses `org.deepreader.ios`; App Store Release uses `org.deepreader.macos` to join the existing DeepReader: Read with AI record (6821368213). Test-install libraries do not automatically migrate to the store app. iOS 1.1.0 (2) prepares the adaptive sidebar, multi-provider support and knowledge-scope fixes for App Review; 1.0.0 (1) was previously submitted. macOS 1.3.1 (8) is a separate submission. See [submission record](../docs/app-store/ios-readiness.md).
 
 ## Implemented

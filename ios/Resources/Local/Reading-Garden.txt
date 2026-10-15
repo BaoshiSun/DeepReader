@@ -1,0 +1,31 @@
+阅读花园 · The Reading Garden
+
+慢下来，读懂一句话
+
+一本书的价值，不只在于读到最后一页，也在于某个句子让我们停下来，重新看待熟悉的事情。
+
+你可以长按选择下面的文字，再点底部的「阅读助手」。本地阅读不需要账号，也不需要 API Key。
+
+The river bank is green. The bank approved the loan.
+
+同一个 bank，在不同语境中含义不同。第一句写的是河岸，第二句写的是银行。理解词义，也是在理解作者正在谈论什么。
+
+Read at your own pace
+
+A useful reading habit begins with a small question: what is the writer really saying here? Select a sentence, consider the surrounding paragraph, and write down the idea in your own words.
+
+DeepReader Local includes Qwen3 0.6B. Explanations run on your device, even in airplane mode. No API key, server or purchase is needed. This small model can make mistakes; check its answers against the text.
+
+今天的小练习
+
+• 找一句值得重读的话。
+• 用自己的语言解释它。
+• 标记重点，明天再来看。
+
+This original sample was written for DeepReader. It is not an AI service response.
+
+离线小练习
+
+蒸发是液体表面的分子进入气体的过程。湿衣服晾晒后逐渐变干，就是水分蒸发的结果。
+
+请选中“湿衣服晾晒后逐渐变干”，让千问解释；切换到结合通用知识，再追问“为什么有风时衣服干得更快？”。

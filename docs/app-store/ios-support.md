@@ -2,22 +2,30 @@
 
 支持邮箱 / Support: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)
 
-需要 iOS / iPadOS 17 或更新版本。通过书库“从文件导入”打开 PDF、EPUB、TXT 或 Markdown，或先打开内置示例。EPUB 以纯文本章节显示，Markdown 显示源文本；不支持 DRM、MOBI/AZW3、OCR 或 Mac 同步。
+## iOS / iPadOS 1.1.0（构建 3）离线版
 
-在正文中长按选择文字，半透明阅读助手会出现。拖动标题移动，点减号收起，点叉关闭。点击“解释选文”才会请求 AI。首次发送需要同意；应用记住授权，可在设置中撤销。AI 需要您自己的服务商 API Key，保存在设备钥匙串；服务商费用与额度另计。
+需要 iOS / iPadOS 17 或更新版本。模型随应用安装，约需 500 MB 存储空间。无需账户、API Key、订阅或购买问答次数。首次初始化可能较慢，生成时会增加耗电或发热。
 
-iOS 1.1.0 支持多家服务商及自定义兼容接口，发送授权和 Key 按服务商及地址隔离。宽屏可切换右侧 AI 栏并拖动分隔线调整空间，也可选悬浮模式。回答依据可选择“仅书中内容”或“结合通用知识（不联网）”；后者使用模型已有知识，不执行网页搜索。
+在书库点击“打开示例文章”，或从“文件”导入 PDF、EPUB、TXT、Markdown。长按选择短句，在阅读助手中点击“解释选文”，之后可继续追问。解释和追问由本机 Qwen3 0.6B 模型生成，不联网、不上传阅读内容。宽屏可以调整右侧栏宽度或选择悬浮框；窄屏自动使用悬浮框。
 
-遇到问题请提供设备型号、iOS 版本和错误文字。不要发送 Key、私人文档或阅读历史。删除书籍副本不删除原文件或历史；历史可左滑删除，Key 可在设置中移除。
+**AI 答案可能不准确或不完整。请核对原文，不要仅凭 AI 回答作出重要决定。** “仅书中内容”要求模型依据提供的文字；“结合通用知识”允许模型使用已有知识，两者都不搜索网络，也都可能出错。
 
-Requires iOS / iPadOS 17 or later. Use Import from Files for PDF, EPUB, TXT or Markdown, or open the built-in sample. EPUB is chapter text; Markdown displays source. DRM, MOBI/AZW3, OCR and Mac sync are unsupported.
+使用短段落：最多取选文前 500 字、附近语境前 600 字、追问前 300 字及上次回答前 250 字。过长输入请缩短后重试。本版不提供全文总结。EPUB 为纯文本章节，Markdown 显示源文本；不支持 DRM、OCR、MOBI/AZW3 或跨设备同步。
 
-Touch and hold to select text. Drag the assistant title to move it, collapse it with minus, or close it with X. Tap Explain to request AI. First-use permission is remembered and can be revoked in Settings. AI needs your own provider API key, stored in device Keychain; provider fees and quotas apply.
+书库、高亮和历史保存在本机。可删除导入副本或单独删除历史；不会删除原始文件。系统备份可能包含这些数据。遇到问题请提供设备型号、系统版本和错误文字，不要发送私人文档或凭据。
 
-iOS 1.1.0 supports multiple providers and custom compatible endpoints, with keys and sharing permission isolated by recipient. Wide screens offer a resizable right sidebar or floating mode. Choose Book only or General knowledge (no browsing); the latter uses learned model knowledge without web search.
+## Offline edition — iOS/iPadOS 1.1.0 build 3
 
-For support, include your device model, iOS version and error text. Do not send keys, private documents or reading history. Deleting an imported book leaves its original and history intact. Swipe history records to delete them; remove keys in Settings.
+Requires iOS/iPadOS 17 or later and about 500 MB of storage. The model is included. No account, API key, subscription or question purchase is required. Initial setup takes time; generation may increase battery use and warmth.
 
-[Privacy policy / 隐私政策](https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy.md)
+Open Read a sample, or import PDF, EPUB, TXT or Markdown. Select a short passage and tap Explain in the reading assistant, then ask follow-ups. Qwen3 0.6B runs locally without uploading reading content. Wide screens support an adjustable sidebar or floating panel; narrow screens use the floating panel.
 
-[Source / 源码](https://github.com/BaoshiSun/DeepReader/tree/codex/main/ios)
+**AI answers may be inaccurate or incomplete. Check the original text and do not rely solely on AI for important decisions.** Book only requests answers grounded in the supplied text; General knowledge permits learned background knowledge. Neither mode searches the web or guarantees accuracy.
+
+Inputs are limited to short passages: 500 characters of selection, 600 of context, 300 of follow-up and 250 of the previous answer. Shorten long inputs if requested. Full-document summaries are unavailable. EPUB is chapter text; Markdown displays source text. DRM, OCR, MOBI/AZW3 and device sync are unsupported.
+
+Books, highlights and history remain locally and may be included in system backups. Delete imported copies or individual history records without deleting the original files. For support, send the device model, OS version and error text, not private documents or credentials.
+
+[Privacy policy / 隐私政策](https://github.com/BaoshiSun/DeepReader/blob/codex/ios-offline-qwen-store/docs/app-store/privacy-policy.md)
+
+[Source / 源码](https://github.com/BaoshiSun/DeepReader/tree/codex/ios-offline-qwen-store/ios)

@@ -131,9 +131,13 @@ struct Sidebar: View {
             }
             Group {
                 switch m.tab {
-                case 0: lookup
+                case 0: VStack {
+                    if OrdinaryQuestions.enabled { Button(m.t("问答次数与购买", "Question balance and purchase")) { m.tab = 4 } }
+                    lookup
+                }
                 case 1: history
-                case 2: summary
+                case 2:
+                    if OrdinaryQuestions.enabled { Text(m.t("普通问答套餐不包含全文或阅读总结。请在正文中选择要解释的段落。", "The ordinary question pack excludes document and reading summaries. Select a passage in the document to explain it.")) } else { summary }
                 case 3: library
                 default: settings
                 }
@@ -220,6 +224,10 @@ struct Sidebar: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 Text(m.t("AI 服务", "AI provider")).font(.headline)
+                if OrdinaryQuestions.enabled {
+                    QuestionCreditsView(english: m.settings.english)
+                    if m.hasAISharingConsent { Button(m.t("撤销 AI 发送授权", "Revoke AI sharing permission")) { m.revokeAISharingConsent() } }
+                } else {
                 Picker(m.t("服务商", "Provider"), selection: Binding(get: { m.settings.provider }, set: { m.chooseProvider($0) })) {
                     ForEach(Provider.available()) { provider in Text(provider.rawValue).tag(provider) }
                 }
@@ -248,6 +256,7 @@ struct Sidebar: View {
                     Button(m.t("撤销 AI 发送授权", "Revoke AI sharing permission")) { m.revokeAISharingConsent() }
                 }
                 Text(m.t("AI 使用您自己的账户和额度，密钥按服务商和接口地址保存在钥匙串。支持文字对话模型；可填写新模型 ID。本地阅读不需要密钥。", "AI uses your own account and quota. Keys are isolated by provider and endpoint in Keychain. Text chat models are supported; new model IDs can be entered. Local reading needs no key.")).font(.caption).foregroundStyle(.secondary)
+                }
                 Divider()
                 Text(m.t("归档文件夹", "Archive folder")).font(.headline)
                 Text(m.settings.archiveFolder.isEmpty ? m.t("尚未选择", "Not selected") : m.settings.archiveFolder).font(.caption).textSelection(.enabled)

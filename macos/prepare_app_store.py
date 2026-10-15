@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Prepare reproducible resources for the Xcode app target; does not sign or upload."""
 import plistlib
+import os
 import shutil
 import subprocess
 import sys
@@ -27,6 +28,8 @@ def main():
     with (ROOT / 'macos/Info.plist').open('rb') as f:
         info = plistlib.load(f)
     info['DeepReaderAppStoreBuild'] = True
+    info['DeepReaderGatewayURL'] = os.environ.get('DEEPREADER_GATEWAY_URL', '')
+    info['DeepReaderSandboxGatewayURL'] = os.environ.get('DEEPREADER_SANDBOX_GATEWAY_URL', '')
     info['CFBundleGetInfoString'] = 'DeepReader for macOS — AGPL-3.0-or-later'
     info['LSApplicationCategoryType'] = 'public.app-category.books'
     info['CFBundleSupportedPlatforms'] = ['MacOSX']
