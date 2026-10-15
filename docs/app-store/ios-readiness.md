@@ -57,3 +57,29 @@ Local store-edition changes remove OpenAI and Claude choices, OpenRouter/custom 
 The store listing JSON files are replacement-build drafts. No replacement binary, screenshots or live store descriptions have been uploaded in this change. The existing 99-second video demonstrates build 2 and must not be described as a recording of the modified candidate. Before resubmission, assign a new build number, update screenshots/Review Notes/privacy documentation to that exact candidate, and physically test it. Do not resubmit unchanged build 2 as though the provider restrictions were present.
 
 Validation: 35 macOS tests and 22 iOS tests passed, including the store policy, legacy settings, endpoint restrictions and retained direct-provider requests. iOS ran offline on an iPad Air 11-inch (M3) simulator with iOS 26.3, not a physical iPad. No live API calls or new keys were used. The 3.1.1 / China-service clarification was sent in the existing iOS review conversation on 2026-10-14 at 22:21 Asia/Riyadh; the page shows two messages. Screenshot and exact sent text are retained locally under `artifacts/ios-app-store/provider-restrictions/`.
+
+## 2026-10-15: offline Qwen replacement 1.1.0 (3)
+
+The App Store archive was signed and uploaded successfully. Build ID:
+`7f43e652-86b1-4e19-994c-acbc64e6c2a5`. The version selects build 3 rather
+than rejected build 2. All AI runs through bundled Qwen3 0.6B / llama.cpp,
+with no API key, remote AI fallback or purchase flow. Accuracy warnings
+appear in the assistant, Settings and both store localizations.
+
+The corresponding source and support/privacy documents are published on
+`codex/ios-offline-qwen-store`. Chinese and English store descriptions and
+iPhone/iPad screenshots were replaced. The shared privacy policy explains
+the offline iOS edition separately from macOS.
+
+An explanatory reply was sent in submission
+`cbb9ec8c-6d42-495b-a460-69d73edb2921` at 09:39 Asia/Riyadh. It describes
+the changes addressing 3.1.1 and 5 and does not claim guaranteed approval.
+The old build-2 video is explicitly identified as superseded. Physical
+device QA refers to the separately signed local variant on iPhone 14 Pro,
+iOS 26.6.2; the store variant passed simulator inference/layout tests.
+
+App Store Connect confirmed **Waiting for Review** for **1.1.0 (3)** on
+2026-10-15 at **09:42 Asia/Riyadh**. The resubmission contains one item, the
+iOS app version. No IAP was attached. Automatic release after approval
+remains selected. The separate macOS 1.3.1 submission was not replaced.
+Local submission proof: `artifacts/ios-offline-store/review-submitted.jpg`.
