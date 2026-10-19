@@ -1,6 +1,6 @@
 # DeepReader · AI 阅读器
 
-**iPhone / iPad 初版：** 原生 SwiftUI 工程已加入 [`ios/`](ios/README.md)，支持 iOS 17+ 的本地阅读与 DeepSeek 辅助阅读。当前为开发版本，尚未在 iOS App Store 发布。
+**iPhone / iPad：** [`iOS 工程`](ios/README.md)现已统一为内置 Qwen3 0.6B 的离线阅读器，支持 iOS 17+。阅读和 AI 问答免费，无广告、API Key、订阅或问答次数配额。答案可能不准确，请核对原文。上架进度见[提交记录](docs/app-store/ios-readiness.md)。
 
 基于 **SumatraPDF 3.6.1rel** 的 Windows x64 原生定制版，提供可调宽度、可收起或悬浮的 AI 侧栏。选中词句、按 **Ctrl + Alt + D**，即可结合附近上下文获得简短解释。
 
@@ -23,7 +23,7 @@ iOS/iPadOS、macOS、Windows 原生侧栏和旧版 Windows 助手均可在阅读
 
 追问修正：切到通用知识后，要求模型重新判断问题，避免沿用上一次“原文未说明”的答复。量化问题可补充计算方法、条件和明确标注的假设算例；不能编造书中设备的实测值或通用范围。Windows 新追问的回答标题记录该次请求的实际模式，旧记录保留原样。此修正仍需重新构建下载包才能供已安装版本使用；离线测试验证请求与模式传递，不代表实测模型一定遵循指令。
 
-新源码的 iOS、macOS、Windows 原生阅读器和旧版 Windows 助手提供相同的服务选择：DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter，以及自定义 OpenAI 兼容接口。支持阅读所需的**文字对话**，不表示支持图像生成、视频、语音、工具调用，或每家所有专用 API。
+以下多服务商说明适用于 macOS、Windows 原生阅读器和旧版 Windows 助手；当前 iOS 仅使用内置离线 Qwen。桌面源码提供的服务选择：DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter，以及自定义 OpenAI 兼容接口。支持阅读所需的**文字对话**，不表示支持图像生成、视频、语音、工具调用，或每家所有专用 API。
 
 在设置中选择服务商 → 选择或填写模型 ID → 核对完整 HTTPS 接口地址 → 填入该服务的 Key → 保存。豆包须填写账户可用的模型 / 推理接入点 ID；自定义接口也须填写模型 ID。模型预设只是起点，可输入新 ID，实际可用性由服务商、账户权限和地区决定。OpenRouter 可接入其提供的其他模型，例如 Llama；DeepReader 不会自动切换服务商或付费线路。
 
@@ -31,9 +31,9 @@ Qwen 默认地址属于美国 Virginia 地区，GLM 使用 Z.AI 国际接口，K
 
 Apple 版本使用钥匙串并按服务商和完整地址隔离 Key；已有官方 DeepSeek Key 继续可用。Windows 使用当前用户 DPAPI 加密；原生版修改地址会清除该服务原地址的 Key 槽，必须重新填写，旧助手则保留分别绑定各地址的加密 Key。模型、接口地址和非敏感偏好保存在本机配置。聊天产品订阅不等同于 API 额度。
 
-iOS / Windows 在首次向某接收方发送时请求授权，可在设置中撤销；macOS 新版也可选择“同意并记住”，并在设置中撤销；旧版仍按操作确认。提示显示实际接口和内容范围；OpenRouter 还会转发给模型供应商。Gemini 和 OpenRouter 有 18 岁要求，开发版加入年龄确认。重新上架前仍需复核整体受众、年龄分级、各服务条款、可用地区和隐私标签，年龄确认本身不代表已满足全部条款。
+Windows 在首次向某接收方发送时请求授权，可在设置中撤销；macOS 新版也可选择“同意并记住”，并在设置中撤销；旧版仍按操作确认。提示显示实际接口和内容范围；OpenRouter 还会转发给模型供应商。Gemini 和 OpenRouter 有 18 岁要求，开发版加入年龄确认。重新上架前仍需复核整体受众、年龄分级、各服务条款、可用地区和隐私标签，年龄确认本身不代表已满足全部条款。
 
-本次只进行离线开发和测试，不创建 Key、不调用真实模型。已送审的 macOS 1.2.1 (5) 和 iOS 1.0.0 (1) 仍是原来的 DeepSeek 首发构建；开发源码改动不会自动上传或替换它们。Windows CI 已通过原生 AI 面板编译和核心回归测试，以及旧版助手的编译与离线测试；完整安装包和人工界面回归仍需在发布前验证。
+以下为 2026-10-12 的历史验证记录，后续 iOS 已改为免费离线 Qwen（见上方链接）。当时只进行离线开发和测试，不创建 Key、不调用真实模型。已送审的 macOS 1.2.1 (5) 和 iOS 1.0.0 (1) 仍是原来的 DeepSeek 首发构建；开发源码改动不会自动上传或替换它们。Windows CI 已通过原生 AI 面板编译和核心回归测试，以及旧版助手的编译与离线测试；完整安装包和人工界面回归仍需在发布前验证。
 
 离线验证：macOS 30 项、iOS 模拟器 21 项（包括新增的同服务商切换接口隔离测试）通过；Windows 原生核心 121 项、旧助手 67 项通过。Python 共 31 项，其中 3 项仅适用于 Windows 成品包的测试跳过。已在 iPad 模拟器检查服务商菜单及 OpenAI 切换后的模型、接口和空 Key 状态。真实模型账户、配额、区域权限及完整 Windows GUI 尚未验证。参见 [Windows 验证记录](https://github.com/BaoshiSun/DeepReader/actions/runs/38213582902)。
 

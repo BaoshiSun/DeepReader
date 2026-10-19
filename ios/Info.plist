@@ -33,13 +33,11 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.1.0</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>4</string>
 	<key>DeepReaderAppStoreBuild</key>
 	<true/>
-	<key>DeepReaderGatewayURL</key>
-	<string></string>
-	<key>DeepReaderSandboxGatewayURL</key>
-	<string></string>
+	<key>DeepReaderLocalAI</key>
+	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>

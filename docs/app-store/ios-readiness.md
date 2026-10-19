@@ -98,3 +98,36 @@ Review Notes explicitly distinguish this development variant from the exact
 App Store build-3 binary and explain that displayed documents are tester
 imports, not bundled content. The video is only an Apple review attachment;
 it is not published with the source repository.
+
+## Free offline iOS consolidation — 2026-10-19
+
+The owner chose free iOS distribution without ads or paid question credits. All iOS configurations now
+bundle Qwen, including the default checked-in project. Candidate 1.1.0 (4) removes the online client,
+Keychain credential and purchase implementations from iOS compilation, removes the advertising build
+option and UI, and preserves library/history compatibility, answer scope and floating/sidebar layouts.
+The library uses single-column book rows. Accuracy warnings remain visible.
+
+The previously uploaded 1.1.0 (3) already provided free offline Qwen. The newer source must not be
+represented as live until upload and App Store Connect verification are complete. At the start of this
+work, App Store Connect required the owner to sign in again. No price or storefront changes have been
+verified in this session yet. Previously authorized storefronts remain mainland China, Hong Kong,
+Macau, Taiwan and the six Gulf countries; this is not a worldwide availability change.
+
+Analytics plan: use Apple's aggregate download, engagement and crash metrics with iOS filters, without
+adding a tracking SDK. Opt-in and privacy thresholds limit usage statistics; no per-question or book-content
+telemetry is collected. Historical review recordings remain labeled with their original build/variant.
+
+Validation on 2026-10-19: 16 iOS simulator tests passed (iPhone 17 / iOS 26.3), including actual
+Qwen inference and iPhone/iPad layout renders; 2 physical iPhone 14 Pro / iOS 26.6.2 tests passed
+in the build-4 local development identity, covering actual answers/follow-up/cancellation/history and
+legacy provider settings. The two short device answers took 1.14 s and 0.83 s, not a general latency
+benchmark. All 39 macOS regression tests passed. Store archive signing and strict signature verification
+passed. Model SHA-256 matched the pinned artifact, and the archive has no remote AI, credential or
+purchase symbols and no ad/tracking frameworks. Matching llama dSYM UUID was included before upload.
+
+After owner sign-in, App Store Connect showed iOS 1.1.0 (3) still Waiting for Review, automatic
+release after approval, and 175 available storefronts with zero prices. The owner explicitly confirmed
+keeping all 175 storefronts on 2026-10-19, superseding the earlier ten-storefront preference.
+
+Build 4 upload succeeded on 2026-10-19 at 23:20 Asia/Riyadh via Xcode App Store Connect
+export/upload with symbols enabled. Upload success is not approval or submission.

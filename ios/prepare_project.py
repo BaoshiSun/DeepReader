@@ -3,12 +3,18 @@
 """Generate the independent iOS Xcode project and icon. No account mutations or uploads."""
 from pathlib import Path
 import json
-import os
 import plistlib
 import subprocess
 import sys
-STORE_QWEN = "--store-qwen" in sys.argv
-LOCAL = "--local-qwen" in sys.argv or STORE_QWEN
+# Every iOS target is offline and free. Legacy switches only select bundle identity.
+unknown = set(sys.argv[1:]) - {'--store-qwen', '--local-qwen'}
+if unknown:
+    raise SystemExit('Unsupported option. All iOS builds now include offline Qwen; ads are retired.')
+STORE_QWEN = '--store-qwen' in sys.argv
+DEVELOPMENT = '--local-qwen' in sys.argv
+if STORE_QWEN and DEVELOPMENT:
+    raise SystemExit('Choose either the App Store or separate development identity.')
+LOCAL = True
 ROOT = Path(__file__).resolve().parent
 
 def main():
@@ -18,20 +24,17 @@ def main():
     subprocess.run(['swift', str(ROOT / 'prepare_icon.swift'), str(assets / 'AppIcon.png')], check=True)
     (assets / 'Contents.json').write_text(json.dumps({'images': [{'filename': 'AppIcon.png', 'idiom': 'universal', 'platform': 'ios', 'size': '1024x1024'}], 'info': {'author': 'xcode', 'version': 1}}))
     (assets.parent / 'Contents.json').write_text('{"info":{"author":"xcode","version":1}}')
-    info = dict(CFBundleDisplayName='DeepReader', CFBundleExecutable='$(EXECUTABLE_NAME)', CFBundleIdentifier='$(PRODUCT_BUNDLE_IDENTIFIER)', CFBundleName='DeepReader', CFBundlePackageType='APPL', CFBundleShortVersionString='1.1.0', CFBundleVersion='2', LSRequiresIPhoneOS=True, LSSupportsOpeningDocumentsInPlace=False, DeepReaderAppStoreBuild=True, ITSAppUsesNonExemptEncryption=False, UILaunchScreen={}, UISupportedInterfaceOrientations=['UIInterfaceOrientationPortrait','UIInterfaceOrientationLandscapeLeft','UIInterfaceOrientationLandscapeRight'], **{'UISupportedInterfaceOrientations~ipad':['UIInterfaceOrientationPortrait','UIInterfaceOrientationPortraitUpsideDown','UIInterfaceOrientationLandscapeLeft','UIInterfaceOrientationLandscapeRight']})
-    info['DeepReaderGatewayURL'] = os.environ.get('DEEPREADER_GATEWAY_URL', '')
-    info['DeepReaderSandboxGatewayURL'] = os.environ.get('DEEPREADER_SANDBOX_GATEWAY_URL', '')
+    info = dict(CFBundleDisplayName='DeepReader', CFBundleExecutable='$(EXECUTABLE_NAME)', CFBundleIdentifier='$(PRODUCT_BUNDLE_IDENTIFIER)', CFBundleName='DeepReader', CFBundlePackageType='APPL', CFBundleShortVersionString='1.1.0', CFBundleVersion='4', LSRequiresIPhoneOS=True, LSSupportsOpeningDocumentsInPlace=False, DeepReaderAppStoreBuild=True, ITSAppUsesNonExemptEncryption=False, UILaunchScreen={}, UISupportedInterfaceOrientations=['UIInterfaceOrientationPortrait','UIInterfaceOrientationLandscapeLeft','UIInterfaceOrientationLandscapeRight'], **{'UISupportedInterfaceOrientations~ipad':['UIInterfaceOrientationPortrait','UIInterfaceOrientationPortraitUpsideDown','UIInterfaceOrientationLandscapeLeft','UIInterfaceOrientationLandscapeRight']})
     info['CFBundleDocumentTypes'] = [dict(CFBundleTypeName='Reading documents', LSHandlerRank='Alternate', CFBundleTypeRole='Viewer', LSItemContentTypes=['com.adobe.pdf','org.idpf.epub-container','public.plain-text','net.daringfireball.markdown'])]
-    if LOCAL:
-        info.update(CFBundleDisplayName='DeepReader' if STORE_QWEN else 'DeepReader Local', DeepReaderAppStoreBuild=STORE_QWEN)
-        if STORE_QWEN: info.update(CFBundleVersion='3', DeepReaderLocalAI=True)
-    info_name = 'OfflineStoreInfo.plist' if STORE_QWEN else ('LocalInfo.plist' if LOCAL else 'Info.plist')
+    info.update(CFBundleDisplayName='DeepReader Local' if DEVELOPMENT else 'DeepReader',
+                DeepReaderAppStoreBuild=not DEVELOPMENT, DeepReaderLocalAI=True)
+    info_name = 'OfflineStoreInfo.plist' if STORE_QWEN else ('LocalInfo.plist' if DEVELOPMENT else 'Info.plist')
     with (ROOT / info_name).open('wb') as f: plistlib.dump(info, f)
     def uid(n): return f'{n:024X}'
     objects = []
     def obj(n, body): objects.append(f'{uid(n)} = {{ {body} }};')
     def arr(values): return '(' + ', '.join(uid(v) for v in values) + ')'
-    app_sources = [str(p.relative_to(ROOT)) for p in sorted((ROOT / 'Sources').glob('*.swift'))] + [f'../macos/Sources/DeepReaderCore/{name}.swift' for name in ['Models','Credentials','AIClient','QuestionCredits']]
+    app_sources = [str(p.relative_to(ROOT)) for p in sorted((ROOT / 'Sources').glob('*.swift'))] + [f'../macos/Sources/DeepReaderCore/{name}.swift' for name in ['Models','AIClient']]
     resources = ['.build/Assets.xcassets', 'Resources/Reading-Garden.txt', 'Resources/ZIPFoundation-LICENSE.txt', '../LICENSE-AGPL-3.0.txt', '../THIRD-PARTY-NOTICES.md', '../macos/AppStore/PrivacyInfo.xcprivacy']
     if LOCAL:
         resources = ['Resources/Local/Reading-Garden.txt' if p == 'Resources/Reading-Garden.txt' else p for p in resources]
@@ -43,12 +46,12 @@ def main():
         obj(n, f'isa = PBXFileReference; lastKnownFileType = {kind}; path = "{path}"; sourceTree = "<group>";')
         obj(n+100, f'isa = PBXBuildFile; fileRef = {uid(n)};')
         (sources if path.endswith('.swift') else res).append(n+100)
-    obj(1, f'isa = PBXProject; attributes = {{ LastUpgradeCheck = 2630; }}; buildConfigurationList = {uid(10)}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; knownRegions = (en, "zh-Hans", Base); mainGroup = {uid(2)}; productRefGroup = {uid(3)}; projectDirPath = ""; projectRoot = ""; packageReferences = {arr([30])}; targets = {arr([4,40])};')
-    obj(2, f'isa = PBXGroup; children = {arr(references+[50,3]+([60] if LOCAL else []))}; sourceTree = "<group>";')
+    obj(1, f'isa = PBXProject; attributes = {{ LastUpgradeCheck = 2630; }}; buildConfigurationList = {uid(10)}; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; knownRegions = (en, "zh-Hans", Base); mainGroup = {uid(2)}; productRefGroup = {uid(3)}; projectDirPath = ""; projectRoot = ""; packageReferences = {arr([30]+[])}; targets = {arr([4,40])};')
+    obj(2, f'isa = PBXGroup; children = {arr(references+[50,52,3]+([60] if LOCAL else []))}; sourceTree = "<group>";')
     obj(3, f'isa = PBXGroup; children = {arr([6,46])}; name = Products; sourceTree = "<group>";')
-    obj(4, f'isa = PBXNativeTarget; buildConfigurationList = {uid(11)}; buildPhases = {arr([7,8,9]+([63] if LOCAL else []))}; buildRules = (); dependencies = (); name = DeepReaderiOS; packageProductDependencies = {arr([31])}; productName = DeepReader; productReference = {uid(6)}; productType = "com.apple.product-type.application";')
+    obj(4, f'isa = PBXNativeTarget; buildConfigurationList = {uid(11)}; buildPhases = {arr([7,8,9]+([63] if LOCAL else []))}; buildRules = (); dependencies = (); name = DeepReaderiOS; packageProductDependencies = {arr([31]+[])}; productName = DeepReader; productReference = {uid(6)}; productType = "com.apple.product-type.application";')
     obj(6, 'isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DeepReader.app; sourceTree = BUILT_PRODUCTS_DIR;')
-    for n, kind, files in [(7,'Sources',sources),(8,'Frameworks',[32]+([61] if LOCAL else [])),(9,'Resources',res),(47,'Sources',[51]),(48,'Frameworks',[])]:
+    for n, kind, files in [(7,'Sources',sources),(8,'Frameworks',[32]+([61] if LOCAL else [])+[]),(9,'Resources',res),(47,'Sources',[51,53]),(48,'Frameworks',[])]:
         obj(n, f'isa = PBX{kind}BuildPhase; buildActionMask = 2147483647; files = {arr(files)}; runOnlyForDeploymentPostprocessing = 0;')
     if LOCAL:
         framework_path = '.build/local-qwen/llama-combined.xcframework' if (ROOT / '.build/local-qwen/llama-combined.xcframework').exists() else '.build/local-qwen/build-apple/llama.xcframework'
@@ -59,7 +62,8 @@ def main():
     for n, configs in [(10,[12,13]),(11,[14,15]),(41,[42,43])]:
         obj(n, f'isa = XCConfigurationList; buildConfigurations = {arr(configs)}; defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;')
     common = 'CLANG_ENABLE_MODULES = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2"; ENABLE_USER_SCRIPT_SANDBOXING = YES;'
-    if LOCAL: common += ' SWIFT_ACTIVE_COMPILATION_CONDITIONS = LOCAL_QWEN;'
+    conditions = 'LOCAL_QWEN'
+    if LOCAL: common += f' SWIFT_ACTIVE_COMPILATION_CONDITIONS = "{conditions}";'
     for n, name in [(12,'Debug'),(13,'Release')]:
         flags = 'SWIFT_OPTIMIZATION_LEVEL = "-Onone"; ENABLE_TESTABILITY = YES; ONLY_ACTIVE_ARCH = YES;' if name == 'Debug' else 'SWIFT_OPTIMIZATION_LEVEL = "-O"; SWIFT_COMPILATION_MODE = wholemodule; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";'
         obj(n, f'isa = XCBuildConfiguration; buildSettings = {{ {common} {flags} }}; name = {name};')
@@ -67,7 +71,8 @@ def main():
     for n, name in [(14,'Debug'),(15,'Release')]:
         platform_app = app.replace('org.deepreader.ios;', 'org.deepreader.macos;') if name == 'Release' else app
         if LOCAL:
-            platform_app = app.replace('Info.plist;', info_name + ';').replace('org.deepreader.ios;', 'org.deepreader.macos;' if STORE_QWEN else 'org.deepreader.ios.local;') + ' SWIFT_ACTIVE_COMPILATION_CONDITIONS = LOCAL_QWEN;'
+            bundle = 'org.deepreader.ios.local' if DEVELOPMENT else ('org.deepreader.macos' if STORE_QWEN or name == 'Release' else 'org.deepreader.ios')
+            platform_app = app.replace('Info.plist;', info_name + ';').replace('org.deepreader.ios;', bundle + ';') + f' SWIFT_ACTIVE_COMPILATION_CONDITIONS = "{conditions}";'
         obj(n, f'isa = XCBuildConfiguration; buildSettings = {{ {platform_app} }}; name = {name};')
     obj(30, 'isa = XCRemoteSwiftPackageReference; repositoryURL = "https://github.com/weichsel/ZIPFoundation.git"; requirement = { kind = exactVersion; version = 0.9.20; };')
     obj(31, f'isa = XCSwiftPackageProductDependency; package = {uid(30)}; productName = ZIPFoundation;')
@@ -76,11 +81,13 @@ def main():
     obj(44, f'isa = PBXTargetDependency; target = {uid(4)}; targetProxy = {uid(45)};')
     obj(45, f'isa = PBXContainerItemProxy; containerPortal = {uid(1)}; proxyType = 1; remoteGlobalIDString = {uid(4)}; remoteInfo = DeepReaderiOS;')
     obj(46, 'isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = DeepReaderMobileTests.xctest; sourceTree = BUILT_PRODUCTS_DIR;')
-    test_path = 'Tests/LocalQwenTests.swift' if LOCAL else 'Tests/MobileTests.swift'
+    test_path = 'Tests/LocalQwenTests.swift'
     obj(50, f'isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = {test_path}; sourceTree = "<group>";')
     obj(51, f'isa = PBXBuildFile; fileRef = {uid(50)};')
+    obj(52, 'isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/MobileTests.swift; sourceTree = "<group>";')
+    obj(53, f'isa = PBXBuildFile; fileRef = {uid(52)};')
     for n, name in [(42,'Debug'),(43,'Release')]: obj(n, f'isa = XCBuildConfiguration; buildSettings = {{ DEVELOPMENT_TEAM = YA66T3UWKU; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = org.deepreader.ios.tests; PRODUCT_NAME = DeepReaderMobileTests; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/DeepReader.app/DeepReader"; BUNDLE_LOADER = "$(TEST_HOST)"; }}; name = {name};')
-    project_name = 'DeepReaderOfflineStore.xcodeproj' if STORE_QWEN else ('DeepReaderLocal.xcodeproj' if LOCAL else 'DeepReader.xcodeproj')
+    project_name = 'DeepReaderOfflineStore.xcodeproj' if STORE_QWEN else ('DeepReaderLocal.xcodeproj' if DEVELOPMENT else 'DeepReader.xcodeproj')
     project = ROOT / project_name; project.mkdir(exist_ok=True)
     (project / 'project.pbxproj').write_text('// !$*UTF8*$!\n{ archiveVersion = 1; classes = {}; objectVersion = 56; objects = {\n'+'\n'.join(objects)+f'\n}}; rootObject = {uid(1)}; }}\n')
     scheme = project / 'xcshareddata/xcschemes/DeepReaderiOS.xcscheme'; scheme.parent.mkdir(parents=True, exist_ok=True)

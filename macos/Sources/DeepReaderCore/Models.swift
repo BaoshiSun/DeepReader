@@ -117,7 +117,14 @@ public struct Settings: Codable {
         endpoints = values
     }
     public var recipientID: String { provider.rawValue + "|" + endpointText }
-    public func sharingRecipient(appStore: Bool = Provider.isAppStoreBuild) -> String { appStore ? OrdinaryQuestions.recipient : recipientID }
+    public func sharingRecipient(appStore: Bool = Provider.isAppStoreBuild) -> String {
+#if os(iOS)
+        // Legacy settings decoding only; iOS has no remote request or purchase path.
+        return recipientID
+#else
+        return appStore ? OrdinaryQuestions.recipient : recipientID
+#endif
+    }
     public func requestEndpoint(appStore: Bool = Provider.isAppStoreBuild) throws -> URL {
         if appStore {
             guard Provider.available(appStore: true).contains(provider),

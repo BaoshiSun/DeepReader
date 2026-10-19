@@ -2,7 +2,7 @@
 
 Separate development app (`org.deepreader.ios.local`, display name **DeepReader Local**).
 The local development variant does not replace the App Store app or migrate its library.
-The separate App Store variant below uses the existing store identity.
+The default project and App Store alias also use this offline engine. See README for current build commands.
 
 ## Build
 
@@ -19,8 +19,8 @@ This compiles the simulator slice from llama.cpp commit
 isolated build environment if needed. The official binary only includes devices and macOS.
 
 Select `DeepReaderiOS` and your device, then Run. The existing team is YA66T3UWKU;
-other developers must select their own team. The normal project is generated with
-`python3 ios/prepare_project.py` and remains independent of llama and model weights.
+other developers must select their own team. The default project is generated with
+`python3 ios/prepare_project.py` and also bundles llama and the same model weights.
 
 The download script pins and SHA-256 verifies both artifacts before use:
 
@@ -41,11 +41,11 @@ or otherwise modified by DeepReader. Upstream model: https://huggingface.co/Qwen
 
 - Model is bundled; no first-launch download, key, purchase, or server required.
 - Explanation and follow-up use `LocalQwen` only; no remote fallback.
-- StoreKit listeners are not started. Provider/key and purchase controls are hidden.
+- No StoreKit gateway, remote AI client or credential implementation is compiled into iOS. Provider/key and purchase controls have been removed.
 - Books and history are in this app's separate container; system backups may include them.
 - External source/support links only open if explicitly selected.
 - Book-only / general-knowledge scope still applies. Neither mode searches the web.
-- No full-document summary in this experiment.
+- No full-document summary in this edition.
 - Input takes up to 500 UTF-16 units of selection, 600 of nearby context, 300 of follow-up,
   and 250 of prior answer. Total prompt must fit 1536 tokens; overflow reports an error.
 - Context 2048, output capped at 320 tokens, non-thinking Qwen chat template.
@@ -88,7 +88,7 @@ survived a model reload. The separately signed release app was installed on the 
 
 ## App Store variant 1.1.0 (3)
 
-After preparing the model and framework, generate the offline store project:
+After preparing the model and framework, the historical build-3 submission used the offline store project:
 
 ```sh
 python3 ios/prepare_project.py --store-qwen
@@ -101,8 +101,8 @@ xcodebuild -project ios/DeepReaderOfflineStore.xcodeproj -scheme DeepReaderiOS \
 This variant uses `org.deepreader.macos`, version 1.1.0 build 3, with
 `DeepReaderLocalAI` and the `LOCAL_QWEN` compilation flag enabled. It includes
 the model, accuracy disclaimer, offline sample and license texts. No API-key
-entry, purchases or remote AI fallback is available. The regular generated
-project retains separate online-development code and is not this submitted build.
+entry, purchases or remote AI fallback is available. As of 2026-10-19, the default project is also offline and the source build number is 4.
+The commands above document the historical build-3 submission; use README for current commands.
 
 The App Store archive and upload succeeded on 2026-10-15. Four simulator tests
 passed, including actual offline explanations and iPhone/iPad store screenshots.

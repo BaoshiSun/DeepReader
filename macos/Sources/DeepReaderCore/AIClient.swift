@@ -23,6 +23,7 @@ public enum TextLimits {
     }
 }
 
+#if !os(iOS)
 private final class NoRedirect: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
                     newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
@@ -199,3 +200,5 @@ public final class AIClient: @unchecked Sendable {
         return parts.first ?? ""
     }
 }
+
+#endif // iOS uses only bundled LocalQwen, never a remote AI client.

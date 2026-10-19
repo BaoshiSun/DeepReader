@@ -1,20 +1,11 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Foundation
 
-// Only the offline edition links llama or includes model weights.
+import llama
+
 enum LocalEdition {
-    static var enabled: Bool {
-#if LOCAL_QWEN
-        true
-#else
-        false
-#endif
-    }
     static let name = "Qwen3 0.6B · Q4_K_M"
 }
-
-#if LOCAL_QWEN
-import llama
 
 actor LocalQwen {
     static let shared = LocalQwen()
@@ -99,4 +90,3 @@ actor LocalQwen {
         ReaderError("本地推理未完成，请重试或缩短选文。", "Local inference failed. Try again with a shorter selection.")
     }
 }
-#endif

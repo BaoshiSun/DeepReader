@@ -1,81 +1,86 @@
 # DeepReader for iPhone and iPad
 
-**Current App Store candidate: 1.1.0 (3), bundled offline Qwen.** Use the
-[offline build instructions](LOCAL-QWEN.md#app-store-variant-110-3), not the
-regular online project below. The offline edition is free and requires no
-API key or purchase; AI answers may be inaccurate or incomplete.
+All iOS build configurations now include **Qwen3 0.6B Q4_K_M** and run AI on device.
+The app is free, with no advertisements, subscriptions, purchases, API keys or question quota.
+No remote AI client, Keychain credential implementation, StoreKit gateway, advertising SDK
+or analytics SDK is compiled into the iOS application. The model is bundled, with no first-launch download.
 
-The following describes the earlier online source/build configuration.
-
-Native SwiftUI / UIKit first version, iOS and iPadOS 17 or later. Current candidate: version 1.1.0 (2). Debug uses `org.deepreader.ios`; App Store Release uses `org.deepreader.macos` to join the existing DeepReader: Read with AI record (6821368213). Test-install libraries do not automatically migrate to the store app. iOS 1.1.0 (2) prepares the adaptive sidebar, multi-provider support and knowledge-scope fixes for App Review; 1.0.0 (1) was previously submitted. macOS 1.3.1 (8) is a separate submission. See [submission record](../docs/app-store/ios-readiness.md).
-
-## Implemented
-
-- Import PDF, EPUB, UTF-8/UTF-16 TXT and Markdown from Files or Open In. A coordinated local copy is kept inside the app; the original is not modified.
-- PDFKit reading, text selection, search, persistent PDF highlight annotations and exporting the annotated copy.
-- EPUB spine-order chapter reading in plain text; embedded scripts and external content never execute. Chapter selection, text selection/search, saved text highlights and chapter/page position.
-- Local book library, ratings, finished state, deletion of imported copies, built-in original bilingual sample and Chinese/English interface.
-- Multi-provider AI explanation, follow-up and full-document summary in the unreleased source, using the shared macOS AI client. See [provider setup and release limits](../README.md#多模型开发版2026-10-12尚未发布). The submitted 1.0.0 (1) remains DeepSeek-only. First-use disclosure covers selection/context, follow-ups and full-text summaries; explicit permission is remembered locally and can be revoked in Settings. Older libraries default to no permission. Provider credentials use a separate iOS Keychain service; no API key is bundled.
-- Adaptive reader layout: windows at least 664 points wide can show a right AI sidebar. Drag its divider to allocate space; the width ratio and sidebar/floating preference persist locally. On smaller windows the sidebar automatically becomes a floating panel, and returns when space is available. The reader toolbar and panel header switch between the two modes. A wide reader opens with the sidebar visible by default.
-- The translucent floating assistant supports dragging, collapsing and closing. Selecting text reveals the assistant without sending a request. Layout changes retain selection, answers and the follow-up draft. Explain/follow-up/summary send only on a user tap; the first permission prompt stays inside the assistant. Reduce Transparency uses an opaque background for floating mode.
-- Request cancellation, bounded inputs/responses, saved successful history, record deletion and sharing.
-
-EPUB images, original book styling and malformed HTML are not supported in this first text-reading version. Markdown displays source text. MOBI/AZW3, DRM, OCR, Mac sync, separate OS-level floating windows, rating-folder archives and day/week/month summaries are not implemented on iOS. Text highlights match the chosen phrase within displayed chapters, so repeated phrases are also highlighted.
+Current source candidate: **1.1.0 (4)**. The last confirmed App Store submission is
+**1.1.0 (3)**, submitted on 2026-10-15. Build 4 is not published until the live submission
+record in [readiness](../docs/app-store/ios-readiness.md) says so.
 
 ## Build and run
 
+Requires Xcode, iOS/iPadOS 17 or later, and approximately 500 MB for the installed app.
+Prepare the pinned model/framework once:
+
 ```sh
+python3 ios/prepare_local_model.py --simulator
 python3 ios/prepare_project.py
-xcodebuild -project ios/DeepReader.xcodeproj -scheme DeepReaderiOS \
-  -configuration Debug -destination 'generic/platform=iOS Simulator' \
-  -derivedDataPath artifacts/ios/DerivedData build
+open ios/DeepReader.xcodeproj
 ```
 
-Open `ios/DeepReader.xcodeproj` in Xcode and choose an iPhone or iPad simulator. For a physical device, choose your Apple Developer team, connect the device, and run with automatic signing. The simulator build is not an installable App Store IPA.
+The default project is now offline too. Debug uses `org.deepreader.ios`;
+Release uses `org.deepreader.macos`, joining the existing App Store record 6821368213.
+`--store-qwen` generates the compatible `DeepReaderOfflineStore.xcodeproj` alias with the
+store identity in both configurations. `--local-qwen` produces a separate
+`DeepReaderLocal.xcodeproj` / `org.deepreader.ios.local` development app. All three include
+the same offline engine and free features. These distinct development identities have separate libraries.
+The retired `--ads-test` option is rejected.
 
-Keep Xcode's default signing enabled for simulator builds and tests too. Passing `CODE_SIGNING_ALLOWED=NO` can produce a runnable app without the application-identifier entitlement needed by Keychain; saving an API key then fails with `-34018`. See [Apple's Keychain entitlement troubleshooting](https://developer.apple.com/forums/thread/114456). If you used an earlier unsigned simulator build, stop the app and rebuild/run from Xcode, or use the corrected build command above. You do not need to erase the simulator, delete your books, or change your API key. Saving a key only stores it locally; it does not verify the provider account or make a network request.
-
-The checked-in project is reproducibly generated by `prepare_project.py`; run it after checkout to generate the icon catalog. ZIPFoundation is pinned to 0.9.20 through Swift Package Manager; first resolution needs network access. The icon uses the existing attributed DeepReader artwork. Shared `Models.swift`, `Credentials.swift` and `AIClient.swift` are compiled from their existing macOS paths, without copying or modifying the Mac target.
-
-## Offline verification
+For devices only, omit `--simulator` when preparing resources. See
+[model provenance, licenses and runtime limits](LOCAL-QWEN.md).
 
 ```sh
-xcrun simctl list devices available
 xcodebuild -project ios/DeepReader.xcodeproj -scheme DeepReaderiOS \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
-  -derivedDataPath artifacts/ios/DerivedData test
+  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -derivedDataPath artifacts/ios-free-qwen/DerivedData test
+
+xcodebuild -project ios/DeepReader.xcodeproj -scheme DeepReaderiOS \
+  -configuration Release -destination 'generic/platform=iOS' \
+  -archivePath artifacts/ios-free-qwen/DeepReader-1.1.0-4.xcarchive \
+  -allowProvisioningUpdates archive
 ```
 
-The XCTest suite exercises import/relaunch persistence, original-file preservation, corrupt-state handling, failed-import rollback, EPUB spine order and script/DRM/entity rejection, traversal protection, PDF annotation persistence, Unicode chunking, provider request contracts, endpoint credential isolation, and consent on provider changes. Tests never call a live AI provider or read the macOS review credential. Actual provider behavior and signed-device Keychain operation still require separate verification.
+Choose your own development team when building a fork. Build numbers must be unique for uploads.
+Generated models, signing material, recordings and archives are excluded from Git.
 
-Validation on 2026-10-11 with Xcode 26.3: all 10 iOS XCTest tests passed on an iPhone 16e simulator running iOS 26.3, and the existing 9 distribution tests passed. Generic iOS Simulator and unsigned arm64 iOS Release builds both succeeded. XCTest also rendered the library and reader at phone/tablet dimensions for visual inspection; these are layout test renders, not physical-device screenshots. Manual simulator tapping was blocked by the local UI automation tool, so complete touch interaction and actual iPad-device testing remain outstanding. No live AI request was made.
+## Features
 
-Keychain regression follow-up on 2026-10-11: the earlier unsigned build reproduced `-34018`. With default simulator signing, all 13 iOS tests passed, including real Keychain create/update/read/delete in isolated services using disposable, nonfunctional test values, invalid-key preservation, and failed replacement state. The shared credential error diagnostics also passed the existing 28 macOS tests. The simulator Release app was rebuilt with signing enabled. No real user key was accessed by the regression tests, and no provider request was made.
+- Import PDF, EPUB, TXT and Markdown as local copies; originals remain unchanged.
+- PDF text search, selection, persistent highlights and export of the annotated copy.
+- EPUB spine-order text chapters; scripts and external content do not execute.
+- Library search, ratings, finished state, saved reading position and an original bilingual sample.
+- Explain a passage and ask follow-up questions using bundled Qwen, including in airplane mode.
+- Book-only or general-knowledge scope. Neither mode searches the web; answers may be inaccurate.
+- Adjustable sidebar on wide screens and a draggable, collapsible translucent floating assistant.
+- Cancel inference, retain successful local history, delete records and explicitly share answers.
+- Chinese and English interface; single-column library book rows, with no inserted ads.
 
-Floating-reader follow-up on 2026-10-11: all 15 iOS tests passed. New offline transport tests cover first-use consent, remembering it after reopening the library, explanations/follow-ups/summaries without repeated prompts, revocation, and rejecting obsolete pending requests. Selection alone makes no request. Phone/tablet, landscape, dark appearance and inline consent layouts were rendered for inspection; subsequent layout changes passed the rendering test again. These checks do not substitute for manual drag/keyboard testing on a physical device.
+Small models are best suited to simple explanations. Technical facts, calculations and complex reasoning
+may be unreliable. Accuracy warnings appear beside answers and in Settings. There is no full-document
+summary. Inputs and output length are bounded for device memory and latency; this is not a paid quota.
+EPUB images/original typography, DRM, MOBI/AZW3, scanned-PDF OCR and cross-device sync are unsupported.
 
-## Data and distribution
+## Verification
 
-Books, settings, selected text highlights and successful AI history are stored in the iOS application-support container. File references are relative to the container so reinstall/restore path changes do not invalidate saved copies. Files can be included in OS backups; this is not a cloud-sync feature. API keys use `org.deepreader.ios.providers` in Keychain with ThisDeviceOnly accessibility and are never written into settings. Removing a key does not delete provider-held data; uninstalling does not guarantee Keychain removal.
+The active test target includes document import/persistence/security and adaptive-layout regression tests,
+plus actual bundled inference, follow-up, cancellation/history, scope prompts and missing-model failure.
+Legacy provider settings can still decode, but cannot activate a remote service. iOS creates no cloud
+credential client. Tests use generated documents, not the owner's private books or keys.
+Historical tests and submissions are documented in [readiness](../docs/app-store/ios-readiness.md).
 
-Settings exposes data handling, deletion controls, provider policy, source code, licenses and the support email `baoshi.sun@icloud.com`. The operator is Baoshi Sun. Only optional AI sends text to the selected endpoint; the provider controls network/account metadata and retention. Custom endpoints belong to their server operator; OpenRouter also forwards to downstream model providers. Its API fees belong to the user's provider account.
+## Privacy and release data
 
-Original iOS code is AGPL-3.0-or-later, consistent with this repository; ZIPFoundation is MIT. The iOS target does not link libmobi, libarchive, SumatraPDF or MuPDF. License texts and icon attribution ship in the app. The combined privacy policy now covers Mac and iOS; Chinese/English iPhone and iPad screenshots, signing and upload are complete. App Store submission is not approval or an independent determination of license compatibility.
+Books, positions, highlights, settings and answers remain in the application container; system backups may
+include them. Source/privacy/support links open only when selected. No user reading content is sent for
+inference or developer analytics. The archived advertising prototype is no longer a supported iOS build.
 
-## Adaptive layout update — 2026-10-12
+For release experience, use App Store Connect → Analytics and filter to iOS. Review downloads,
+product-page conversion, active devices, sessions, retention and crashes. Usage metrics include only
+eligible users who opted to share analytics and may be unavailable below Apple's privacy thresholds.
+They do not report readers' book text, questions, answers or a complete count of AI requests.
+See [Apple app usage metrics](https://developer.apple.com/help/app-store-connect-analytics/engagement/app-usage/).
 
-This source update adds the adjustable sidebar and floating-mode choice. It has not been uploaded to App Store Connect and is not included in the previously submitted 1.0.0 (1) binary. Layout is based on available window space rather than an assumed device model, covering iPad multitasking and wide iPhone layouts. Specific new hardware requires testing when available.
-
-Validation: all 18 iOS tests passed on the iPhone 16e simulator (iOS 26.3). Added coverage checks sidebar bounds across 320–1366-point windows, persistence and legacy defaults, and preserving reading/AI state without network requests during mode changes. Layout renders were inspected for default/wider sidebars, narrow-window fallback, phone landscape, floating mode and dark appearance. These renders use phone/tablet-sized hosting views; physical-device divider dragging, keyboard interaction and any specific new device remain to be checked.
-
-### Multi-provider validation
-
-Run the shared macOS suite with `swift test --package-path macos` and this target’s simulator XCTest suite. All HTTP tests use synthetic credentials and an intercepted transport; they do not verify live accounts, quotas or model availability. New optional settings preserve older libraries. Sharing consent version 2 is bound to the provider and endpoint, so older global consent requires a fresh prompt.
-
-Validated on 2026-10-12: 20 simulator tests passed together, followed by the additional endpoint-change credential/consent test (21 total). The iPad simulator provider menu and switching to OpenAI were visually checked. No real provider credentials or inference requests were used.
-
-## App Store update — 2026-10-13
-
-iOS 1.1.0 (2) packages the previously developed adaptive sidebar/floating layouts, multiple providers, recipient-bound consent and credentials, and corrected general-knowledge follow-ups. The privacy/source links now use the maintained default branch, and the About version reads the bundle metadata. No live AI account tests or new API keys are part of this update.
-
-Validation for this candidate: 22 iOS simulator tests passed with zero failures on iPhone 16e / iOS 26.3. The signed arm64 App Store archive succeeded and its version/bundle identity and code signature were verified. Tests use offline transports and synthetic isolated credentials; no live provider request was made.
+Original code is AGPL-3.0-or-later, ZIPFoundation and llama.cpp are MIT, and Qwen is Apache 2.0.
+License texts and existing icon attribution ship in Settings. Support: baoshi.sun@icloud.com.

@@ -23,12 +23,30 @@ final class LocalQwenTests: XCTestCase {
             XCTFail("Missing model must fail")
         } catch { XCTAssertFalse(error.localizedDescription.isEmpty) }
     }
+    @MainActor func testLegacyProviderSettingsDoNotBlockOfflineReading() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let library = try MobileLibrary(root: root)
+        try library.update {
+            $0.settings.provider = .openAI
+            $0.settings.useWorldKnowledge = true
+            $0.aiConsentVersion = 2
+            $0.aiConsentRecipient = "legacy-provider"
+        }
+        let model = MobileModel(root: root)
+        XCTAssertNil(model.error)
+        XCTAssertEqual(model.settings.useWorldKnowledge, true)
+        model.persistSettings()
+        XCTAssertNil(model.error)
+        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "DeepReaderLocalAI") as? Bool, true)
+        for key in ["DeepReaderGatewayURL", "DeepReaderSandboxGatewayURL", "GADApplicationIdentifier", "NSUserTrackingUsageDescription"] {
+            XCTAssertNil(Bundle.main.object(forInfoDictionaryKey: key), "Unexpected online configuration: \(key)")
+        }
+    }
     @MainActor func testRealOfflineExplanationFollowupHistoryAndCancellation() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let model = MobileModel(root: root)
-        XCTAssertTrue(model.localAI); XCTAssertFalse(model.storeQuestions)
-        XCTAssertFalse(model.hasKey); XCTAssertFalse(model.hasAIConsent)
         let file = root.appendingPathComponent("offline-sample.txt")
         try "蒸发是液体表面的分子进入气体的过程。湿衣服晾晒后逐渐变干，就是水分蒸发的结果。".write(to: file, atomically: true, encoding: .utf8)
         let book = try XCTUnwrap(model.library).importFile(file)
@@ -36,7 +54,6 @@ final class LocalQwenTests: XCTestCase {
         model.select("湿衣服晾晒后逐渐变干", surrounding: "蒸发是液体表面的分子进入气体的过程。湿衣服晾晒后逐渐变干，就是水分蒸发的结果。")
         let start = Date()
         model.explain()
-        XCTAssertNil(model.pending)
         try await wait(model)
         XCTAssertNil(model.error)
         XCTAssertFalse(model.answer.isEmpty)
