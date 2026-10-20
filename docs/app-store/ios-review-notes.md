@@ -1,3 +1,23 @@
+# iOS 1.1.0 (5) — draft App Review Notes
+
+Not yet uploaded or submitted. This draft must be paired with build-5 device QA before submission.
+
+DeepReader is a free iPhone/iPad document reader. Bundled Qwen3 0.6B runs on device; no API keys, remote AI, purchases, subscriptions, accounts or quotas. AI answers may be inaccurate; accuracy warnings remain visible.
+
+The library now supports one clearly labelled AdMob native image ad among book rows. There are no ads in the reader, search results, History or an empty library. The first eligible library visit explains advertising data handling and offers Agree or Continue without ads. Settings can disable ads at any time without removing features. Google UMP presents region-appropriate privacy choices. Ads are non-personalized, publisher first-party ID is disabled, and no ATT permission is requested. No book title, document, selection, question or answer is passed to advertising services. Offline reading/AI and an unfilled ad slot work normally.
+
+For review: open the bundled sample from the empty Library, return to Library, and choose whether to enable advertising. The ad is placed after the third book, or the final book when fewer than three are present. AdMob may return no ad until its separate app-readiness checks complete. No ad viewing/clicking is required. Explain a short selection and ask a follow-up in the floating assistant or adjustable sidebar. Switch English/Chinese and answer scope in Settings.
+
+External components: Google Mobile Ads SDK 13.11.0, Google User Messaging Platform 3.1.0, bundled Qwen3 0.6B, llama.cpp, ZIPFoundation, Apple frameworks. Google handles ad/consent data as described in the updated policy. There is no developer backend or Firebase Analytics. The same free offline AI features are offered in all 175 selected regions; ad availability and consent forms can vary by region.
+
+Physical-device test and demonstration video for build 5: pending. Earlier build-4 QA and videos do not establish validation of this advertising build. Do not claim otherwise in the submission.
+
+The reader hosts no public posts, user accounts or protected catalog. Users import their own documents. The bundled Reading Garden sample is original project content. No regulated service is offered.
+
+---
+
+## Previous build-4 review notes (historical)
+
 # iOS 1.1.0 (4) — App Review Notes
 
 DeepReader iOS 1.1.0 (4) is a free reader with bundled, fully on-device Qwen AI. It consolidates the offline build 3 and removes the old remote AI, credential, purchase and advertising code from the iOS app. No question quota or subscription applies.

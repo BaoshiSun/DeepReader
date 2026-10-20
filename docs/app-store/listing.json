@@ -1,5 +1,5 @@
 {
-  "status": "1.3.1 (9) resubmitted 2026-10-20 13:35 +03:00; WAITING_FOR_REVIEW, automatic release after approval.",
+  "status": "Mac App Store 1.3.1 (9) review withdrawn 2026-10-20 at owner request (DEVELOPER_REJECTED); no advertising change to this Mac build.",
   "platform": "macOS",
   "bundle_id_candidate": "org.deepreader.macos",
   "primary_category_candidate": "Books",

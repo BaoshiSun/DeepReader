@@ -1,3 +1,5 @@
+> Current status — 2026-10-20: At the owner's request, iOS 1.1.0 (4) and macOS 1.3.1 (9) were withdrawn from review; both are DEVELOPER_REJECTED. Historical Waiting for Review entries below are superseded. The new iOS build-5 native-ad candidate has not been uploaded or submitted. See [advertising checklist](ios-advertising.md).
+
 # iOS App Store submission — 2026-10-11
 
 Owner authorized submission of iOS to the existing app record (6821368213), free in CHN/HKG/MAC/TWN/SAU/ARE/QAT/KWT/BHR/OMN. Release uses org.deepreader.macos; Debug retains org.deepreader.ios. No migration of local test-install data is claimed. macOS 1.2.1 (5) is already Waiting for Review.

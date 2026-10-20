@@ -13,13 +13,16 @@ import UniformTypeIdentifiers
 }
 struct RootView: View {
     @EnvironmentObject var model: MobileModel
+    @StateObject private var ads = LibraryAdvertising.shared
+    @Environment(\.scenePhase) private var scenePhase
     @State private var selectedTab = 0
     @State private var importing = false
     @State private var search = ""
     @State private var removal: MobileBook?
     private var filteredBooks: [MobileBook] { model.books.filter { search.isEmpty || $0.title.localizedCaseInsensitiveContains(search) } }
-    private var libraryColumns: [GridItem] {
-        [GridItem(.flexible())]
+    private var libraryEligible: Bool {
+        LibraryAdPolicy.eligible(tab: selectedTab, reading: model.document != nil, bookCount: model.books.count,
+                                 searching: !search.isEmpty, busy: model.busy || model.importing || importing, active: scenePhase == .active)
     }
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -28,7 +31,7 @@ struct RootView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         VStack(alignment: .leading, spacing: 10) {
                             Text(model.t("留一点时间，\n读懂更多。", "Make room\nfor a good read.")).font(.system(size: 34, weight: .semibold, design: .serif))
-                            Text(model.t("内置千问 · 离线免费 · 无广告", "Built-in Qwen · Free offline AI · No ads")).foregroundStyle(.secondary)
+                            Text(model.t("内置千问 · 免费离线问答", "Built-in Qwen · Free offline AI")).foregroundStyle(.secondary)
                         }.padding(.top, 12)
                         Button { importing = true } label: { Label(model.t("从文件导入", "Import from Files"), systemImage: "plus.circle.fill").frame(maxWidth: .infinity).padding(6) }.buttonStyle(.borderedProminent).disabled(model.importing || model.busy || model.library == nil)
                         if model.importing { ProgressView(model.t("正在导入…", "Importing…")) }
@@ -40,8 +43,8 @@ struct RootView: View {
                                 Button(model.t("打开示例文章", "Read a sample")) { model.sample() }.disabled(model.library == nil)
                             }.frame(maxWidth: .infinity).padding(.vertical, 38)
                         }
-                        LazyVGrid(columns: libraryColumns, spacing: 16) {
-                            ForEach(filteredBooks) { book in
+                        LazyVStack(spacing: 16) {
+                            ForEach(Array(filteredBooks.enumerated()), id: \.element.id) { index, book in
                                 Button { model.open(book) } label: {
                                     HStack(alignment: .top, spacing: 16) {
                                         Image(systemName: book.filename.hasSuffix("pdf") ? "doc.richtext" : "book.closed")
@@ -54,6 +57,9 @@ struct RootView: View {
                                     }.padding().frame(maxWidth: .infinity, alignment: .leading).background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 18))
                                 }.buttonStyle(.plain).disabled(model.busy)
                                 .contextMenu { Button(role: .destructive) { removal = book } label: { Label(model.t("删除导入副本", "Delete imported copy"), systemImage: "trash") } }
+                                if libraryEligible, LibraryAdPolicy.slot(after: index, bookCount: filteredBooks.count, searching: !search.isEmpty), let ad = ads.nativeAd {
+                                    LibraryNativeAdRow(ad: ad, english: model.english)
+                                }
                             }
                         }
                     }.padding(22)
@@ -64,6 +70,10 @@ struct RootView: View {
             }.tabItem { Label(model.t("书库", "Library"), systemImage: "books.vertical") }.tag(0)
             NavigationStack { HistoryView() }.tabItem { Label(model.t("历史", "History"), systemImage: "clock") }.tag(1)
             NavigationStack { SettingsView() }.tabItem { Label(model.t("设置", "Settings"), systemImage: "gearshape") }.tag(2)
+        }
+        .task(id: libraryEligible) { ads.setLibraryVisible(libraryEligible) }
+        .sheet(isPresented: Binding(get: { libraryEligible && ads.configured && ads.needsDisclosure }, set: { _ in })) {
+            AdvertisingConsentSheet(ads: ads)
         }
         .disabled(model.importing)
         .fileImporter(isPresented: $importing, allowedContentTypes: [.pdf, .plainText, UTType(filenameExtension: "epub") ?? .data, UTType(filenameExtension: "md") ?? .plainText], allowsMultipleSelection: false) { result in
@@ -128,6 +138,8 @@ struct HistoryView: View {
 }
 struct SettingsView: View {
     @EnvironmentObject var model: MobileModel
+    @ObservedObject private var ads = LibraryAdvertising.shared
+    @State private var advertisingConsent = false
     var body: some View {
         Form {
             Section(model.t("界面", "Interface")) {
@@ -137,11 +149,21 @@ struct SettingsView: View {
                 KnowledgeScopePicker()
                     Text(LocalEdition.name).font(.headline)
                     Text(model.t("答案可能不准确或不完整，请核对原文，不要仅凭 AI 回答作出重要决定。", "Answers may be inaccurate or incomplete. Check the original text and do not rely solely on AI for important decisions.")).font(.callout)
-                    Text(model.t("模型已内置，完全免费，无广告、订阅或问答次数限制，可在飞行模式下使用。", "Model included. Free, with no ads, subscriptions or question quota. Works in airplane mode."))
+                    Text(model.t("模型已内置，完全免费，无订阅或问答次数限制，可在飞行模式下使用。书库可展示广告，阅读页面不展示广告。", "Model included. Free, with no subscriptions or question quota. Works in airplane mode. Ads may appear in the library, never in the reader."))
                     Text(model.t("本机问答取选文前 500 字、附近语境前 600 字；追问前 300 字及上次回答前 250 字。小模型适合简单释义，专业知识与计算可能不准确。首次回答需加载模型，生成时会增加耗电。", "On-device limits: first 500 characters of selection, 600 of context, 300 of follow-up and 250 of previous answer. Best for simple explanations; technical knowledge and calculations may be unreliable. Loading and generation use battery."))
             }.disabled(model.busy)
+            Section(model.t("书库广告", "Library ads")) {
+                Toggle(model.t("允许书库广告", "Allow library ads"), isOn: Binding(get: { ads.enabled }, set: { value in
+                    if value { advertisingConsent = true } else { ads.choose(false) }
+                }))
+                NavigationLink(model.t("广告与隐私", "Ads and privacy")) { AdvertisingPrivacyView() }
+                if ads.privacyOptionsRequired {
+                    Button(model.t("管理 Google 隐私选择", "Manage Google privacy choices")) { ads.showPrivacyOptions() }.disabled(ads.privacyBusy)
+                }
+                Text(model.t("仅书库列表展示一条标注为“广告”的内容，不影响阅读和免费 AI。", "One clearly labelled ad may appear among your books. Reading and free AI are unaffected.")).font(.footnote)
+            }
             Section(model.t("数据与隐私", "Data and privacy")) {
-                    Link(model.t("隐私政策", "Privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-offline-qwen-store/docs/app-store/privacy-policy.md")!)
+                    Link(model.t("隐私政策", "Privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-library-admob/docs/app-store/privacy-policy.md")!)
                     Text(model.t("阅读和 AI 推理都在设备上完成，不发送原文或问题。书库和历史保存在本机，系统备份可能包含这些资料。可在书库和历史中删除记录。", "Reading and inference run on your device. Text and questions are not sent out. Books and history stay locally and may be included in system backups. Delete them from Library and History."))
             }
             Section(model.t("关于", "About")) {
@@ -153,9 +175,11 @@ struct SettingsView: View {
                 Link(model.t("支持邮箱", "Support email"), destination: URL(string: "mailto:baoshi.sun@icloud.com")!)
             }
         }.navigationTitle(model.t("设置", "Settings"))
+        .sheet(isPresented: $advertisingConsent) { AdvertisingConsentSheet(ads: ads) }
+        .alert(model.t("暂时无法打开隐私选项，请稍后重试。", "Privacy options are unavailable. Please try again later."), isPresented: $ads.privacyError) { Button("OK") {} }
     }
     private var licenses: String {
-        ["LICENSE-AGPL-3.0", "ZIPFoundation-LICENSE", "THIRD-PARTY-NOTICES", "Qwen-LICENSE", "llama-LICENSE"].compactMap { name in
+        ["LICENSE-AGPL-3.0", "ZIPFoundation-LICENSE", "THIRD-PARTY-NOTICES", "AdvertisingPrivacy", "Qwen-LICENSE", "llama-LICENSE"].compactMap { name in
             guard let url = Bundle.main.url(forResource: name, withExtension: name == "THIRD-PARTY-NOTICES" ? "md" : "txt") else { return nil }
             return try? String(contentsOf: url, encoding: .utf8)
         }.joined(separator: "\n\n")

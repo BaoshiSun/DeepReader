@@ -1,6 +1,24 @@
 # DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-20。适用于 macOS 1.3.1（Mac App Store 构建 9 为离线版，构建 8 为旧联网版），以及 iOS / iPadOS 1.1.0；同时保留旧版行为的说明。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+更新日期 / Updated: 2026-10-20。适用于 macOS 1.3.1（Mac App Store 构建 9 为离线版，构建 8 为旧联网版），以及 iOS / iPadOS 1.1.0（按构建号区分）；同时保留旧版行为的说明。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+
+## iOS / iPadOS 1.1.0（构建 5）：离线 AI 与书库广告 / Offline AI and library ads
+
+本节仅适用于新增书库广告的 iOS 构建 5，优先于旧版本说明。内置 Qwen3 0.6B 仍在设备上运行，阅读和问答全部免费，无登录、API Key、内购、订阅或次数配额。文档副本、书名、选文、问题、回答、阅读位置和历史不发送给 Google 或远程 AI；保存在设备上，系统备份和用户主动分享需另行管理。
+
+书库列表最多展示一条标注“广告”的 Google AdMob 原生图片广告。阅读、历史、搜索结果和空书库不显示广告。首次在有书籍的书库使用广告前，会说明广告数据处理并请求您的选择；可以拒绝，并随时在设置关闭广告，不影响阅读和 AI。未开启时不初始化广告或同意管理 SDK、不请求广告。开启后先通过 Google User Messaging Platform（UMP）检查适用的地区隐私选择；无法完成时不加载广告。广告无填充或断网不会阻止使用。
+
+广告及同意管理服务可能处理 IP 地址及由其推断的大致位置、设备或应用范围标识、广告展示与点击、产品使用情况、性能、崩溃及其他诊断资料，用于广告投放、效果衡量、诊断和防欺诈。数据可能关联到设备，并在您所在国家以外处理。我们请求非个性化广告和限制数据处理，关闭发布商第一方 ID，不请求 Apple 广告跟踪权限，不提供 GPS 位置或阅读内容。非个性化广告仍涉及上述数据处理，并不等同于“不收集数据”。未接入 Firebase Analytics 或第三方广告聚合网络。
+
+可在“设置 → 书库广告”关闭之后的新广告请求，并在需要的地区通过“管理 Google 隐私选择”更改同意选项。关闭或删除本机资料无法撤回 Google 已收到的数据；Google 的保留、访问及删除规则见 [Google 隐私政策](https://policies.google.com/privacy) 和 [合作伙伴广告数据说明](https://policies.google.com/technologies/partner-sites)。运营者无法访问 Google 保存的单个用户广告日志。联系我们：baoshi.sun@icloud.com。
+
+This section takes precedence for iOS/iPadOS 1.1.0 build 5. Bundled Qwen3 0.6B continues to run locally. Reading and AI remain free with no login, API key, purchase, subscription or question quota. Documents, book titles, selections, questions, answers, reading positions and history are not sent to Google or a remote AI service. They remain local; manage system backups and user-initiated sharing separately.
+
+The library may show one clearly labelled Google AdMob native image ad. No ads appear in the reader, History, search results or an empty library. Before enabling ads, an explanation lets you agree or decline. You can turn ads off in Settings without losing any reading or AI features. Until enabled, the app does not initialize the ads/consent SDKs or request ads. When enabled, Google UMP checks applicable privacy choices before ads load. Consent failures, unavailable ads and offline use never block reading.
+
+Advertising and consent services may process IP-derived coarse location, device/app identifiers, ad views and clicks, product interactions, performance, crash and diagnostic information for advertising, measurement, diagnostics and fraud prevention. Data may be associated with a device and processed internationally. We request non-personalized ads and restricted data processing, disable publisher first-party ID, do not request Apple's tracking permission, and supply neither GPS location nor reading content. Non-personalized advertising still involves data collection. Firebase Analytics and third-party mediation networks are not integrated.
+
+Settings → Library ads stops new requests; Manage Google privacy choices is available where required. Stopping ads or deleting local data cannot recall data already received by Google. Retention, access and deletion are governed by the [Google privacy policy](https://policies.google.com/privacy) and [partner data notice](https://policies.google.com/technologies/partner-sites). The operator cannot access Google's per-user ad logs. Privacy contact: baoshi.sun@icloud.com.
 
 ## Mac App Store 1.3.1（构建 9）：离线 AI / Offline AI
 

@@ -1,3 +1,5 @@
+> Current advertising branch: iOS build 5 adds one labelled AdMob native image row to the library. Reading and bundled Qwen stay free and offline. Use [the integration and release checklist](../docs/app-store/ios-advertising.md); earlier no-ads statements below refer to builds 3–4.
+
 # DeepReader for iPhone and iPad
 
 All iOS build configurations now include **Qwen3 0.6B Q4_K_M** and run AI on device.
