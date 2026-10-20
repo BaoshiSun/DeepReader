@@ -1,5 +1,5 @@
 {
-  "status": "Build 9 passed packaged offline QA; upload in progress.",
+  "status": "1.3.1 (9) resubmitted 2026-10-20 13:35 +03:00; WAITING_FOR_REVIEW, automatic release after approval.",
   "platform": "macOS",
   "bundle_id_candidate": "org.deepreader.macos",
   "primary_category_candidate": "Books",
@@ -31,5 +31,7 @@
   "build": "9",
   "support_url": "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-offline-qwen-store/docs/app-store/support.md",
   "territory_count": 175,
-  "availability": "Keep the existing 175 selected storefronts"
+  "availability": "Keep the existing 175 selected storefronts",
+  "build_id": "a1b90523-77f2-481a-97e3-5dad22aa9b38",
+  "review_submission_id": "3fe14149-cb0a-4832-9dc5-052059dfcff0"
 }
