@@ -1,7 +1,6 @@
-# DeepReader for macOS · 1.2.1 preview
+# DeepReader for macOS · 1.3.2
 
-> 未发布源码现已扩展为多服务商文字模型，配置、地区接口与验证限制见[多模型开发版](../README.md#多模型开发版2026-10-12尚未发布)。下面的旧发行包说明不代表其已获得新功能。
-
+GitHub 直接下载版保留多服务商 API、回答依据切换、追问、总结和可记住／撤销的发送授权；需使用自己的服务商 Key。Mac App Store 另有内置 Qwen 的免费离线构建，详见 [商店版](AppStore/README.md)。
 
 macOS 13 Ventura 或更新版本，通用应用同时支持 Apple Silicon（M 系列）和 Intel。使用 Apple PDFKit、AppKit、SwiftUI 与 WebKit 实现阅读界面，无需 Python、Wine、Calibre 或外部助手。1.2.1 在原有 PDF 阅读功能上新增 EPUB、TXT、Markdown、MOBI 和 AZW3，继续共用 AI 解释、追问、历史、总结、评分、阅读状态、归档和书单。
 
@@ -19,11 +18,11 @@ macOS 13 Ventura 或更新版本，通用应用同时支持 Apple Silicon（M �
 
 ## 安装
 
-从 [macOS 1.2.1 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.1-macos)下载安装包；同页提供对应源码和 `SHA256SUMS.txt`。
+从 [macOS 1.3.2 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.3.2-macos)下载安装包；同页提供对应源码和 `SHA256SUMS.txt`。
 
-打开 `DeepReader-v1.2.1-macos-universal.dmg`，将 DeepReader 拖到 Applications，然后从 Applications 启动。也可以解压 universal ZIP，将其中的 DeepReader.app 拖到 Applications。不要从只读磁盘映像运行。更新时替换应用即可，现有设置、钥匙串密钥、历史和书单沿用。
+打开 `DeepReader-v1.3.2-macos-universal.dmg`，将 DeepReader 拖到 Applications，然后从 Applications 启动。也可以解压 universal ZIP，将其中的 DeepReader.app 拖到 Applications。不要从只读磁盘映像运行。更新时替换应用即可，现有设置、钥匙串密钥、历史和书单沿用。
 
-本测试版仅经过 ad-hoc 本地代码签名，**尚无 Apple Developer ID 签名或 Apple 公证**。从网络下载后，macOS 可能阻止首次打开。确认文件来自本项目并核对 SHA-256 后，尝试打开，再到“系统设置 → 隐私与安全性 → 仍要打开”按系统提示操作。受组织管理的 Mac 可能不允许此操作。不要全局关闭 Gatekeeper。正式的 Developer ID 签名和公证需要维护者提供 Apple 开发者凭据。
+GitHub 正式发布附件使用 Developer ID 签名，并在 Apple 公证通过、附加票据及 Gatekeeper 检查通过后发布。自行运行 build.sh 生成的包仍仅为本地 ad-hoc 签名，不能与正式附件混同。
 
 ## 开始使用
 
@@ -71,7 +70,7 @@ CI 额外执行 `python3 macos/Tests/make_format_fixtures.py --upstream`，下�
 
 ## English quick start
 
-Requires macOS 13+, Apple Silicon or Intel. Version 1.2.1 supports PDF, EPUB, TXT, Markdown, and DRM-free MOBI/KF8/AZW3. Mount the DMG and drag DeepReader to Applications. Existing settings, history and Keychain credentials are retained when replacing the app. The app is **ad-hoc signed and not notarized**; macOS may require an explicit “Open Anyway” in Privacy & Security after the first attempt. Do not disable Gatekeeper globally.
+Requires macOS 13+, Apple Silicon or Intel. Version 1.3.2 supports PDF, EPUB, TXT, Markdown, and DRM-free MOBI/KF8/AZW3. Mount the DMG and drag DeepReader to Applications. Existing settings, history and Keychain credentials are retained when replacing the app. Published release assets are Developer ID signed and released only after Apple notarization, ticket stapling and Gatekeeper validation. Locally running build.sh produces ad-hoc development artifacts.
 
 Open Setup, click EN, choose a provider and save your own API key. DeepSeek is the default; free OpenRouter models still require an account and key. Keys are stored in macOS Keychain. Open a document with **⌘O**, select text, press **⌘⇧D**, and ask follow-ups with **⌘Return**. Resize or float the AI sidebar; use **⌘⇧A** to show it again. Save PDF highlights with **⌘S**; ebook highlights save automatically in local BookHighlights data. Use the chapter menu or arrows to navigate ebooks; search applies to the current chapter. Remote resources and scripts are blocked. Rate and mark books as Reading/Finished, copy them in their original format into star-rating archive folders, and export your book list. Summary supports full extracted document text and daily/weekly/monthly reading records, with local statistics and a request preview before sending.
 

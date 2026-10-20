@@ -1,9 +1,9 @@
 name: macOS build and tests
 on:
   push:
-    branches: ['codex/macos-native']
+    branches: ['codex/main', 'codex/macos-native']
   pull_request:
-    paths: ['macos/**', '.github/workflows/macos-build.yml']
+    paths: ['macos/**', 'ios/Sources/LocalQwen.swift', 'ios/prepare_local_model.py', '.github/workflows/macos-build.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,9 +14,12 @@ jobs:
       matrix:
         os: [macos-15, macos-15-intel]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Check public sources
         run: python3 tools/public_release.py --check-tracked
       - name: Check distribution preparation tools offline
@@ -34,6 +37,7 @@ jobs:
       - name: Validate native App Store archive without signing
         if: matrix.os == 'macos-15'
         run: |
+          python3 ios/prepare_local_model.py
           python3 macos/prepare_app_store.py
           xcodebuild -project macos/DeepReader.xcodeproj -scheme DeepReaderStore -configuration Release \
             -destination 'generic/platform=macOS' -archivePath artifacts/app-store/DeepReader-unsigned.xcarchive \

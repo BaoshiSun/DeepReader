@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Prepare reproducible resources for the Xcode app target; does not sign or upload."""
 import plistlib
+import json
 import os
 import shutil
 import subprocess
@@ -31,7 +32,9 @@ def main():
         info = plistlib.load(f)
     info['DeepReaderAppStoreBuild'] = True
     info['DeepReaderLocalAI'] = True
-    info['CFBundleVersion'] = '9'
+    listing = json.loads((ROOT / 'docs/app-store/listing.json').read_text())
+    info['CFBundleShortVersionString'] = listing['version']
+    info['CFBundleVersion'] = listing['build']
     info['LSMinimumSystemVersion'] = '13.3'
     info['ITSAppUsesNonExemptEncryption'] = False
     for key in ['DeepReaderGatewayURL', 'DeepReaderSandboxGatewayURL']:
