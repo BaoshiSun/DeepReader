@@ -1,40 +1,20 @@
-# App Review notes — working draft
+# macOS 1.3.1 (9) — App Review Notes
 
-Do not submit this document unchanged. The sandboxed store candidate is separate from the older GitHub preview. Build 4 was uploaded with DeepSeek and OpenRouter; replacement build 5 supports only DeepSeek for the first store launch. Complete the gates in readiness.md first. Private review contact details and access credentials belong in App Store Connect, never in this file or the public binary.
+This submission replaces rejected macOS 1.3.1 (8) with a free, fully on-device Qwen reader. There are no paid features, ads, subscriptions, API keys, credits, external payments, accounts or remote AI services in this Mac App Store build.
 
-## Product explanation for the reviewer
+1. Changes for Guidelines 3.1.1 and 5
+The API provider/key settings, credential implementation, remote AI transport and question-credit/StoreKit code are excluded from the store build. OpenAI/ChatGPT, Claude and other remote-provider functionality is not available. No key, purchase, login or provider account unlocks anything. Explanations and follow-ups use bundled Qwen3 0.6B Q4_K_M through llama.cpp entirely on the Mac. No server, network fallback or model download is used. Store descriptions, promotional text and new screenshots describe this offline version. The same free functionality applies in all selected storefronts, including mainland China. No IAP product is submitted with this version.
 
-DeepReader is a native macOS document and ebook reader. It reads PDF, EPUB, TXT, Markdown and DRM-free MOBI/KF8/AZW3. Its optional AI features explain selected text using nearby context, answer follow-ups, and summarize documents or locally saved reading records. The app has no DeepReader account system or developer-operated AI relay. Reading, highlights, ratings, local book lists and archive copies work without an AI API key.
+2. Purpose and audience
+A document and ebook reader for individuals, students and researchers to understand their own reading material, highlight passages and keep local answer history beside the text. No enterprise restriction, public posting, user accounts or hosted book catalog.
 
-AI requests authenticate with the user's selected third-party provider. Provider billing and quotas are separate. The app is free; store users may configure their own DeepSeek API key. Provider charges and quotas are separate. Do not represent API credentials as an application activation code, and do not assume that BYOK automatically satisfies App Review payment rules.
+3. Testing the main features
+No credentials are required. In Setup, click Read a sample / 打开示例文章 to open the original bundled Reading Garden text, or use Open to choose PDF, EPUB, TXT, Markdown or DRM-free MOBI/AZW3. Select a short sentence and press Command-Shift-D or Explain selection. Type a question below the answer and press Command-Return. Successful answers and follow-ups are saved in local History. The window button floats/docks the assistant; drag the sidebar divider to resize. Switch Chinese/English using the language button. Book only / Add general knowledge changes the answer scope, not Internet access. Rate books, mark them finished, export records or archive copies to a user-selected folder. PDF highlights can be saved; ebook highlights remain local.
 
-## Private fields to complete in App Store Connect
+AI answers may be inaccurate, incomplete or fabricated. Warnings appear in the assistant, Setup and both store descriptions. Qwen 0.6B is a small model for simple explanations, not authoritative professional advice. Input/output length limits protect responsiveness, not paid quotas. Full-document and period summaries are unavailable. The model is included in the roughly 500 MB app. Initial setup may take time; generation increases power use and warmth.
 
-- Actual candidate version, build number, tested macOS versions and source commit.
-- Review contact name, email and telephone number.
-- Review-only provider access, with sufficient quota and availability in the review region. Explain precisely where to enter it. Use a revocable, limited-budget credential supplied privately for review; do not embed it in source or the app. Revoke it after the review process when appropriate.
-- Published privacy-policy URL and in-app location of the third-party consent controls.
-- If Apple requests an authorized demonstration mode, explain it openly; do not silently replace live requests with fabricated results.
-- A short screen recording if requested. The offline smoke screenshots are engineering evidence, not evidence of successful live AI calls.
+4. Dependencies, privacy and rights
+Bundled Qwen3 0.6B (Apache 2.0), llama.cpp (MIT), libmobi (LGPL-3.0-or-later), Apple AppKit/SwiftUI/PDFKit/WebKit and system archive APIs. Model/library licenses and a public source archive are bundled. No developer backend, advertising or analytics SDK. WebKit renders local sanitized ebook content with network resources blocked; the network-client sandbox entitlement supports its rendering process and is not used for AI requests. User-initiated support/source links open in the system browser. Books, file-access bookmarks, preferences and history stay local; system backups and user exports may contain them. Legacy reading data is retained, but old provider keys are not read or sent. The policy distinguishes the separate GitHub edition.
 
-## Reproduction steps
-
-1. Launch the candidate on a clean macOS account. Open Setup and switch to English if necessary.
-2. Open the attached synthetic reading sample with Command-O. Opening local files does not require signing into DeepReader.
-3. Select “bank” in “The bank approved the loan.” Press Command-Shift-D. Verify the final consent flow identifies the recipient and explains the text being sent. Reject once to verify that no request is made, then authorize and retry using the privately supplied review access.
-4. Ask “Why does it mean a financial institution here?” and press Command-Return. Confirm the response uses the source context and the conversation appears in History.
-5. Highlight a selection; save PDF changes with Command-S. Reopen the document. For EPUB, change chapter, reopen, and verify locally saved highlights.
-6. Resize the sidebar, float it, dock it and hide/show it with Command-Shift-A.
-7. Assign a rating, mark the book Finished, and archive into a directory selected through the system picker. Restart the app and reopen the archived item through Books. Verify sandbox permissions survive restart, and handle a moved/deleted file or revoked access without a crash.
-8. Prepare a document summary, inspect the request estimate, then generate it. Test a period summary only after records exist in that period. Summary uses extracted text; image-only pages have no OCR.
-9. Delete the sample history record, remove the selected provider key, and verify new AI requests require configuration again.
-
-## Test samples and known scope
-
-Generate synthetic fixtures with `python3 macos/Tests/make_format_fixtures.py`. Use `garden.epub`, `garden.txt`, `garden.md`, `garden.mobi` and the smoke-test `sample.pdf`. These contain invented reading examples, not personal documents. The separately downloaded upstream libmobi samples are for engineering tests; review their licenses before any redistribution.
-
-No DRM bypass, Kindle KFX, OCR, automatic cloud sync or scheduled background summaries. Ebook search is within the current chapter. Do not advertise these unsupported capabilities.
-
-## Pre-submission evidence
-
-Record fresh test results for the exact candidate, not just the earlier 1.2.1 preview. Cover Apple Silicon and Intel, the minimum supported macOS if it remains advertised, clean install, direct-version migration, bookmarks after restart, unavailable provider, cancellation, revoked credentials and insufficient quota. The public preview's CI passed 25 tests per architecture; those tests use offline transport and do not establish real provider availability.
+5. QA and content
+The store source passed three local-engine tests, including real inference, follow-up, cancellation, history and legacy-settings compatibility, plus 39 direct-edition regression tests. The universal archive supports Apple silicon and Intel with macOS 13.3+. The signed sandboxed archive passed PDF reading, real local explanation, follow-up, cancellation and bundled TXT sample opening on an Apple M4 Mac mini, macOS 15.7.4. Intel hardware was not tested. Screenshots show actual app views and generated answers. No regulated professional services or third-party book catalog are supplied. The sample is original project content. DeepReader is an independent reader.

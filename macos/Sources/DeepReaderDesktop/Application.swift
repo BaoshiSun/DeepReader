@@ -21,11 +21,33 @@ import DeepReaderCore
             let smoke = ProcessInfo.processInfo.arguments.firstIndex(of: "--smoke-test")
             let arguments = ProcessInfo.processInfo.arguments
             let smokeFolder = smoke.flatMap { $0 + 1 < arguments.count ? URL(fileURLWithPath: arguments[$0+1], isDirectory: true) : nil }
-            let store = try LibraryStore(root: smokeFolder?.appendingPathComponent("test-profile"))
+            var dataRoot = smokeFolder?.appendingPathComponent("test-profile")
+#if OFFLINE_QWEN
+            let offlineCheck = arguments.contains("--offline-check")
+            if offlineCheck {
+                dataRoot = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("tmp/DeepReaderOfflineQA/\(UUID().uuidString)/test-profile")
+            }
+#endif
+            let store = try LibraryStore(root: dataRoot)
             let model = ReaderModel(store: store)
             let controller = ReaderWindow(model: model); reader = controller
             controller.menusChanged = { [weak self] in self?.menus() }; menus(); controller.present()
             NSApp.activate(ignoringOtherApps: true)
+#if OFFLINE_QWEN
+            if offlineCheck {
+                Task { @MainActor in
+                    do {
+                        try await OfflineCheck.run(controller)
+                        print("OFFLINE_PACKAGED_QA_PASS \(store.root.deletingLastPathComponent().path)")
+                        exit(0)
+                    } catch {
+                        print("OFFLINE_PACKAGED_QA_FAIL \((error as? ReaderError)?.message(true) ?? error.localizedDescription)")
+                        exit(1)
+                    }
+                }
+                return
+            }
+#endif
             if let url = pending { controller.open(url); pending = nil }
             if let folder = smokeFolder {
                 Task { @MainActor in

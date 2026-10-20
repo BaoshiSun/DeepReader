@@ -1,4 +1,15 @@
-# Mac App Store build
+# Free offline Mac App Store build
+
+Current candidate: **1.3.1 (9)**, bundled Qwen3 0.6B Q4_K_M, free without ads, purchases, API keys or question quotas. Requires macOS 13.3 or later on Apple silicon or Intel. Store status is recorded in [readiness](../../docs/app-store/readiness.md).
+
+Run `python3 ios/prepare_local_model.py` once to obtain the pinned, checksum-verified dependencies, then `python3 macos/prepare_app_store.py`. The latter generates `.build/offline-package` from the canonical reader sources, adds the shared iOS local engine and store-only adapter, and excludes the credential/purchase implementations. `OFFLINE_QWEN` excludes remote inference and its UI. The ordinary `macos/Package.swift` remains the direct-download multi-provider edition.
+
+The `DeepReaderStore` Xcode scheme archives the generated package as a universal app. Resources include the model, original Reading Garden sample, licenses and public source archive. Its sandbox allows user-selected files/bookmarks and retains the network-client entitlement needed by WebKit's local rendering process. Book navigation/CSP block network content, and no remote AI implementation is compiled. No first-launch downloads or remote fallback exist. Input/output length limits protect responsiveness; full-document/period summaries are not offered in this edition.
+
+Build with Xcode, using your own team and signing configuration. Prepare resources again after source changes. Private signing/API keys stay outside the repository. A signed app can run `--offline-check` for bundled-model and file-workflow QA in a new isolated profile inside its sandbox. This mode never uses an existing reader profile.
+
+## Historical preparation records (superseded by build 9)
+
 
 The `DeepReaderStore` scheme in `../DeepReader.xcodeproj` wraps the existing local Swift package in a native macOS application target. It builds arm64 and x86_64 and uses macOS 13 as its deployment target. No second reader implementation or remote package is used.
 

@@ -18,6 +18,9 @@ public enum AISharingKind: Equatable {
     }
 
     @MainActor public static func confirm(_ settings: Settings, _ kind: AISharingKind) -> AISharingDecision {
+#if OFFLINE_QWEN
+        return .cancel // Offline inference never transmits data or presents consent.
+#else
         let en = settings.english
         let alert = NSAlert()
         alert.messageText = en ? "Send this data to \(settings.provider.rawValue)?" : "将这些内容发送给 \(settings.provider.rawValue)？"
@@ -42,5 +45,6 @@ public enum AISharingKind: Equatable {
         case .alertThirdButtonReturn: return .sendOnce
         default: return .cancel
         }
+#endif
     }
 }

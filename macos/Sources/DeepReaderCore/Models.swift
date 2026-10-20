@@ -118,7 +118,7 @@ public struct Settings: Codable {
     }
     public var recipientID: String { provider.rawValue + "|" + endpointText }
     public func sharingRecipient(appStore: Bool = Provider.isAppStoreBuild) -> String {
-#if os(iOS)
+#if os(iOS) || OFFLINE_QWEN
         // Legacy settings decoding only; iOS has no remote request or purchase path.
         return recipientID
 #else

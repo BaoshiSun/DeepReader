@@ -23,7 +23,7 @@ public enum TextLimits {
     }
 }
 
-#if !os(iOS)
+#if !os(iOS) && !OFFLINE_QWEN
 private final class NoRedirect: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
                     newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {

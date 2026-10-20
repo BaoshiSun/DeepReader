@@ -1,3 +1,9 @@
+## Current macOS offline candidate — 2026-10-20
+
+Version 1.3.1 (9) replaces remote AI with bundled Qwen3 0.6B Q4_K_M. Free; no API keys, purchases, ads or quotas. Minimum macOS 13.3; arm64 and x86_64. Three local-engine tests and 39 direct-edition regression tests passed. The signed sandboxed universal archive passed real inference, follow-up, cancellation, PDF reading and bundled TXT opening on Apple M4 / macOS 15.7.4. Intel hardware was not tested. Four actual Chinese/English screenshots and offline descriptions replaced the old store metadata. App Privacy now declares Data Not Collected for the offline App Store editions. Upload/submission is still in progress. Existing 175-storefront availability and automatic release are retained.
+
+All older status and remote-provider instructions below are historical and superseded by this offline candidate.
+
 # Mac App Store readiness and acceptance
 
 Assessment updated: 2026-10-10. Unchecked items remain incomplete or require final signed-build verification. Implemented subset: native Xcode universal archive, sandbox entitlements/bookmarks, per-operation AI consent and file-metadata API reason declarations. See [build and validation details](../../macos/AppStore/README.md). A local sandbox EPUB opened, reopened after process restart, and archived successfully; synthetic PDF in-place highlight saving and Save Copy also succeeded; 27 offline tests passed. Build 1.2.1 (3) uploaded successfully on 2026-10-10; replacement build 4 uploaded successfully and completed Apple processing. No App Review submission has occurred.

@@ -11,6 +11,10 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = "1.2.0"
 PRODUCT = "DeepReader"
 PUBLIC_PATHS = tuple("""
+macos/prepare_offline_package.py
+macos/AppStore/OfflineAI.swift
+macos/AppStore/OfflineCheck.swift
+macos/AppStore/Tests/OfflineStoreTests.swift
 macos/Sources/DeepReaderCore/QuestionCredits.swift
 macos/Tests/DeepReaderTests/QuestionCreditTests.swift
 server/app.py

@@ -1,16 +1,26 @@
 # DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-15。适用于 macOS 1.3.1（包括 Mac App Store 构建 8），以及 iOS / iPadOS 1.1.0；同时保留旧版行为的说明。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
+更新日期 / Updated: 2026-10-20。适用于 macOS 1.3.1（Mac App Store 构建 9 为离线版，构建 8 为旧联网版），以及 iOS / iPadOS 1.1.0；同时保留旧版行为的说明。运营者 / Operator: Baoshi Sun。隐私联系邮箱 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。尚在准备送审，商店下载尚未开放。旧 GitHub 预览版的功能及数据位置有所不同，下文明确区分。
 
-## iOS / iPadOS 1.1.0（构建 3）：离线 AI / Offline AI
+## Mac App Store 1.3.1（构建 9）：离线 AI / Offline AI
 
-本节优先适用于 iOS / iPadOS 1.1.0（构建 3）及 DeepReader Local 离线版。下文联网模型、API Key 和开发中的内购服务器说明不适用于此离线版本；macOS 和旧构建仍按各自对应章节说明。
+此节优先适用于 Mac App Store 构建 9。它内置 Qwen3 0.6B 模型，解释和追问在 Mac 本机处理。无需账户、API Key、购买次数或服务器；无广告、订阅、遥测或分析 SDK。没有远程 AI 客户端或联网备用服务，模型随应用安装。电子书使用 WebKit 本地渲染，应用内文档禁止加载网络资源；主动打开支持或源代码链接时，系统浏览器会按对应网站政策联网。
+
+原始文档由用户选择，应用保存本地书单、文件访问书签、阅读偏好、高亮及问答记录。PDF 保存或归档仅在用户主动操作时写入所选文件或目录；不会上传书籍、问题或答案。历史可在应用内逐条删除，导出副本和系统备份需另行管理。更新后保留旧阅读记录及偏好，但不读取或发送旧服务商密钥。旧版钥匙串数据可能仍留在系统中；本版本不删除旧凭据。GitHub 下载版仍采用下文的自带 API Key 联网方式。
+
+This section takes precedence for Mac App Store 1.3.1 build 9. Bundled Qwen3 0.6B generates explanations and follow-ups entirely on the Mac. No account, API key, purchases, server, ads, subscriptions, telemetry or analytics SDK is used. No remote AI client or network fallback is included; the model is installed with the app. Ebooks render locally in WebKit with network document resources blocked. User-initiated support/source links open in the system browser under the destination site's policy.
+
+User-selected documents remain local. Book lists, file-access bookmarks, preferences, highlights and answer history are stored locally. Saving PDFs or archiving writes only when requested by the user. Books, questions and answers are not uploaded. Delete records in History; exported copies and system backups require separate management. Updates retain old reading data/preferences but do not read or transmit old provider keys; older Keychain entries may remain and are not deleted by this version. The GitHub direct-download edition retains the separately described bring-your-own-key network behavior.
+
+## iOS / iPadOS 1.1.0（构建 3、4）：离线 AI / Offline AI
+
+本节优先适用于 iOS / iPadOS 1.1.0（构建 3、4）及 DeepReader Local 离线版。下文联网模型、API Key 和开发中的内购服务器说明不适用于此离线版本；Mac App Store 构建 9 按上节说明；GitHub macOS 和旧构建按下文对应章节说明。
 
 本版内置 Qwen3 0.6B 量化模型，解释和追问完全在设备上处理。无需注册、登录、API Key、内购或远程 AI 服务，不上传文档、选文、问题或回答供 AI 推理，不采集这些内容用于训练。没有开发者后端、广告、追踪或分析 SDK。模型随安装包提供，不在首次使用时联网下载。
 
 用户导入的书籍副本、阅读位置、高亮、偏好和问答历史保存在本机应用容器，系统备份可能包含这些资料。可在书库删除导入副本，在历史中删除记录；原始文件保持不变。卸载应用会移除应用容器，但不会自动删除已有系统备份。主动使用分享、导出或打开支持链接时，所选择的系统应用、网站或收件人可能接收相关资料；请按自己的意愿操作。Apple 的商店下载和系统服务适用 Apple 的政策。若主动通过邮箱联系支持，运营者只使用您提供的信息处理请求；请勿发送私人文档或凭据。
 
-This section takes precedence for iOS/iPadOS 1.1.0 build 3 and the DeepReader Local offline edition. Descriptions below of network providers, personal API keys and the unreleased purchase backend do not apply to this edition. macOS and older builds retain their separately described behavior.
+This section takes precedence for iOS/iPadOS 1.1.0 builds 3 and 4 and the DeepReader Local offline edition. Descriptions below of network providers, personal API keys and the unreleased purchase backend do not apply to this edition. Mac App Store build 9 follows the preceding section; direct-download macOS and older builds retain their separately described behavior.
 
 A bundled, quantized Qwen3 0.6B model generates explanations and follow-ups on the device. There is no registration, login, API key, in-app purchase or remote AI service. Documents, selections, questions and answers are not uploaded for AI inference or collected for training. There is no developer backend, advertising, tracking or analytics SDK, and no first-use model download.
 
