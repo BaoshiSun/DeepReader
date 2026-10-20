@@ -5,9 +5,10 @@ The app is free, with no advertisements, subscriptions, purchases, API keys or q
 No remote AI client, Keychain credential implementation, StoreKit gateway, advertising SDK
 or analytics SDK is compiled into the iOS application. The model is bundled, with no first-launch download.
 
-Current source candidate: **1.1.0 (4)**. The last confirmed App Store submission is
-**1.1.0 (3)**, submitted on 2026-10-15. Build 4 is not published until the live submission
-record in [readiness](../docs/app-store/ios-readiness.md) says so.
+Current App Store submission: **1.1.0 (4)**, **Waiting for Review** as of
+2026-10-20 at 13:11 Asia/Riyadh. It replaces build 3, with free pricing in the
+175 selected storefronts and automatic release after approval. Submission is not approval
+or publication; see the dated record in [readiness](../docs/app-store/ios-readiness.md).
 
 ## Build and run
 

@@ -131,3 +131,20 @@ keeping all 175 storefronts on 2026-10-19, superseding the earlier ten-storefron
 
 Build 4 upload succeeded on 2026-10-19 at 23:20 Asia/Riyadh via Xcode App Store Connect
 export/upload with symbols enabled. Upload success is not approval or submission.
+
+## 2026-10-20: build 4 submitted for review
+
+At 13:11 Asia/Riyadh, the official App Store Connect API confirmed **Waiting for Review**
+for iOS **1.1.0 (4)**. Submission ID: `676e2b1b-2282-4787-9f54-cec74434531c`;
+build ID: `3bca0aff-a384-4d0d-a3a9-95e9c07befe2`.
+The earlier build-3 submission was canceled and its review item removed before replacement.
+
+Both English and Simplified Chinese descriptions now explicitly state free reading and offline AI,
+no advertising, subscriptions or question quota. Review Notes were updated for build 4 while preserving
+the existing physical-device video, accurately labeled as the earlier local development variant.
+No login is required. No purchase product was added to this submission.
+
+Automatic release after approval remains selected. The previously verified free prices and
+owner-confirmed 175 storefronts were retained. No approval or public availability is claimed.
+Publishing authentication is configured locally outside the repository; no private key or access
+token is included in the source, app, or public documentation.
