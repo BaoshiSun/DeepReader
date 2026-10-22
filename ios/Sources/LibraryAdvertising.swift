@@ -141,6 +141,9 @@ enum LibraryAdPolicy {
         guard !starting else { return }
         if sdkStarted { loadIfNeeded(); return }
         starting = true
+        // Enable Google's documented RDP signal before SDK initialization. All
+        // users receive restricted processing, regardless of their region.
+        UserDefaults.standard.set(true, forKey: "gad_rdp")
         MobileAds.shared.requestConfiguration.setPublisherFirstPartyIDEnabled(false)
         MobileAds.shared.requestConfiguration.maxAdContentRating = .general
         MobileAds.shared.start { [weak self] _ in

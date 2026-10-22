@@ -1,18 +1,25 @@
-# iOS 1.1.0 (5) — draft App Review Notes
+# iOS 1.1.0 (5) — App Review Notes
 
-Not yet uploaded or submitted. This draft must be paired with build-5 device QA before submission.
+DeepReader iOS 1.1.0 (5) is a free iPhone/iPad document reader with bundled, on-device Qwen3 0.6B AI. No login, API key, remote AI, purchases, subscriptions or question quota. AI answers may be inaccurate; warnings appear in the assistant, Settings and store descriptions.
 
-DeepReader is a free iPhone/iPad document reader. Bundled Qwen3 0.6B runs on device; no API keys, remote AI, purchases, subscriptions, accounts or quotas. AI answers may be inaccurate; accuracy warnings remain visible.
+1. Changes and previous Guidelines 3.1.1 / 5
+All AI runs locally through llama.cpp. No paid unlock, external payment, provider selection, cloud fallback, web search or model download is available. The earlier question-credit IAP is not used or submitted. The app now offers one optional, clearly labelled AdMob native image ad in the library. There are no ads in the reader, search results, History or an empty library. No viewing/clicking requirement or rewarded unlock exists.
 
-The library now supports one clearly labelled AdMob native image ad among book rows. There are no ads in the reader, search results, History or an empty library. The first eligible library visit explains advertising data handling and offers Agree or Continue without ads. Settings can disable ads at any time without removing features. Google UMP presents region-appropriate privacy choices. Ads are non-personalized, publisher first-party ID is disabled, and no ATT permission is requested. No book title, document, selection, question or answer is passed to advertising services. Offline reading/AI and an unfilled ad slot work normally.
+2. Purpose and setup
+For individuals, students and researchers reading their own documents. In the empty Library, tap Read a sample / 打开示例文章, or import PDF, EPUB, TXT or Markdown from Files. Select a short passage, tap Explain and ask a follow-up. Wide screens offer an adjustable sidebar or floating panel; narrow screens use a draggable/collapsible floating panel. Settings switches English/Chinese and Book only / General knowledge. Both modes work offline. Successful answers remain in local History. Full-document summaries, OCR and DRM are not supported.
 
-For review: open the bundled sample from the empty Library, return to Library, and choose whether to enable advertising. The ad is placed after the third book, or the final book when fewer than three are present. AdMob may return no ad until its separate app-readiness checks complete. No ad viewing/clicking is required. Explain a short selection and ask a follow-up in the floating assistant or adjustable sidebar. Switch English/Chinese and answer scope in Settings.
+3. Advertising and privacy
+Return to Library after opening the sample. The first eligible library visit offers Agree or Continue without ads. Allow library ads in Settings can disable ads without losing any feature. Google UMP provides applicable privacy choices, including Do not consent and a Settings link to revisit choices. Ads are non-personalized, restricted data processing is enabled, publisher first-party ID is disabled, and no ATT permission is requested. Book titles/text, selections, questions and answers are not sent to advertising services. One ad appears after the third book, or the last book when fewer than three exist. Production ad availability depends on Google's separate readiness checks; no-fill is handled without an empty card. Offline reading and AI remain available.
 
-External components: Google Mobile Ads SDK 13.11.0, Google User Messaging Platform 3.1.0, bundled Qwen3 0.6B, llama.cpp, ZIPFoundation, Apple frameworks. Google handles ad/consent data as described in the updated policy. There is no developer backend or Firebase Analytics. The same free offline AI features are offered in all 175 selected regions; ad availability and consent forms can vary by region.
+4. Components and regions
+Google Mobile Ads 13.11.0, UMP 3.1.0, Qwen3 0.6B Q4_K_M (Apache 2.0), llama.cpp (MIT), ZIPFoundation (MIT), Apple frameworks. No developer backend or Firebase Analytics. Updated App Privacy and policy disclose Google's advertising/consent data. The same free offline features are offered in all 175 selected storefronts; advertising availability and consent forms may vary by region.
 
-Physical-device test and demonstration video for build 5: pending. Earlier build-4 QA and videos do not establish validation of this advertising build. Do not claim otherwise in the submission.
+5. Testing and video
+On 2026-10-23, seven tests passed on a physical iPhone 14 Pro with iOS 26.6.2 using the separately signed build-5 Local development variant with the same source/engine. They cover real Qwen explanation/follow-up/history/cancellation, legacy settings and advertising policy. The owner confirmed a library ad appeared and no ad appeared in the reader. Debug uses Google's official sample ad; Release uses the production unit. Twenty simulator tests passed, and native-ad validation passed on iPhone and iPad simulators. No physical iPad test is claimed.
+The existing attachment DeepReader-Local-Qwen-iPhone14Pro-2026-10-15.mp4 shows launch, reading, local AI, history, settings/language and floating assistant on iPhone 14 Pro / iOS 26.6.2. It is an earlier local development build, not build 5, and does not show the new ads. The core offline workflow remains the same. Documents imported by the tester are not bundled content.
 
-The reader hosts no public posts, user accounts or protected catalog. Users import their own documents. The bundled Reading Garden sample is original project content. No regulated service is offered.
+6. Content and rights
+No accounts, public posting, messaging, protected catalog or regulated service. Users import their own documents. Reading Garden is original sample content. Open-source/model licenses and icon attribution are included in Settings. This is an independent reader.
 
 ---
 

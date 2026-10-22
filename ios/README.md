@@ -1,16 +1,13 @@
-> Current advertising branch: iOS build 5 adds one labelled AdMob native image row to the library. Reading and bundled Qwen stay free and offline. Use [the integration and release checklist](../docs/app-store/ios-advertising.md); earlier no-ads statements below refer to builds 3–4.
-
 # DeepReader for iPhone and iPad
 
 All iOS build configurations now include **Qwen3 0.6B Q4_K_M** and run AI on device.
-The app is free, with no advertisements, subscriptions, purchases, API keys or question quota.
-No remote AI client, Keychain credential implementation, StoreKit gateway, advertising SDK
-or analytics SDK is compiled into the iOS application. The model is bundled, with no first-launch download.
+Reading and on-device AI are free, with no subscriptions, purchases, API keys or question quota.
+One optional, labelled AdMob native image row can appear in the library. The reader stays ad-free.
+No remote AI client, Keychain credential implementation or StoreKit gateway is compiled into iOS.
+The model is bundled, with no first-launch download. Google Mobile Ads and UMP handle optional ads and consent.
 
-Current App Store submission: **1.1.0 (4)**, **Waiting for Review** as of
-2026-10-20 at 13:11 Asia/Riyadh. It replaces build 3, with free pricing in the
-175 selected storefronts and automatic release after approval. Submission is not approval
-or publication; see the dated record in [readiness](../docs/app-store/ios-readiness.md).
+Current candidate: **1.1.0 (5)**. See the dated [submission record](../docs/app-store/ios-readiness.md)
+and [advertising configuration](../docs/app-store/ios-advertising.md) for verified status.
 
 ## Build and run
 
@@ -41,7 +38,7 @@ xcodebuild -project ios/DeepReader.xcodeproj -scheme DeepReaderiOS \
 
 xcodebuild -project ios/DeepReader.xcodeproj -scheme DeepReaderiOS \
   -configuration Release -destination 'generic/platform=iOS' \
-  -archivePath artifacts/ios-free-qwen/DeepReader-1.1.0-4.xcarchive \
+  -archivePath artifacts/ios-free-qwen/DeepReader-1.1.0-5.xcarchive \
   -allowProvisioningUpdates archive
 ```
 
@@ -58,7 +55,7 @@ Generated models, signing material, recordings and archives are excluded from Gi
 - Book-only or general-knowledge scope. Neither mode searches the web; answers may be inaccurate.
 - Adjustable sidebar on wide screens and a draggable, collapsible translucent floating assistant.
 - Cancel inference, retain successful local history, delete records and explicitly share answers.
-- Chinese and English interface; single-column library book rows, with no inserted ads.
+- Chinese and English interface; single-column library book rows and one optional labelled ad.
 
 Small models are best suited to simple explanations. Technical facts, calculations and complex reasoning
 may be unreliable. Accuracy warnings appear beside answers and in Settings. There is no full-document
@@ -77,7 +74,7 @@ Historical tests and submissions are documented in [readiness](../docs/app-store
 
 Books, positions, highlights, settings and answers remain in the application container; system backups may
 include them. Source/privacy/support links open only when selected. No user reading content is sent for
-inference or developer analytics. The archived advertising prototype is no longer a supported iOS build.
+inference or developer analytics. Optional advertising can transmit Google SDK data; the policy and App Privacy label disclose it. Users can disable library ads without losing reading or AI features.
 
 For release experience, use App Store Connect → Analytics and filter to iOS. Review downloads,
 product-page conversion, active devices, sessions, retention and crashes. Usage metrics include only

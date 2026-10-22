@@ -17,7 +17,7 @@ The owner requested one book-like native ad row in the library. Reading and Qwen
 
 Exactly one slot after the third book, or the last book for libraries with fewer than three. No ad in empty/search/import/reader/history/settings screens. Clearly visible 广告/Ad badge, advertiser icon/name, headline, provider CTA and SDK AdChoices. No clickable card background or navigation disguised as an ad. The production unit serves static images; video rendering is supported defensively if its remote settings change.
 
-The first eligible library visit has a single explanation with agree/decline. Choice is remembered separately from AI settings; disabling ads immediately clears the current ad and drops pending callbacks. Reading/AI are never gated. UMP checks consent before initializing/loading ads. It offers privacy options where required. Requests specify non-personalized ads and restricted data processing; publisher first-party ID is off and the app never requests ATT/IDFA permission or sends book data. No Firebase or mediation SDKs.
+The first eligible library visit has a single explanation with agree/decline. Choice is remembered separately from AI settings; disabling ads immediately clears the current ad and drops pending callbacks. Reading/AI are never gated. UMP checks consent before initializing/loading ads. It offers privacy options where required. Requests specify non-personalized ads and restricted data processing (`rdp=1`); `gad_rdp=true` is set in UserDefaults before initializing Google Mobile Ads, following Google's current iOS guidance; publisher first-party ID is off and the app never requests ATT/IDFA permission or sends book data. No Firebase or mediation SDKs.
 
 One in-flight load, at least 60 seconds between attempts, no periodic refresh while reading, cached ad expiry at 55 minutes. Loading failure is silent and leaves no empty ad card. No fake promotion is substituted for an unfilled ad.
 
@@ -42,14 +42,19 @@ Manual verification completed on 2026-10-23:
 
 The European message **DeepReader library privacy** is published in AdMob, with a direct **Do not consent** option and Google Advertising Products as its one configured ad partner. Its privacy-policy link points to this branch's updated policy. English rendering is verified; additional message language coverage still needs review before global release.
 
-## Before App Store submission
+## App Store preparation — 2026-10-23
 
-- Both prior submissions were withdrawn at the owner's request: iOS 1.1.0 (4), macOS 1.3.1 (9), DEVELOPER_REJECTED.
-- Build 5 has not been uploaded or submitted. Keep Mac submission separate.
-- Configure and validate US privacy choices; requests already specify restricted data processing. Confirm UMP behavior on registered physical test devices for EEA, US and other regions, including the desired message translations.
-- After Apple publishes the app, link its App Store listing in AdMob and complete app-readiness/app-ads.txt verification. Until Google approves the app, production filling is not guaranteed.
-- App Store shared privacy label MUST change from Data Not Collected before shipping this build. Review the SDK privacy report and actual configuration: coarse location, device/app identifiers, advertising data, product interactions, performance, crashes and other diagnostics. Most ad/interaction identifiers can be linked to a device; do not assume non-personalized means anonymous. Google SDK's generic manifest includes potential tracking, whereas this implementation does not request ATT and disables personalization/PFID. Validate the final label against actual behavior rather than blindly copying the SDK manifest.
-- Store descriptions and review-note drafts are updated here; live ASC metadata is not yet changed. Provide current screenshots with the ad label, review advertising-content/age declarations, and physically test iPhone/iPad consent, offline reading, ads/no-fill, search, rotation, large text and privacy revocation. Do not reuse an old video as if it demonstrated build 5.
-- `docs/app-store/privacy-policy.md` adds a build-5 section without changing the older Mac/offline editions' data descriptions.
+- User confirmed the build-5 sample ad appears in the physical iPhone library and no ad appears in the reader.
+- Seven tests passed on iPhone 14 Pro / iOS 26.6.2 using the separate Local development variant: real Qwen explanation/follow-up/history/cancellation, legacy settings and five advertising-policy tests. Result: `artifacts/ios-admob-store/DeviceQA.xcresult`. No physical iPad test is claimed.
+- Release archive/export/upload succeeded. Matching llama dSYM was included. Xcode reported non-blocking missing dSYM warnings for Google's prebuilt Mobile Ads and UMP frameworks; upload succeeded, but crash symbolication inside those vendor binaries may be limited.
+- Both store descriptions, support/policy links, review notes and advertising age-rating flag were updated. Shared App Privacy was published with seven data types. Coarse location, device ID, advertising data, product interactions and performance data are disclosed as linked; crash/other diagnostics as unlinked. None are declared for tracking under this NPA/RDP/no-ATT/PFID-disabled configuration. Advertising/analytics purposes are disclosed, with App Functionality for UMP-related coarse location, performance and interactions. The performance linkage is conservative relative to the bundled manifest and Google's public data-disclosure guidance.
+- The dated physical-device recording from October 15 is retained as a demonstration of the unchanged offline workflow and is explicitly identified as an earlier build without ads. It is not described as build-5 footage.
+- Google documents direct RDP signalling as an alternative to GPP signalling. This build uses direct RDP and provides its own optional-ad switch; a separate US UMP message is not configured. Forced EEA simulator testing does not establish testing in all regions.
+- Existing reading screenshots still show the unchanged offline assistant. Google sample advertisements are not presented as production inventory in store screenshots.
+- See [readiness](ios-readiness.md) for the final Apple processing/submission state. macOS remains separate and withdrawn.
 
-Official references: [native display](https://developers.google.com/admob/ios/native/advanced), [native policies](https://support.google.com/admob/answer/6329638), [UMP](https://developers.google.com/admob/ios/privacy), [data disclosure](https://developers.google.com/admob/ios/privacy/data-disclosure).
+## After publication
+
+Link the public App Store listing in AdMob and complete Google's app-readiness/app-ads.txt requirements. Production filling is not guaranteed before approval. Review the additional UMP translations and real regional consent behavior as coverage expands; only English EEA rendering is currently verified.
+
+Official references: [native display](https://developers.google.com/admob/ios/native/advanced), [native policies](https://support.google.com/admob/answer/6329638), [UMP](https://developers.google.com/admob/ios/privacy), [data disclosure](https://developers.google.com/admob/ios/privacy/data-disclosure), [US states and RDP](https://developers.google.com/admob/ios/privacy/us-states), [Apple privacy details](https://developer.apple.com/app-store/app-privacy-details/).
