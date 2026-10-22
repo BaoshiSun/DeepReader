@@ -42,7 +42,7 @@ Manual verification completed on 2026-10-23:
 
 The European message **DeepReader library privacy** is published in AdMob, with a direct **Do not consent** option and Google Advertising Products as its one configured ad partner. Its privacy-policy link points to this branch's updated policy. English rendering is verified; additional message language coverage still needs review before global release.
 
-## App Store preparation — 2026-10-23
+## App Store submission — 2026-10-23
 
 - User confirmed the build-5 sample ad appears in the physical iPhone library and no ad appears in the reader.
 - Seven tests passed on iPhone 14 Pro / iOS 26.6.2 using the separate Local development variant: real Qwen explanation/follow-up/history/cancellation, legacy settings and five advertising-policy tests. Result: `artifacts/ios-admob-store/DeviceQA.xcresult`. No physical iPad test is claimed.
@@ -51,7 +51,7 @@ The European message **DeepReader library privacy** is published in AdMob, with 
 - The dated physical-device recording from October 15 is retained as a demonstration of the unchanged offline workflow and is explicitly identified as an earlier build without ads. It is not described as build-5 footage.
 - Google documents direct RDP signalling as an alternative to GPP signalling. This build uses direct RDP and provides its own optional-ad switch; a separate US UMP message is not configured. Forced EEA simulator testing does not establish testing in all regions.
 - Existing reading screenshots still show the unchanged offline assistant. Google sample advertisements are not presented as production inventory in store screenshots.
-- See [readiness](ios-readiness.md) for the final Apple processing/submission state. macOS remains separate and withdrawn.
+- iOS 1.1.0 (5) is Waiting for Review, submitted at 01:53 Asia/Riyadh. See [readiness](ios-readiness.md) for the build/submission IDs. macOS remains separate and withdrawn.
 
 ## After publication
 

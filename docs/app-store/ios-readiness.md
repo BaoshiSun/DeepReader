@@ -1,4 +1,18 @@
-> Current status — 2026-10-20: At the owner's request, iOS 1.1.0 (4) and macOS 1.3.1 (9) were withdrawn from review; both are DEVELOPER_REJECTED. Historical Waiting for Review entries below are superseded. The new iOS build-5 native-ad candidate has not been uploaded or submitted. See [advertising checklist](ios-advertising.md).
+> Current status — 2026-10-23: iOS 1.1.0 (5) is **Waiting for Review**, submitted at 01:53 Asia/Riyadh. macOS 1.3.1 (9) remains withdrawn (DEVELOPER_REJECTED). Historical records below are superseded by this entry.
+
+## iOS library advertising release — 2026-10-23
+
+App Store Connect confirmed **Waiting for Review** for iOS **1.1.0 (5)**. Submission ID: `c376efed-e84c-40e0-ad6b-143a3d957918`. [Open submission](https://appstoreconnect.apple.com/apps/6821368213/distribution/reviewsubmissions/details/c376efed-e84c-40e0-ad6b-143a3d957918). This is a submission, not an approval or publication.
+
+- Owner authorized upload and App Review submission after confirming the library ad is visible on iPhone and reading remains ad-free.
+- Archive, App Store export and Xcode upload succeeded at 01:47 Asia/Riyadh. Apple processing completed (VALID), and the iOS version selects build 5. Build identifier: `0e023673-340e-4b05-8636-3768136d2703`.
+- Physical iPhone 14 Pro / iOS 26.6.2: 7 tests passed using the separate Local debug identity, including real Qwen explanations/follow-ups/history/cancellation, legacy settings and advertising policy. Earlier simulator suite: 20 passed. Google native-ad validator passed on iPhone and iPad simulators. No physical iPad testing is claimed.
+- Release uses the production AdMob app/unit IDs. Sample-ad bypass and forced EEA geography are absent from Release. No ATT usage prompt is included. `gad_rdp=true` is set before Google Mobile Ads initialization; NPA/RDP request extras and disabled PFID remain in place.
+- Chinese/English store descriptions and support links, review notes, shared privacy-policy links, advertising age-rating flag and all seven App Privacy data types were saved. Age override remains 16+. Public support/privacy documents are hosted on `codex/ios-library-admob`.
+- Free prices and all 175 available storefronts were verified in App Store Connect. Automatic release after approval remains selected. No IAP is submitted.
+- Existing reading screenshots are retained. The physical-device October 15 recording is retained and explicitly identified as earlier footage of the unchanged offline workflow without ads.
+- Archive and proofs: `artifacts/ios-admob-store/`; physical tests: `DeviceQA.xcresult`; privacy proof: `privacy-published.png`; submission proof: `waiting-for-review.png` and `submission-result.json`. Generated files are ignored by Git. Google Mobile Ads/UMP vendor dSYMs were not included in the distributed frameworks and produced non-blocking upload warnings; app and matching llama symbols were included.
+- AdMob app-readiness/store-linking remains separate from Apple review. Production ads may not fill until Google approves the public app. See [advertising details](ios-advertising.md).
 
 # iOS App Store submission — 2026-10-11
 

@@ -6,7 +6,7 @@ One optional, labelled AdMob native image row can appear in the library. The rea
 No remote AI client, Keychain credential implementation or StoreKit gateway is compiled into iOS.
 The model is bundled, with no first-launch download. Google Mobile Ads and UMP handle optional ads and consent.
 
-Current candidate: **1.1.0 (5)**. See the dated [submission record](../docs/app-store/ios-readiness.md)
+Current submission: **1.1.0 (5), Waiting for Review**, submitted 2026-10-23. See the dated [submission record](../docs/app-store/ios-readiness.md)
 and [advertising configuration](../docs/app-store/ios-advertising.md) for verified status.
 
 ## Build and run
