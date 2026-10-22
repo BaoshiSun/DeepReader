@@ -79,7 +79,7 @@ def main():
         if LOCAL:
             bundle = 'org.deepreader.ios.local' if DEVELOPMENT else ('org.deepreader.macos' if STORE_QWEN or name == 'Release' else 'org.deepreader.ios')
             platform_app = app.replace('Info.plist;', info_name + ';').replace('org.deepreader.ios;', bundle + ';') + f' SWIFT_ACTIVE_COMPILATION_CONDITIONS = "{conditions} {"DEBUG" if name == "Debug" else ""}";'
-        app_id = ad_config['test_app_id'] if name == 'Debug' else ad_config['production_app_id']
+        app_id = ad_config['production_app_id']  # UMP messages belong to the real app; Debug ad unit stays Google's sample.
         unit_id = ad_config['test_native_unit_id'] if name == 'Debug' else ad_config['production_native_unit_id']
         platform_app += f' OTHER_LDFLAGS = "$(inherited) -ObjC"; ADMOB_APP_ID = "{app_id}"; ADMOB_NATIVE_UNIT_ID = "{unit_id}";'
         obj(n, f'isa = XCBuildConfiguration; buildSettings = {{ {platform_app} }}; name = {name};')

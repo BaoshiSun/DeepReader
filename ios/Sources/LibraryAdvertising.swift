@@ -88,14 +88,26 @@ enum LibraryAdPolicy {
         guard !consentUpdating, enabled, configured else { return }
         consentUpdating = true
         let token = revision
-        ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters()) { [weak self] error in
+        let parameters = RequestParameters()
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--admob-consent-eea") {
+            let debug = DebugSettings(); debug.geography = .EEA
+            parameters.debugSettings = debug
+        }
+        #endif
+        ConsentInformation.shared.requestConsentInfoUpdate(with: parameters) { [weak self] error in
             Task { @MainActor in
                 guard let self else { return }
                 self.consentUpdating = false
                 guard token == self.revision, self.enabled else { return }
                 self.privacyOptionsRequired = ConsentInformation.shared.privacyOptionsRequirementStatus == .required
                 // A failed update never blocks reading or starts ads using stale consent.
-                guard error == nil else { return }
+                guard error == nil else {
+                    #if DEBUG
+                    print("Library consent unavailable: \(error!.localizedDescription)")
+                    #endif
+                    return
+                }
                 guard self.libraryVisible else { return }
                 self.privacyBusy = true
                 do { try await ConsentForm.loadAndPresentIfRequired(from: nil) }
@@ -193,6 +205,7 @@ final class BookNativeAdView: NativeAdView {
     private let cta = UIButton(type: .system)
     private let media = MediaView()
     private let content = UIStackView()
+    private var pendingAd: NativeAd?
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .secondarySystemGroupedBackground
@@ -233,11 +246,13 @@ final class BookNativeAdView: NativeAdView {
             content.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
             badge.widthAnchor.constraint(greaterThanOrEqualToConstant: 38),
             badge.heightAnchor.constraint(greaterThanOrEqualToConstant: 22),
-            icon.widthAnchor.constraint(equalToConstant: 52), icon.heightAnchor.constraint(equalToConstant: 52),
-            media.heightAnchor.constraint(equalToConstant: 180)
+            icon.heightAnchor.constraint(equalToConstant: 52)
         ])
-        headlineView = headline; iconView = icon; advertiserView = advertiser
-        callToActionView = cta; mediaView = media
+        let iconWidth = icon.widthAnchor.constraint(equalToConstant: 52)
+        iconWidth.priority = UILayoutPriority(999); iconWidth.isActive = true
+        let mediaHeight = media.heightAnchor.constraint(equalToConstant: 180)
+        mediaHeight.priority = UILayoutPriority(999); mediaHeight.isActive = true
+        headlineView = headline; callToActionView = cta
         accessibilityIdentifier = "library-native-ad"
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
@@ -250,8 +265,21 @@ final class BookNativeAdView: NativeAdView {
         cta.configuration?.title = ad.callToAction; cta.isHidden = ad.callToAction == nil
         media.mediaContent = ad.mediaContent
         media.isHidden = !ad.mediaContent.hasVideoContent
-        // Bind only after every asset has been assigned.
-        if nativeAd !== ad { nativeAd = ad }
+        // Hidden assets must not remain registered: their old frames can be outside
+        // the compact row and fail Google's native-ad validator.
+        iconView = ad.icon == nil ? nil : icon
+        advertiserView = ad.advertiser == nil ? nil : advertiser
+        mediaView = ad.mediaContent.hasVideoContent ? media : nil
+        pendingAd = ad
+        setNeedsLayout()
+    }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        // SwiftUI initially creates this view at zero size. Bind after layout so
+        // the SDK positions AdChoices inside the actual card, not outside it.
+        if bounds.width > 0, bounds.height > 0, let pendingAd, nativeAd !== pendingAd {
+            nativeAd = pendingAd
+        }
     }
 }
 

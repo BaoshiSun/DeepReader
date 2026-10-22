@@ -41,7 +41,7 @@ final class LibraryAdTests: XCTestCase {
         XCTAssertNil(ads.nativeAd)
     }
     func testDebugUsesOfficialTestAdsAndNeverRequestsTrackingPermission() {
-        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "GADApplicationIdentifier") as? String, "ca-app-pub-3940256099942544~1458002511")
+        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "GADApplicationIdentifier") as? String, "ca-app-pub-9226197175186931~9369232249")
         XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "DeepReaderNativeAdUnitID") as? String, "ca-app-pub-3940256099942544/3986624511")
         XCTAssertNil(Bundle.main.object(forInfoDictionaryKey: "NSUserTrackingUsageDescription"))
         XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "GADDelayAppMeasurementInit") as? Bool, true)
