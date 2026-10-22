@@ -1,4 +1,4 @@
-> Current status — 2026-10-23: iOS 1.1.0 (5) is **Waiting for Review**, submitted at 01:53 Asia/Riyadh. macOS 1.3.1 (9) remains withdrawn (DEVELOPER_REJECTED). Historical records below are superseded by this entry.
+> Current status — 2026-10-23: iOS 1.1.0 (5) is **Waiting for Review**, submitted at 01:53 Asia/Riyadh. macOS 1.3.1 (9) was separately resubmitted without ads at 02:01 and is also Waiting for Review. Historical records below are superseded by this entry.
 
 ## iOS library advertising release — 2026-10-23
 

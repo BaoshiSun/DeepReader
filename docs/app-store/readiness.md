@@ -1,6 +1,20 @@
-> Current status — 2026-10-20: At the owner's request, iOS 1.1.0 (4) and macOS 1.3.1 (9) were withdrawn from review; both are DEVELOPER_REJECTED. Historical Waiting for Review entries below are superseded. The new iOS build-5 native-ad candidate has not been uploaded or submitted. See [advertising checklist](ios-advertising.md).
+> Current status — 2026-10-23: macOS 1.3.1 (9) was resubmitted at 02:01 Asia/Riyadh and is **Waiting for Review**. It remains free, fully on-device and without ads. iOS 1.1.0 (5) is also Waiting for Review, with optional library ads. Historical status/privacy declarations below are superseded by the current entries.
 
-## Current macOS offline submission — 2026-10-20
+## macOS resubmission — 2026-10-23
+
+The owner chose to keep native macOS free and without advertising. Existing build **1.3.1 (9)** was reused unchanged; Apple reports VALID. No new binary or SDK was added. The archive's earlier QA below remains the applicable test record; no new physical-device test is claimed for this metadata-only resubmission.
+
+- App Store Connect confirms **Waiting for Review**. Submission ID: `a27a00be-9cc0-4190-95a8-46a09cf4c64d`; build ID: `a1b90523-77f2-481a-97e3-5dad22aa9b38`. [Open submission](https://appstoreconnect.apple.com/apps/6821368213/distribution/reviewsubmissions/details/a27a00be-9cc0-4190-95a8-46a09cf4c64d).
+- Free pricing, all 175 selected storefronts and automatic release after approval are retained. Submission does not mean approval or publication.
+- Chinese/English descriptions and screenshots continue to describe the offline, ad-free Mac app. Review Notes now identify the unchanged resubmission and explain the platform distinction: shared App Privacy disclosures include the optional iOS advertising SDK; Mac build 9 has no ads, advertising SDK or app data collection. The shared privacy policy explicitly separates these versions. No privacy declaration was removed for iOS.
+- Google Mobile Ads' iOS SDK does not support this native macOS project; no iOS advertising unit was reused. The owner selected resubmission without ads after this limitation was explained.
+- Local proof is in `artifacts/macos-resubmit-2026-10-23/`: `submission-confirmation.png`, `waiting-for-review.png`, and `submission-result.json` (ignored by Git).
+
+## Historical withdrawal — 2026-10-20
+
+At the owner's request, iOS 1.1.0 (4) and macOS 1.3.1 (9) were withdrawn from review (DEVELOPER_REJECTED). The later submissions above supersede that status.
+
+## Historical macOS offline submission — 2026-10-20
 
 Version 1.3.1 (9) replaces remote AI with bundled Qwen3 0.6B Q4_K_M. Free; no API keys, purchases, ads or quotas. Minimum macOS 13.3; arm64 and x86_64. Three local-engine tests and 39 direct-edition regression tests passed. The signed sandboxed universal archive passed real inference, follow-up, cancellation, PDF reading and bundled TXT opening on Apple M4 / macOS 15.7.4. Intel hardware was not tested. Four actual Chinese/English screenshots and offline descriptions replaced the old store metadata. App Privacy now declares Data Not Collected for the offline App Store editions. Apple processed build 9 successfully and it replaced build 8. The existing rejection was resolved and resubmitted at 13:35 Riyadh on 2026-10-20; both version and submission report WAITING_FOR_REVIEW. A reply explaining the Guideline 3.1.1/5 changes was sent to App Review. This is submission, not approval. iOS 1.1.0 (4) remains WAITING_FOR_REVIEW. Existing 175-storefront availability and automatic release are retained.
 

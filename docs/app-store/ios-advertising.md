@@ -51,7 +51,7 @@ The European message **DeepReader library privacy** is published in AdMob, with 
 - The dated physical-device recording from October 15 is retained as a demonstration of the unchanged offline workflow and is explicitly identified as an earlier build without ads. It is not described as build-5 footage.
 - Google documents direct RDP signalling as an alternative to GPP signalling. This build uses direct RDP and provides its own optional-ad switch; a separate US UMP message is not configured. Forced EEA simulator testing does not establish testing in all regions.
 - Existing reading screenshots still show the unchanged offline assistant. Google sample advertisements are not presented as production inventory in store screenshots.
-- iOS 1.1.0 (5) is Waiting for Review, submitted at 01:53 Asia/Riyadh. See [readiness](ios-readiness.md) for the build/submission IDs. macOS remains separate and withdrawn.
+- iOS 1.1.0 (5) is Waiting for Review, submitted at 01:53 Asia/Riyadh. See [readiness](ios-readiness.md) for the build/submission IDs. macOS 1.3.1 (9) was separately resubmitted without ads at 02:01 and is also Waiting for Review; see [Mac readiness](readiness.md).
 
 ## After publication
 
