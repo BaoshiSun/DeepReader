@@ -1,25 +1,26 @@
 # iOS 1.1.0 (5) — App Review Notes
 
-DeepReader iOS 1.1.0 (5) is a free iPhone/iPad document reader with bundled, on-device Qwen3 0.6B AI. No login, API key, remote AI, purchases, subscriptions or question quota. AI answers may be inaccurate; warnings appear in the assistant, Settings and store descriptions.
+DeepReader iOS/iPadOS 1.1.0 (5) is a free document reader with bundled, on-device Qwen3 0.6B AI. No login, API key, purchases, subscription or question quota is required.
 
-1. Changes and previous Guidelines 3.1.1 / 5
-All AI runs locally through llama.cpp. No paid unlock, external payment, provider selection, cloud fallback, web search or model download is available. The earlier question-credit IAP is not used or submitted. The app now offers one optional, clearly labelled AdMob native image ad in the library. There are no ads in the reader, search results, History or an empty library. No viewing/clicking requirement or rewarded unlock exists.
+1. Response to Guidelines 5.1.1(i) / 5.1.2(i)
+This build does NOT send personal data to a third-party AI service. Qwen is a model file included in the app, not a cloud service. llama.cpp generates explanations and follow-up answers locally. Documents, titles, selections, nearby context, questions, answers and reading history are not sent to Alibaba/Qwen, another AI provider or the developer. No remote AI API, cloud fallback, web search or runtime model download is used. General knowledge uses the local model's learned knowledge, not Internet search.
+We clarified the public privacy policy on 2026-10-28 and moved earlier online-edition descriptions to a separate archive. Those earlier descriptions do not apply to this build. The policy distinguishes local AI from optional Google advertising. The existing build 5 already implements this local processing; this resubmission clarifies documentation, with no binary change.
 
-2. Purpose and setup
-For individuals, students and researchers reading their own documents. In the empty Library, tap Read a sample / 打开示例文章, or import PDF, EPUB, TXT or Markdown from Files. Select a short passage, tap Explain and ask a follow-up. Wide screens offer an adjustable sidebar or floating panel; narrow screens use a draggable/collapsible floating panel. Settings switches English/Chinese and Book only / General knowledge. Both modes work offline. Successful answers remain in local History. Full-document summaries, OCR and DRM are not supported.
+2. Reproduce local AI on iPhone or iPad
+Disable both Wi-Fi and cellular data (Airplane Mode alone can leave Wi-Fi enabled). Launch the installed app. In an empty Library, tap Read a sample / 打开示例文章; otherwise open a local document. Select a short sentence, tap Explain, wait for generation, and ask a follow-up. No credentials are needed. Settings shows On-device AI / Qwen3 0.6B; Book only and General knowledge both work offline. AI answers may be inaccurate or incomplete; warnings appear in the assistant, Settings and store descriptions.
 
-3. Advertising and privacy
-Return to Library after opening the sample. The first eligible library visit offers Agree or Continue without ads. Allow library ads in Settings can disable ads without losing any feature. Google UMP provides applicable privacy choices, including Do not consent and a Settings link to revisit choices. Ads are non-personalized, restricted data processing is enabled, publisher first-party ID is disabled, and no ATT permission is requested. Book titles/text, selections, questions and answers are not sent to advertising services. One ad appears after the third book, or the last book when fewer than three exist. Production ad availability depends on Google's separate readiness checks; no-fill is handled without an empty card. Offline reading and AI remain available.
+3. Setup and audience
+For individuals reading their own documents. Import PDF, EPUB, TXT or Markdown using Files. Wide screens have an adjustable sidebar or floating panel; narrow screens use a floating panel. Settings switches English/Chinese. Successful answers remain in local History. No full-document summary, OCR, DRM, accounts, public posting or regulated service. Reading Garden is original sample content; tester-imported books are not bundled content.
 
-4. Components and regions
-Google Mobile Ads 13.11.0, UMP 3.1.0, Qwen3 0.6B Q4_K_M (Apache 2.0), llama.cpp (MIT), ZIPFoundation (MIT), Apple frameworks. No developer backend or Firebase Analytics. Updated App Privacy and policy disclose Google's advertising/consent data. The same free offline features are offered in all 175 selected storefronts; advertising availability and consent forms may vary by region.
+4. Optional advertising is separate from AI
+The first library ad prompt explains Google's data use with Agree / Continue without ads. No ads/consent SDK starts before opt-in. Settings can disable ads without losing reading or AI. Google UMP provides applicable regional privacy choices. One labelled native image ad may appear in Library, never in the reader, search, History or an empty library. No rewarded unlock exists. The app does not provide reading content or conversations to Google. We request non-personalized ads and restricted processing, disable publisher first-party ID, and do not request ATT. Advertising can involve IP-derived location, identifiers, interactions and diagnostics as disclosed in App Privacy and the policy. No-fill/offline use never blocks reading or AI. No developer backend or Firebase Analytics.
 
-5. Testing and video
-On 2026-10-23, seven tests passed on a physical iPhone 14 Pro with iOS 26.6.2 using the separately signed build-5 Local development variant with the same source/engine. They cover real Qwen explanation/follow-up/history/cancellation, legacy settings and advertising policy. The owner confirmed a library ad appeared and no ad appeared in the reader. Debug uses Google's official sample ad; Release uses the production unit. Twenty simulator tests passed, and native-ad validation passed on iPhone and iPad simulators. No physical iPad test is claimed.
-The existing attachment DeepReader-Local-Qwen-iPhone14Pro-2026-10-15.mp4 shows launch, reading, local AI, history, settings/language and floating assistant on iPhone 14 Pro / iOS 26.6.2. It is an earlier local development build, not build 5, and does not show the new ads. The core offline workflow remains the same. Documents imported by the tester are not bundled content.
+5. QA and video
+Seven tests passed on a physical iPhone 14 Pro / iOS 26.6.2 on 2026-10-23 using the separately signed build-5 Local development variant with the same source/engine; 20 simulator tests passed. No physical iPad test is claimed.
+New review-message attachment: ScreenRecording_10-28-2026 2.MP4 (2m29s). At 00:02-00:08 the owner enables Airplane Mode and turns Wi-Fi off, then launches DeepReader Local. At 00:10-00:20 it shows On-device AI Settings; 00:44-01:05 shows a new explanation in General knowledge mode; 02:00-02:16 shows generation and an answer in Book only mode, with the airplane icon and no Wi-Fi connection icon. This is the separately signed Local development variant, not the App Store binary.
 
-6. Content and rights
-No accounts, public posting, messaging, protected catalog or regulated service. Users import their own documents. Reading Garden is original sample content. Open-source/model licenses and icon attribution are included in Settings. This is an independent reader.
+6. Components and availability
+Qwen3 0.6B (Apache 2.0), llama.cpp (MIT), ZIPFoundation (MIT), Google Mobile Ads 13.11.0, UMP 3.1.0, Apple frameworks. Licenses are in Settings. Same free local AI in all 175 selected storefronts; ad availability and consent may vary. Earlier question-credit IAP is unused and not submitted.
 
 ---
 
