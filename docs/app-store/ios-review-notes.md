@@ -17,7 +17,7 @@ The first library ad prompt explains Google's data use with Agree / Continue wit
 
 5. QA and video
 Seven tests passed on a physical iPhone 14 Pro / iOS 26.6.2 on 2026-10-23 using the separately signed build-5 Local development variant with the same source/engine; 20 simulator tests passed. No physical iPad test is claimed.
-New review-message attachment: ScreenRecording_10-28-2026 2.MP4 (2m29s). At 00:02-00:08 the owner enables Airplane Mode and turns Wi-Fi off, then launches DeepReader Local. At 00:10-00:20 it shows On-device AI Settings; 00:44-01:05 shows a new explanation in General knowledge mode; 02:00-02:16 shows generation and an answer in Book only mode, with the airplane icon and no Wi-Fi connection icon. This is the separately signed Local development variant, not the App Store binary.
+New App Review Information attachment: ScreenRecording_10-28-2026 2.MP4 (2m29s). At 00:02-00:08 the owner enables Airplane Mode and turns Wi-Fi off, then launches DeepReader Local. At 00:10-00:20 it shows On-device AI Settings; 00:44-01:05 shows a new explanation in General knowledge mode; 02:00-02:16 shows generation and an answer in Book only mode, with the airplane icon and no Wi-Fi connection icon. This is the separately signed Local development variant, not the App Store binary.
 
 6. Components and availability
 Qwen3 0.6B (Apache 2.0), llama.cpp (MIT), ZIPFoundation (MIT), Google Mobile Ads 13.11.0, UMP 3.1.0, Apple frameworks. Licenses are in Settings. Same free local AI in all 175 selected storefronts; ad availability and consent may vary. Earlier question-credit IAP is unused and not submitted.
