@@ -11,11 +11,41 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = "1.2.0"
 PRODUCT = "DeepReader"
 PUBLIC_PATHS = tuple("""
+macos/build_offline.sh
+docs/app-store/ios-advertising.md
+docs/app-store/privacy-policy-legacy.md
+ios/Advertising.json
+ios/Resources/AdvertisingPrivacy.txt
+ios/Resources/PrivacyInfo.xcprivacy
+ios/Sources/LibraryAdvertising.swift
+ios/Tests/LibraryAdTests.swift
+macos/prepare_offline_package.py
+macos/AppStore/OfflineAI.swift
+macos/AppStore/OfflineCheck.swift
+macos/AppStore/Tests/OfflineStoreTests.swift
+macos/Sources/DeepReaderCore/QuestionCredits.swift
+macos/Tests/DeepReaderTests/QuestionCreditTests.swift
+server/app.py
+server/ledger.py
+server/README.md
+server/requirements.in
+server/requirements.txt
+server/Dockerfile
+server/.dockerignore
+server/example.env
+server/tests/test_billing.py
 ios/DeepReader.xcodeproj/project.pbxproj
 ios/DeepReader.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 ios/DeepReader.xcodeproj/xcshareddata/xcschemes/DeepReaderiOS.xcscheme
 ios/Info.plist
 ios/README.md
+ios/LOCAL-QWEN.md
+ios/prepare_local_model.py
+ios/Sources/LocalQwen.swift
+ios/Tests/LocalQwenTests.swift
+ios/Resources/Qwen-LICENSE.txt
+ios/Resources/Local/Reading-Garden.txt
+ios/Resources/llama-LICENSE.txt
 ios/Resources/Reading-Garden.txt
 ios/Resources/ZIPFoundation-LICENSE.txt
 ios/Sources/DeepReaderApp.swift

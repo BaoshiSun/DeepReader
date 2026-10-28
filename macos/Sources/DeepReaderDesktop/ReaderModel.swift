@@ -6,7 +6,9 @@ import DeepReaderCore
 @MainActor public final class ReaderModel: ObservableObject {
     public let store: LibraryStore
     public let fileAccess: FileAccessStore
+#if !OFFLINE_QWEN
     public let credentials: Credentials
+#endif
     public let reader = DocumentReader()
     public var pdf: PDFReader { reader.pdf }
     public let ai: AIClient
@@ -54,18 +56,30 @@ import DeepReaderCore
     public var libraryBook: Book? { books.first { $0.id == bookID } }
     public var filteredBooks: [Book] { books.filter { $0.matches(bookSearch, filter: bookFilter) } }
 
+#if OFFLINE_QWEN
+    public init(store: LibraryStore, ai: AIClient = AIClient()) {
+        self.store = store; self.ai = ai
+        self.fileAccess = FileAccessStore(root: store.root)
+        self.confirmSharing = { _, _ in .cancel }
+        self.settings = (try? store.settings()) ?? Settings()
+        do { _ = try store.settings(); try reload() } catch { show(error) }
+        if !settings.onboardingSeen { tab = 4; guide() }
+    }
+#else
     public init(store: LibraryStore, credentials: Credentials = KeychainCredentials(), ai: AIClient = AIClient(),
                 confirmSharing: @escaping @MainActor (Settings, AISharingKind) -> AISharingDecision = AISharingKind.confirm) {
         self.store = store; self.credentials = credentials; self.ai = ai
         self.fileAccess = FileAccessStore(root: store.root)
         self.confirmSharing = confirmSharing
         self.settings = (try? store.settings()) ?? Settings()
-        if !Provider.available().contains(settings.provider) { settings.provider = .deepSeek }
+        settings.applyProviderAvailability()
         modelDraft = settings.model; endpointDraft = settings.endpointText
         do { _ = try store.settings(); try reload() }
         catch { show(error) }
         if !settings.onboardingSeen { tab = 4; guide() }
+        QuestionCredits.shared.start()
     }
+#endif
     public func t(_ zh: String, _ en: String) -> String { settings.english ? en : zh }
     public func show(_ error: Error) {
         status = (error as? ReaderError)?.message(settings.english) ?? t("操作失败，请检查文件权限或可用空间。", "Operation failed. Check file permissions or available disk space.")
@@ -94,13 +108,40 @@ import DeepReaderCore
         try reload(); status = t("选中文字后按 ⌘⇧D 解释。", "Select text and press ⌘⇧D to explain.")
     }
     public func guide() {
+#if OFFLINE_QWEN
+        status = t("免费本机 AI：打开书籍，选中文字后按 ⌘⇧D。无需账户、网络或 API Key。答案可能不准确，请核对原文。", "Free on-device AI: open a book, select text and press ⌘⇧D. No account, network or API key. Answers may be inaccurate; check the source.")
+        settings.onboardingSeen = true; persist()
+#else
+        if OrdinaryQuestions.enabled {
+            status = t("打开书籍、选择文字即可解释。普通问答在设置中购买次数，无需填写 API Key。", "Open a book and select text to explain it. Purchase ordinary question credits in Settings; no API key is needed.")
+            settings.onboardingSeen = true; persist(); return
+        }
         status = t("① 选择服务和模型，填写自己的 API Key 并保存。② 打开文档或电子书，选词后按 ⌘⇧D。③ 可继续追问、评分和归档。AI 请求会发送所选文字及上下文；全文总结会发送提取的全文。", "1. Choose a provider and model, add your own API key and save. 2. Open a document or ebook, select text and press ⌘⇧D. 3. Ask follow-ups, rate and archive books. AI lookups send your selection and context; document summaries send extracted document text.")
         settings.onboardingSeen = true; persist()
+#endif
     }
     public func language() { settings.english.toggle(); clearSummary(); persist(); languageAction?() }
+#if OFFLINE_QWEN
+    public func openSample() {
+        do {
+            guard let bundled = Bundle.main.url(forResource: "Reading-Garden", withExtension: "txt") else {
+                throw ReaderError("安装包中缺少示例文章。", "The bundled sample is missing.")
+            }
+            // A bundled resource cannot receive a user-selected security-scoped bookmark.
+            // Keep an editable sample copy in our container, preserving any existing copy.
+            let folder = store.root.appendingPathComponent("Examples", isDirectory: true)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            let url = folder.appendingPathComponent("Reading-Garden.txt")
+            if !FileManager.default.fileExists(atPath: url.path) { try FileManager.default.copyItem(at: bundled, to: url) }
+            openURLAction?(url)
+        } catch { show(error) }
+    }
+#endif
+#if !OFFLINE_QWEN
     public func chooseProvider(_ provider: Provider) {
         guard Provider.available().contains(provider) else { return }
-        settings.provider = provider; modelDraft = settings.model; endpointDraft = settings.endpointText; keyDraft = ""; clearSummary()
+        settings.provider = provider; settings.applyProviderAvailability()
+        modelDraft = settings.model; endpointDraft = settings.endpointText; keyDraft = ""; clearSummary()
     }
     public func saveConfiguration() {
         do {
@@ -120,6 +161,7 @@ import DeepReaderCore
         do { try credentials.remove(settings); keyDraft = ""; status = t("此服务的密钥已删除。", "This provider's key was removed.") }
         catch { show(error) }
     }
+#endif
     public func chooseArchiveFolder() {
         let panel = NSOpenPanel(); panel.canChooseFiles = false; panel.canChooseDirectories = true; panel.canCreateDirectories = true
         panel.message = t("选择归档根目录，文件将复制到对应星级子目录。", "Choose the archive folder. Files are copied into star-rating subfolders.")
@@ -144,8 +186,12 @@ import DeepReaderCore
     public func explain() {
         guard !busy, !opening else { return }
         do {
-            let configuration = try settings.validated(), key = try credentials.read(settings)
-            _ = try AIClient.request(settings: configuration, key: key, task: .explain, source: "validate")
+#if OFFLINE_QWEN
+            let configuration = settings, key = ""
+#else
+            let configuration = try settings.validated(), key = OrdinaryQuestions.enabled ? "" : try credentials.read(settings)
+            if !OrdinaryQuestions.enabled { _ = try AIClient.request(settings: configuration, key: key, task: .explain, source: "validate") }
+#endif
             let file = reader.url?.path ?? "", title = reader.url?.lastPathComponent ?? ""
             begin { [weak self] id in
                 guard let self = self else { return }
@@ -153,17 +199,25 @@ import DeepReaderCore
                 try Task.checkCancellation(); guard self.job == id else { return }
                 guard self.allowSharing(configuration, .selection) else { return }
                 self.captured = selection; self.selected = selection.text; self.answer = ""; self.followup = ""; self.currentRecord = nil; self.tab = 0
-                let response = try await self.ai.complete(settings: configuration, key: key, task: .explain,
-                    source: "Selected text:\n\(selection.text)\n\nSource context (⟦…⟧ marks the selection):\n\(selection.context)")
+#if OFFLINE_QWEN
+                let source = AIClient.source(selection: selection.text, context: selection.context)
+#else
+                let source = OrdinaryQuestions.enabled ? OrdinaryQuestions.source(selection: selection.text, context: selection.context) : "Selected text:\n\(selection.text)\n\nSource context (⟦…⟧ marks the selection):\n\(selection.context)"
+#endif
+                let response = try await self.ai.complete(settings: configuration, key: key, task: .explain, source: source)
                 try Task.checkCancellation(); guard self.job == id else { return }
                 var record = ReadingRecord(); record.file = file; record.title = title; record.page = selection.page
                 record.selected = selection.text; record.context = selection.context; record.answer = response
-                record.provider = configuration.provider.rawValue; record.model = configuration.model; record.language = configuration.english ? "en" : "zh"
+                record.provider = self.answerProvider(configuration); record.model = self.answerModel(configuration); record.language = configuration.english ? "en" : "zh"
                 self.answer = response
                 try self.store.saveRecord(record); self.currentRecord = record; try self.reload()
                 self.status = self.t("解释已自动保存。", "Explanation saved automatically.")
             }
-        } catch { show(error); if (try? credentials.read(settings)) == "" { tab = 4 } }
+        } catch { show(error)
+#if !OFFLINE_QWEN
+            if (try? credentials.read(settings)) == "" { tab = 4 }
+#endif
+        }
     }
     public func ask() {
         guard !busy, !opening, let original = currentRecord else { status = t("请先解释一次选中文字。", "Explain a selection first."); return }
@@ -172,15 +226,23 @@ import DeepReaderCore
             guard !question.isEmpty, question.utf16.count <= 1200, original.answer.utf16.count <= 12000 else {
                 throw ReaderError("追问限 1200 字符；对话过长时请重新选词。", "Follow-ups allow 1,200 characters. Start a new lookup if the conversation is too long.")
             }
-            let configuration = settings, key = try credentials.read(settings)
+#if OFFLINE_QWEN
+            let configuration = settings, key = ""
+#else
+            let configuration = settings, key = OrdinaryQuestions.enabled ? "" : try credentials.read(settings)
+#endif
             guard allowSharing(configuration, .followup) else { return }
             begin { [weak self] id in
                 guard let self = self else { return }
-                let response = try await self.ai.complete(settings: configuration, key: key, task: .followup,
-                    source: "Original selection:\n\(original.selected)\nSource context:\n\(original.context)\nPrevious conversation:\n\(original.answer)\nUser follow-up:\n\(question)")
+#if OFFLINE_QWEN
+                let source = AIClient.source(selection: original.selected, context: original.context, previous: original.answer, question: question)
+#else
+                let source = OrdinaryQuestions.enabled ? OrdinaryQuestions.source(selection: original.selected, context: original.context, previous: original.answer, question: question) : "Original selection:\n\(original.selected)\nSource context:\n\(original.context)\nPrevious conversation:\n\(original.answer)\nUser follow-up:\n\(question)"
+#endif
+                let response = try await self.ai.complete(settings: configuration, key: key, task: .followup, source: source)
                 try Task.checkCancellation(); guard self.job == id else { return }
                 var record = original
-                record.answer += "\n\n— \(self.t("追问", "Follow-up")) —\n\(question)\n[\(configuration.provider.rawValue) / \(configuration.model)]\n\(response)"
+                record.answer += "\n\n— \(self.t("追问", "Follow-up")) —\n\(question)\n[\(self.answerProvider(configuration)) / \(self.answerModel(configuration))]\n\(response)"
                 guard record.valid else { throw ReaderError("对话已达到长度上限，请重新选词。", "The conversation reached its length limit. Start a new lookup.") }
                 try self.store.saveRecord(record); self.currentRecord = record; self.answer = record.answer; self.followup = ""
                 try self.reload(); self.status = self.t("追问已保存到原查询。", "Follow-up saved with the original lookup.")
@@ -247,6 +309,9 @@ import DeepReaderCore
     }
     public func clearSummary() { prepared = nil; summaryPreview = ""; summaryAnswer = "" }
     public func prepareSummary() {
+#if OFFLINE_QWEN
+        clearSummary(); show(AIClient.unsupported)
+#else
         guard !opening else { return }
         do {
             try reload()
@@ -273,8 +338,13 @@ import DeepReaderCore
             summaryPreview = title + "\n\n" + stats + "\n\n" + t("将发送 \(source.utf16.count) 字符，预计 \(requests) 次 API 请求。费用或额度由服务商决定。", "Will send \(source.utf16.count) characters in approximately \(requests) API requests. Provider pricing or quotas apply.") + notice
             summaryAnswer = stats + notice
         } catch { clearSummary(); show(error) }
+#endif
     }
     public func summarize() {
+#if OFFLINE_QWEN
+        show(AIClient.unsupported)
+#else
+        guard !OrdinaryQuestions.enabled else { show(OrdinaryQuestions.unsupported); return }
         guard !busy, let snapshot = prepared else { return }
         do {
             let key = try credentials.read(snapshot.settings)
@@ -294,29 +364,48 @@ import DeepReaderCore
                 self.status = self.t("总结已保存到历史。", "Summary saved to History.")
             }
         } catch { show(error) }
+#endif
     }
     private func allowSharing(_ configuration: Settings, _ kind: AISharingKind) -> Bool {
-        guard configuration.recipientID == settings.recipientID else { return false }
+#if OFFLINE_QWEN
+        return true
+#else
+        guard configuration.sharingRecipient() == settings.sharingRecipient() else { return false }
         if hasAISharingConsent { return true }
         switch confirmSharing(configuration, kind) {
         case .cancel:
             status = t("已取消，未发送给 AI 服务。", "Cancelled. Nothing was sent to the AI service.")
             return false
-        case .sendOnce: return configuration.recipientID == settings.recipientID
+        case .sendOnce: return configuration.sharingRecipient() == settings.sharingRecipient()
         case .rememberRecipient:
-            guard configuration.recipientID == settings.recipientID else { return false }
+            guard configuration.sharingRecipient() == settings.sharingRecipient() else { return false }
             do {
                 var next = settings
-                next.aiSharingConsentRecipient = configuration.recipientID
+                next.aiSharingConsentRecipient = configuration.sharingRecipient()
                 next.aiSharingConsentVersion = AISharingKind.consentVersion
                 try store.saveSettings(next); settings = next
                 return true
             } catch { show(error); return false }
         }
+#endif
+    }
+    private func answerProvider(_ configuration: Settings) -> String {
+#if OFFLINE_QWEN
+        return "Qwen (on device)"
+#else
+        return configuration.provider.rawValue
+#endif
+    }
+    private func answerModel(_ configuration: Settings) -> String {
+#if OFFLINE_QWEN
+        return "Qwen3-0.6B-Q4_K_M"
+#else
+        return configuration.model
+#endif
     }
     public var hasAISharingConsent: Bool {
         settings.aiSharingConsentVersion == AISharingKind.consentVersion &&
-            settings.aiSharingConsentRecipient == settings.recipientID
+            settings.aiSharingConsentRecipient == settings.sharingRecipient()
     }
     public func revokeAISharingConsent() {
         do {

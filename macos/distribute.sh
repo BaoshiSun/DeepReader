@@ -61,6 +61,13 @@ stage="$out/staging"
 mkdir "$stage"
 signed="$stage/DeepReader.app"
 ditto "$app" "$signed"
+# Sign bundled inference code before the enclosing application. Do not rely on
+# --deep signing, which can hide an incorrectly packaged nested component.
+for framework in "$signed/Contents/Frameworks/"*.framework; do
+    [[ -d "$framework" ]] || continue
+    codesign --force --options runtime --timestamp --sign "$identity" "$framework"
+    codesign --verify --strict "$framework"
+done
 codesign --force --options runtime --timestamp --sign "$identity" "$signed"
 codesign --verify --deep --strict "$signed"
 codesign -d --verbose=4 "$signed" 2> "$out/signature.txt"

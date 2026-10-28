@@ -82,6 +82,10 @@ final class AITests: XCTestCase {
             if settings.model.isEmpty { settings.models[provider.rawValue] = "offline-model" }
             if provider == .custom { settings.setEndpoint("https://models.example.test/v1/chat/completions") }
             for store in [false, true] {
+                if store {
+                    XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: true))
+                    continue
+                }
                 let request = try AIClient.request(settings: settings, key: "offline-test", task: .explain, source: "bank", appStore: store)
                 XCTAssertEqual(request.url?.absoluteString, settings.endpointText)
                 let body = try XCTUnwrap(JSONSerialization.jsonObject(with: request.httpBody!) as? [String: Any])
@@ -101,6 +105,34 @@ final class AITests: XCTestCase {
                 if provider != .deepSeek && provider != .miniMax { XCTAssertNil(body["thinking"]); XCTAssertNil(body["temperature"]) }
                 if provider == .openRouter { XCTAssertNotNil(body["provider"]) }
             }
+        }
+    }
+    func testStoreCannotRestoreOrRouteToRemovedProviders() throws {
+        XCTAssertFalse(Provider.available(appStore: true).contains(.openAI))
+        XCTAssertFalse(Provider.available(appStore: true).contains(.claude))
+        XCTAssertFalse(Provider.available(appStore: true).contains(.custom))
+        XCTAssertFalse(Provider.available(appStore: true).contains(.openRouter))
+        XCTAssertEqual(Provider.available(appStore: false), Provider.allCases)
+        for provider in [Provider.openAI, .claude, .openRouter, .custom] {
+            var old = Settings(); old.provider = provider
+            old.aiSharingConsentRecipient = old.recipientID; old.aiSharingConsentVersion = 2
+            old.applyProviderAvailability(appStore: true)
+            XCTAssertEqual(old.provider, .deepSeek)
+            XCTAssertNil(old.aiSharingConsentRecipient)
+        }
+        for endpoint in [Provider.openAI.endpoint.absoluteString, Provider.claude.endpoint.absoluteString,
+                         "https://proxy.example.test/chat/completions", "https://api.deepseek.com.evil.test/chat/completions"] {
+            var settings = Settings(); settings.setEndpoint(endpoint)
+            XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline", task: .explain, source: "bank", appStore: true))
+            XCTAssertNoThrow(try AIClient.request(settings: settings, key: "offline", task: .explain, source: "bank", appStore: false))
+            settings.aiSharingConsentRecipient = settings.recipientID
+            settings.applyProviderAvailability(appStore: true)
+            XCTAssertEqual(settings.endpointText, Provider.deepSeek.endpoint.absoluteString)
+            XCTAssertNil(settings.aiSharingConsentRecipient)
+        }
+        for model in ["gpt-4.1", "openai/o3", "anthropic/claude-sonnet", "Claude-test"] {
+            var settings = Settings(); settings.models[Provider.deepSeek.rawValue] = model
+            XCTAssertThrowsError(try AIClient.request(settings: settings, key: "offline", task: .explain, source: "bank", appStore: true))
         }
     }
     func testEndpointValidationAgeGateAndLegacySettings() throws {

@@ -19,7 +19,10 @@ public enum Provider: String, Codable, CaseIterable, Identifiable {
     public static var isAppStoreBuild: Bool {
         Bundle.main.object(forInfoDictionaryKey: "DeepReaderAppStoreBuild") as? Bool == true
     }
-    public static func available(appStore: Bool = isAppStoreBuild) -> [Self] { allCases }
+    public static func available(appStore: Bool = isAppStoreBuild) -> [Self] {
+        // Store editions cannot expose the removed providers through a gateway either.
+        appStore ? [.deepSeek] : allCases
+    }
     public var endpoint: URL {
         switch self {
         case .deepSeek: return URL(string: "https://api.deepseek.com/chat/completions")!
@@ -114,11 +117,40 @@ public struct Settings: Codable {
         endpoints = values
     }
     public var recipientID: String { provider.rawValue + "|" + endpointText }
-    public func requestEndpoint() throws -> URL {
+    public func sharingRecipient(appStore: Bool = Provider.isAppStoreBuild) -> String {
+#if os(iOS) || OFFLINE_QWEN
+        // Legacy settings decoding only; iOS has no remote request or purchase path.
+        return recipientID
+#else
+        return appStore ? OrdinaryQuestions.recipient : recipientID
+#endif
+    }
+    public func requestEndpoint(appStore: Bool = Provider.isAppStoreBuild) throws -> URL {
+        if appStore {
+            guard Provider.available(appStore: true).contains(provider),
+                  endpointText == provider.endpoint.absoluteString else {
+                throw ReaderError("商店版仅支持列表中的直连服务和预设接口地址。", "The store edition supports only listed direct providers and their preset endpoints.")
+            }
+            let name = model.lowercased()
+            guard !["openai", "chatgpt", "gpt", "anthropic", "claude"].contains(where: name.contains) else {
+                throw ReaderError("商店版不支持此模型。", "This model is not supported in the store edition.")
+            }
+        }
         guard Self.validEndpoint(endpointText), let url = URL(string: endpointText) else {
             throw ReaderError("请输入完整的 HTTPS 接口地址，不能包含账号、查询参数或片段。", "Enter a full HTTPS endpoint without credentials, query or fragment.")
         }
         return url
+    }
+    public mutating func applyProviderAvailability(appStore: Bool = Provider.isAppStoreBuild) {
+        let previousRecipient = recipientID
+        if !Provider.available(appStore: appStore).contains(provider) { provider = .deepSeek }
+        if appStore {
+            endpoints?.removeValue(forKey: provider.rawValue)
+            models[Provider.deepSeek.rawValue] = "deepseek-flash"
+        }
+        guard recipientID != previousRecipient else { return }
+        aiSharingConsentRecipient = nil
+        aiSharingConsentVersion = nil
     }
     public static func validEndpoint(_ text: String) -> Bool {
         guard text.utf8.count <= 2048, !text.contains(where: { $0.isWhitespace }),

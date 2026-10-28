@@ -49,3 +49,19 @@ FileAccess/
 *.p12
 *.mobileprovision
 *.provisionprofile
+
+# Billing state and development server secrets
+server/data/
+server/certs/
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+.pytest_cache/
+
+# Generated separate offline iPhone experiment
+/ios/DeepReaderLocal.xcodeproj/
+/ios/LocalInfo.plist
+
+/ios/DeepReaderOfflineStore.xcodeproj/
+/ios/OfflineStoreInfo.plist
+macos/dist-offline/

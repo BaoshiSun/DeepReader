@@ -2,10 +2,9 @@
 import SwiftUI
 import PDFKit
 
-struct PendingAI: Identifiable {
+struct LocalAIRequest: Identifiable {
     let id = UUID()
     let task: AITask
-    let source: String
     let selection: String
     let context: String
     let book: MobileBook
@@ -13,7 +12,6 @@ struct PendingAI: Identifiable {
     let previous: ReadingRecord?
     let question: String
     let page: Int
-    var requests: Int { task == .document ? AIClient.summaryRequests(chunks: TextLimits.chunks(source).count) : 1 }
 }
 @MainActor final class MobileModel: ObservableObject {
     @Published var books: [MobileBook] = []
@@ -27,19 +25,13 @@ struct PendingAI: Identifiable {
     @Published var answer = ""
     @Published var question = ""
     @Published var error: String?
-    @Published var pending: PendingAI?
     @Published var busy = false
     @Published var importing = false
     @Published var progress = ""
     @Published var showAI = false
     @Published var assistantPresentation = AssistantPresentation.sidebar
     @Published var assistantWidthFraction = 0.38
-    @Published var hasKey = false
-    @Published private(set) var hasAIConsent = false
-    static let aiConsentVersion = 2
     private(set) var library: MobileLibrary?
-    private let credentials: Credentials
-    private let ai: AIClient
     private var work: Task<Void, Never>?
     private var activeRecord: ReadingRecord?
     var answerSubject: String {
@@ -48,13 +40,11 @@ struct PendingAI: Identifiable {
     var pdfView: PDFView?
     var english: Bool { settings.english }
     func t(_ zh: String, _ en: String) -> String { english ? en : zh }
-    init(root: URL? = nil, credentials: Credentials = KeychainCredentials(service: "org.deepreader.ios.providers"), ai: AIClient = AIClient()) {
-        self.credentials = credentials; self.ai = ai
+    init(root: URL? = nil) {
         do {
             library = try MobileLibrary(root: root); refresh(); settings = library!.state.settings
             assistantPresentation = AssistantPresentation(rawValue: library?.state.assistantPresentation ?? "") ?? .sidebar
             assistantWidthFraction = ReaderSplitLayout.validFraction(library?.state.assistantWidthFraction ?? 0.38)
-            refreshProviderState()
         } catch { report(error) }
     }
     func refresh() { books = library?.state.books ?? []; records = library?.state.records ?? [] }
@@ -64,8 +54,6 @@ struct PendingAI: Identifiable {
     func persistSettings() {
         do {
             try library?.update { $0.settings = settings }
-            pending = nil
-            refreshProviderState()
         } catch { report(error) }
     }
     func setWorldKnowledge(_ enabled: Bool) {
@@ -73,43 +61,10 @@ struct PendingAI: Identifiable {
         do {
             var next = settings; next.useWorldKnowledge = enabled
             try library.update { $0.settings = next }
-            settings = next; pending = nil
+            settings = next
         } catch { report(error) }
     }
-    private func refreshProviderState() {
-        hasAIConsent = library?.state.aiConsentVersion == Self.aiConsentVersion && library?.state.aiConsentRecipient == settings.recipientID
-        hasKey = false
-        if (try? settings.requestEndpoint()) != nil {
-            do { hasKey = !(try credentials.read(settings)).isEmpty } catch { report(error) }
-        }
-    }
-    func chooseProvider(_ provider: Provider) {
-        guard !busy else { return }
-        settings.provider = provider
-        persistSettings()
-    }
-    func saveAIConfiguration(model: String, endpoint: String, key: String) -> Bool {
-        do {
-            var next = settings
-            next.models[next.provider.rawValue] = model.trimmingCharacters(in: .whitespacesAndNewlines)
-            next.setEndpoint(endpoint)
-            next = try next.validated()
-            _ = try next.requestEndpoint()
-            if !key.isEmpty { try credentials.save(key.trimmingCharacters(in: .whitespacesAndNewlines), for: next) }
-            try library?.update { $0.settings = next }
-            settings = next; pending = nil; error = nil; refreshProviderState()
-            return true
-        } catch { report(error); return false }
-    }
-    @discardableResult func key(_ value: String) -> Bool {
-        do {
-            try credentials.save(value.trimmingCharacters(in: .whitespacesAndNewlines), for: settings)
-            hasKey = true; error = nil
-            return true
-        } catch { report(error); return false }
-    }
-    func removeKey() { do { try credentials.remove(settings); hasKey = false } catch { report(error) } }
-    func dismissAssistant() { showAI = false; pending = nil }
+    func dismissAssistant() { showAI = false }
     func setAssistantPresentation(_ presentation: AssistantPresentation) {
         assistantPresentation = presentation
         showAI = true
@@ -122,22 +77,6 @@ struct PendingAI: Identifiable {
                 $0.assistantPresentation = assistantPresentation.rawValue
                 $0.assistantWidthFraction = assistantWidthFraction
             }
-        } catch { report(error) }
-    }
-    func revokeAIConsent() {
-        do {
-            guard let library else { return }
-            try library.update { $0.aiConsentVersion = nil; $0.aiConsentRecipient = nil }
-            hasAIConsent = false; pending = nil; cancel()
-        } catch { report(error) }
-    }
-    func authorizeAndSend(_ request: PendingAI) {
-        guard pending?.id == request.id, request.book.id == book?.id, request.settings.recipientID == settings.recipientID, !busy else { return }
-        do {
-            guard let library else { return }
-            try library.update { $0.aiConsentVersion = Self.aiConsentVersion; $0.aiConsentRecipient = request.settings.recipientID }
-            hasAIConsent = true
-            send(request)
         } catch { report(error) }
     }
     func importFile(_ url: URL) {
@@ -178,7 +117,6 @@ struct PendingAI: Identifiable {
     func select(_ text: String, surrounding: String) {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         if selected != TextLimits.prefix(text, 4000) {
-            pending = nil
             if !busy { answer = ""; activeRecord = nil; question = "" }
         }
         selected = TextLimits.prefix(text, 4000)
@@ -193,45 +131,34 @@ struct PendingAI: Identifiable {
         guard !selected.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             error = t("请先在正文中长按并选择文字。", "Touch and hold the document to select text first."); return
         }
-        prepare(.explain, source: "Selection:\n\(selected)\n\nContext:\n\(context)")
+        prepare(.explain)
     }
     func followup() {
         guard let previous = activeRecord, !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-        let source = "Original selection:\n\(previous.selected)\nContext:\n\(previous.context)\nConversation:\n\(TextLimits.prefix(previous.answer, 12000))\nQuestion:\n\(TextLimits.prefix(question, 3000))"
-        prepare(.followup, source: source, previous: previous)
+        prepare(.followup, previous: previous)
     }
-    func summary() {
-        do { guard let document else { return }; prepare(.document, source: try document.fullText()) } catch { report(error) }
-    }
-    private func prepare(_ task: AITask, source: String, previous: ReadingRecord? = nil) {
+    private func prepare(_ task: AITask, previous: ReadingRecord? = nil) {
         guard !busy, let book else { return }
-        guard hasKey else { error = t("请先在设置中保存所选服务商的 API Key。", "Save your selected provider’s API key in Settings first."); return }
-        showAI = true
-        let request = PendingAI(task: task, source: source, selection: selected, context: context, book: book, settings: settings, previous: previous, question: question, page: position + 1)
-        if hasAIConsent { send(request) } else { pending = request }
-    }
-    private func send(_ request: PendingAI) {
-        guard !busy, hasAIConsent, request.settings.recipientID == settings.recipientID else { return }
-        pending = nil; busy = true; progress = t("正在请求 ", "Requesting ") + request.settings.provider.rawValue + "…"; showAI = true
+        let request = LocalAIRequest(task: task, selection: selected, context: context,
+            book: book, settings: settings, previous: previous, question: question, page: position + 1)
+        error = nil; busy = true; showAI = true
+        let previousAnswer = answer
+        answer = ""; progress = t("正在本机加载千问并生成回答…", "Loading Qwen and answering on device…")
         work = Task {
             defer { busy = false; work = nil; progress = "" }
             do {
                 try Task.checkCancellation()
-                guard hasAIConsent else { return }
-                let key = try credentials.read(request.settings)
-                let output: String
-                if request.task == .document {
-                    output = try await ai.summarize(settings: request.settings, key: key, source: request.source, review: false) { [weak self] done, total in
-                        await self?.setProgress(done, total)
-                    }
-                } else { output = try await ai.complete(settings: request.settings, key: key, task: request.task, source: request.source) }
+                let output = try await LocalQwen.shared.complete(settings: request.settings,
+                    source: Self.localSource(request), followup: request.task == .followup) { [weak self] partial in
+                    await self?.showLocalPartial(partial)
+                }
                 try Task.checkCancellation()
                 var record = ReadingRecord()
                 record.file = request.book.filename; record.title = request.book.title
                 record.selected = request.previous?.selected ?? request.selection
                 record.context = request.previous?.context ?? request.context
                 record.answer = output; record.kind = request.task == .document ? "file" : "explain"
-                record.provider = request.settings.provider.rawValue; record.model = request.settings.model
+                record.provider = "Qwen · 本机"; record.model = "Qwen3-0.6B-Q4_K_M"
                 record.language = request.settings.english ? "en" : "zh"; record.page = request.page
                 if request.task == .followup {
                     let prompt = "Q: " + TextLimits.prefix(request.question, 1000) + "\n\n"
@@ -241,11 +168,19 @@ struct PendingAI: Identifiable {
                 guard record.valid else { throw MobileDocument.invalid }
                 try library?.update { $0.records.insert(record, at: 0) }
                 answer = output; activeRecord = record; question = ""; refresh()
-            } catch is CancellationError { }
-            catch { report(error) }
+            } catch is CancellationError { answer = previousAnswer }
+            catch { answer = previousAnswer; report(error) }
         }
     }
-    private func setProgress(_ done: Int, _ total: Int) { progress = "\(done) / \(total)" }
+    static func localSource(_ request: LocalAIRequest) -> String {
+        let selection = TextLimits.prefix(request.previous?.selected ?? request.selection, 500)
+        let context = TextLimits.prefix(request.previous?.context ?? request.context, 600)
+        if request.task == .followup {
+            return "当前追问：\(TextLimits.prefix(request.question, 300))\n选文：\(selection)\n语境：\(context)\n上次回答（可能有误）：\(TextLimits.prefix(request.previous?.answer ?? "", 250))"
+        }
+        return "选文：\(selection)\n语境：\(context)"
+    }
+    private func showLocalPartial(_ text: String) { answer = text }
     func cancel() { work?.cancel() }
     func highlight() {
         guard !selected.isEmpty else { return }

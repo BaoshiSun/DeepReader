@@ -31,21 +31,21 @@ python native/package-native.py
 
 公开下载应使用 GitHub Release 附件，避免将约 84 MB 的二进制及上游源码归档放入 Git 仓库。软件版本号位于 `tools/public_release.py`；发布新版本时同时更新使用说明与本文档。
 
-## macOS 测试版
+## macOS 离线千问版
 
-正式签名和公证准备见 [macOS 发行工具](../macos/DISTRIBUTION.md)；商店渠道的独立准备材料见 [App Store 准备包](app-store/README.md)。
+GitHub 1.3.2 使用 `macos/build_offline.sh`，最低 macOS 13.3，内置 Qwen3 0.6B；不使用旧的联网 `build.sh` 生成公开附件。Mac 版本号位于 `macos/Info.plist`，Windows 版本号独立保留。
 
-macOS 的版本号位于 `macos/Info.plist`；Windows 版本号独立保留。macOS 1.2.1 使用标签 `v1.2.1-macos`，发布为 Pre-release。
+先运行源码检查、分发脚本测试及 macOS 单元测试，提交全部源码，再执行 `bash macos/build_offline.sh artifacts/macos-offline`（新输出目录）。脚本生成通用 `.app` 与开发 ZIP，并测试文档阅读和真实本地问答。通过 `macos/distribute.sh` 使用 Developer ID 签名，再提交 Apple 公证。只有 Accepted、票据和 Gatekeeper 验证均通过，才能发布正式附件。
 
-在 Mac 上先运行 `python3 macos/Tests/make_format_fixtures.py --upstream`，再进入 `macos/` 执行 `swift test`。确认公开源码检查通过并提交源码后，在仓库根目录运行 `bash macos/build.sh`。构建会生成 Apple Silicon / Intel 通用应用并执行离线启动测试。
+上传签名分发目录的 DMG、universal ZIP、macos-source ZIP、`SHA256SUMS.txt` 和 `SOURCE-COMMIT.txt` 到 `v1.3.2-macos`。标签、应用内提交号和源码清单必须一致。说明最低系统版本、实际测试平台、离线模型限制和验证过的签名/公证状态。不要上传整个输出目录、测试资料或私有签名凭据。
 
-将 `macos/dist/` 中的 DMG、universal ZIP、macos-source ZIP 和 `SHA256SUMS.txt` 上传到指向同一源码提交的 GitHub Release。检查应用内 `SOURCE-COMMIT.txt` 和 `Source.zip` 与标签一致。发布说明须标明最低 macOS 版本、实际测试平台，以及尚未进行 Developer ID 签名和 Apple 公证。不要将个人阅读数据或本地测试样本上传为发行附件。
+[发行工具](../macos/DISTRIBUTION.md)仍可用于其他版本。GitHub 发布与[商店提交](app-store/README.md)独立。
 
 ## 发布前复核
 
 - 源码检查和相关原生测试通过，ZIP 通过完整性与密钥扫描。
 - 公开压缩包中没有 `AIReader.json`、`DeepSeek.json`、`config.json`、`AIHistory/`、`BookLibrary/`、归档 PDF 或真实打开文件的设置。
-- 说明默认 DeepSeek 官方 API 需要自己的 Key 并按量计费；可选 OpenRouter 免费路由也需要独立账号和 Key。没有预置共享 Key，也没有免注册服务。
+- 明确所发布构建的 AI 方式：macOS 1.3.2 内置离线 Qwen，无 Key 或额度；Windows 及旧在线构建仍需用户自己的服务商 Key。
 - 附带 AGPL 文本、上游作者、第三方许可、构建步骤和对应源码。
 - 保留 GPL 与 BSD 文本、图标作者署名、MODIFICATIONS.txt 与许可核对报告；“关于 DeepReader”须能显示修改日期及源码位置。
 - 单独的 source.zip 是增量开发包。二进制发行使用包含完整对应源码的 win64 ZIP，不用上游最新版链接替代该版本源码。

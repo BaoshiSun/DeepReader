@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Prepare reproducible resources for the Xcode app target; does not sign or upload."""
 import plistlib
+import json
+import os
 import shutil
 import subprocess
 import sys
@@ -10,9 +12,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
 import public_release
+from prepare_offline_package import prepare
 
 
 def main():
+    model = prepare()
     output = ROOT / 'macos/.build/app-store-resources'
     output.mkdir(parents=True, exist_ok=True)
     subprocess.run([sys.executable, str(ROOT / 'tools/public_release.py'), '--source-zip'], check=True)
@@ -27,6 +31,18 @@ def main():
     with (ROOT / 'macos/Info.plist').open('rb') as f:
         info = plistlib.load(f)
     info['DeepReaderAppStoreBuild'] = True
+    info['DeepReaderLocalAI'] = True
+    listing = json.loads((ROOT / 'docs/app-store/listing.json').read_text())
+    info['CFBundleShortVersionString'] = listing['version']
+    info['CFBundleVersion'] = listing['build']
+    info['LSMinimumSystemVersion'] = '13.3'
+    info['ITSAppUsesNonExemptEncryption'] = False
+    for key in ['DeepReaderGatewayURL', 'DeepReaderSandboxGatewayURL']:
+        info.pop(key, None)
+    shutil.copy2(model, output / model.name)
+    shutil.copy2(ROOT / 'ios/Resources/Local/Reading-Garden.txt', output / 'Reading-Garden.txt')
+    for name in ['Qwen-LICENSE.txt', 'llama-LICENSE.txt']:
+        shutil.copy2(ROOT / 'ios/Resources' / name, output / name)
     info['CFBundleGetInfoString'] = 'DeepReader for macOS — AGPL-3.0-or-later'
     info['LSApplicationCategoryType'] = 'public.app-category.books'
     info['CFBundleSupportedPlatforms'] = ['MacOSX']

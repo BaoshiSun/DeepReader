@@ -32,7 +32,8 @@ public final class KeychainCredentials: Credentials {
          kSecAttrAccount as String: account]
     }
     private func account(_ settings: Settings) throws -> String {
-        let endpoint = try settings.requestEndpoint().absoluteString
+        // Storage access must still permit removing credentials from older editions.
+        let endpoint = try settings.requestEndpoint(appStore: false).absoluteString
         if endpoint == settings.provider.endpoint.absoluteString && settings.provider != .custom { return settings.provider.rawValue }
         let hash = SHA256.hash(data: Data(endpoint.utf8)).map { String(format: "%02x", $0) }.joined()
         return settings.provider.rawValue + ":" + hash

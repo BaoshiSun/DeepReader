@@ -118,7 +118,10 @@ struct Sidebar: View {
             }
             Picker("", selection: $m.tab) {
                 Text(m.t("解释", "Ask")).tag(0); Text(m.t("历史", "Log")).tag(1)
-                Text(m.t("总结", "Summary")).tag(2); Text(m.t("书单", "Books")).tag(3); Text(m.t("设置", "Setup")).tag(4)
+#if !OFFLINE_QWEN
+                Text(m.t("总结", "Summary")).tag(2)
+#endif
+                Text(m.t("书单", "Books")).tag(3); Text(m.t("设置", "Setup")).tag(4)
             }.pickerStyle(.segmented).labelsHidden()
             if m.tab == 0 || m.tab == 2 || m.tab == 4 {
                 VStack(alignment: .leading, spacing: 3) {
@@ -131,9 +134,19 @@ struct Sidebar: View {
             }
             Group {
                 switch m.tab {
-                case 0: lookup
+                case 0: VStack {
+#if !OFFLINE_QWEN
+                    if OrdinaryQuestions.enabled { Button(m.t("问答次数与购买", "Question balance and purchase")) { m.tab = 4 } }
+#endif
+                    lookup
+                }
                 case 1: history
-                case 2: summary
+                case 2:
+#if OFFLINE_QWEN
+                    Text(m.t("本机小模型仅提供选文解释和追问。", "The local small model provides passage explanations and follow-ups."))
+#else
+                    if OrdinaryQuestions.enabled { Text(m.t("普通问答套餐不包含全文或阅读总结。请在正文中选择要解释的段落。", "The ordinary question pack excludes document and reading summaries. Select a passage in the document to explain it.")) } else { summary }
+#endif
                 case 3: library
                 default: settings
                 }
@@ -147,6 +160,9 @@ struct Sidebar: View {
     }
     private var lookup: some View {
         VStack(spacing: 8) {
+#if OFFLINE_QWEN
+            Text(m.t("本机 Qwen · 完全免费 · 答案可能不准确，请核对原文。", "On-device Qwen · Free · Answers may be inaccurate; check the source.")).font(.caption).foregroundStyle(.secondary)
+#endif
             LookupSplit(model: m).frame(minHeight: 150)
             HStack {
                 Button(m.t("解释选中内容", "Explain selection")) { m.explain() }.disabled(m.busy)
@@ -219,7 +235,23 @@ struct Sidebar: View {
     private var settings: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+#if OFFLINE_QWEN
+                Text(m.t("本机 AI · 完全免费", "On-device AI · Free")).font(.headline)
+                Text("Qwen3 0.6B · Q4_K_M")
+                Button(m.t("打开示例文章", "Read a sample")) { m.openSample() }
+                Text(m.t("模型随应用安装，所有问答在 Mac 上运行。无需账户或 API Key，无广告、订阅或次数限制。阅读内容不会为 AI 推理上传。", "The model is bundled and all answers run on your Mac. No account, API key, ads, subscriptions or question quota. Reading content is not uploaded for AI inference."))
+                Text(m.t("答案可能不准确、不完整或产生虚构信息，请核对原文。小模型适合简单词句释义，复杂推理、专业知识和计算可能不可靠。", "Answers may be inaccurate, incomplete or fabricated. Check the original text. The small model suits simple explanations; complex reasoning, specialist knowledge and calculations may be unreliable.")).foregroundStyle(.secondary)
+                Text(m.t("短段落问答：选文最多前 500 字、语境前 600 字，追问前 300 字和历史末尾 250 字。输入及回答有长度上限，不提供全文或周期总结。应用约 500 MB；首次运行需初始化，生成会增加耗电和发热。", "Short-passage Q&A uses the first 500 characters of a selection, 600 of context, 300 of a question and the last 250 of history. Input/output length limits apply. No document or period summaries. Allow about 500 MB; model initialization takes time and generation increases power use and warmth.")).font(.caption)
+                HStack {
+                    Button("Qwen License") { openLicense("Qwen-LICENSE") }
+                    Button("llama.cpp License") { openLicense("llama-LICENSE") }
+                }
+#else
                 Text(m.t("AI 服务", "AI provider")).font(.headline)
+                if OrdinaryQuestions.enabled {
+                    QuestionCreditsView(english: m.settings.english)
+                    if m.hasAISharingConsent { Button(m.t("撤销 AI 发送授权", "Revoke AI sharing permission")) { m.revokeAISharingConsent() } }
+                } else {
                 Picker(m.t("服务商", "Provider"), selection: Binding(get: { m.settings.provider }, set: { m.chooseProvider($0) })) {
                     ForEach(Provider.available()) { provider in Text(provider.rawValue).tag(provider) }
                 }
@@ -229,7 +261,10 @@ struct Sidebar: View {
                 }
                 TextField(m.t("模型 ID", "Model ID"), text: $m.modelDraft)
                 TextField(m.t("完整 HTTPS 接口地址", "Full HTTPS endpoint"), text: $m.endpointDraft)
-                Text(m.t("不同地区的 Key 和地址需匹配；新地址需单独保存 Key。豆包填写模型或推理接入点 ID。", "Match the key and endpoint region; new endpoints need a separately saved key. Doubao accepts a model or deployment ID.")).font(.caption)
+                    .disabled(Provider.isAppStoreBuild)
+                Text(Provider.isAppStoreBuild
+                     ? m.t("商店版使用预设直连接口，请使用与该地址匹配的 Key。", "The store edition uses preset direct endpoints. Use a key for the displayed endpoint.")
+                     : m.t("不同地区的 Key 和地址需匹配；新地址需单独保存 Key。豆包填写模型或推理接入点 ID。", "Match the key and endpoint region; new endpoints need a separately saved key. Doubao accepts a model or deployment ID.")).font(.caption)
                 if m.settings.provider.requiresAdultConfirmation {
                     Toggle(m.t("我已满 18 岁", "I am 18 or older"), isOn: Binding(get: { m.settings.adultConfirmed == true }, set: { m.settings.adultConfirmed = $0 }))
                     Link(m.t("服务商条款", "Provider terms"), destination: m.settings.provider.termsURL!)
@@ -245,6 +280,8 @@ struct Sidebar: View {
                     Button(m.t("撤销 AI 发送授权", "Revoke AI sharing permission")) { m.revokeAISharingConsent() }
                 }
                 Text(m.t("AI 使用您自己的账户和额度，密钥按服务商和接口地址保存在钥匙串。支持文字对话模型；可填写新模型 ID。本地阅读不需要密钥。", "AI uses your own account and quota. Keys are isolated by provider and endpoint in Keychain. Text chat models are supported; new model IDs can be entered. Local reading needs no key.")).font(.caption).foregroundStyle(.secondary)
+                }
+#endif
                 Divider()
                 Text(m.t("归档文件夹", "Archive folder")).font(.headline)
                 Text(m.settings.archiveFolder.isEmpty ? m.t("尚未选择", "Not selected") : m.settings.archiveFolder).font(.caption).textSelection(.enabled)
@@ -253,11 +290,23 @@ struct Sidebar: View {
                 Divider()
                 Text(m.t("使用方法", "Getting started")).font(.headline)
                 Text(m.t("• 打开文档或电子书，拖动选词，按 ⌘⇧D。\n• 解释下方可追问，⌘↩ 发送。\n• 拖动侧栏边缘及选文／解释分隔线调整大小。\n• 右上角窗口按钮切换悬浮和停靠。\n• PDF 高亮后按 ⌘S 保存；电子书高亮自动保存在本机。", "• Open a document or ebook, select text, press ⌘⇧D.\n• Ask follow-ups below; ⌘↩ sends.\n• Drag sidebar and selection/answer dividers to resize.\n• Use the window button to float or dock the panel.\n• Save PDF highlights with ⌘S; ebook highlights are saved locally.")).font(.callout)
+#if !OFFLINE_QWEN
                 Text(m.t("解释发送选文与附近上下文；全文总结发送提取的全文；周期总结发送该范围的历史记录。只在您点击 AI 操作时发送。", "Lookups send selected text and nearby context. Document summaries send extracted full text; period summaries send that period's records. Data is sent only when you request an AI action.")).font(.caption).foregroundStyle(.secondary)
+#endif
                 Link(m.t("源代码与许可证", "Source and license"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader")!)
+#if OFFLINE_QWEN
                 Link(m.t("隐私政策", "Privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy.md")!)
+#else
+                Link(m.t("隐私政策", "Privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy-legacy.md")!)
+#endif
                 Text("DeepReader for macOS · \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development") · AGPL-3.0-or-later").font(.caption2).foregroundStyle(.secondary)
             }.padding(3).textFieldStyle(.roundedBorder).disabled(m.busy)
         }
     }
+#if OFFLINE_QWEN
+    private func openLicense(_ name: String) {
+        if let url = Bundle.main.url(forResource: name, withExtension: "txt") { NSWorkspace.shared.open(url) }
+    }
+#endif
+
 }

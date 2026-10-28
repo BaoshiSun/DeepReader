@@ -23,6 +23,7 @@ public enum TextLimits {
     }
 }
 
+#if !os(iOS) && !OFFLINE_QWEN
 private final class NoRedirect: NSObject, URLSessionTaskDelegate {
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
                     newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
@@ -32,7 +33,9 @@ private final class NoRedirect: NSObject, URLSessionTaskDelegate {
 
 public final class AIClient: @unchecked Sendable {
     private let session: URLSession
-    public init(configuration: URLSessionConfiguration = .ephemeral) {
+    private let hosted: Bool
+    public init(configuration: URLSessionConfiguration = .ephemeral, hosted: Bool = OrdinaryQuestions.enabled) {
+        self.hosted = hosted
         configuration.timeoutIntervalForRequest = 90
         configuration.timeoutIntervalForResource = 180
         configuration.urlCache = nil
@@ -43,7 +46,10 @@ public final class AIClient: @unchecked Sendable {
 
     public static func request(settings: Settings, key: String, task: AITask, source: String,
                                appStore: Bool = Provider.isAppStoreBuild) throws -> URLRequest {
+        guard !appStore else { throw ReaderError("商店版通过内购问答服务发送，不使用个人 API Key。", "Store editions use the purchased question service, not personal API keys.") }
         _ = try settings.validated()
+        // Enforce edition policy at the network boundary, including restored settings.
+        let endpoint = try settings.requestEndpoint(appStore: appStore)
         guard Settings.validModel(settings.model) else { throw ReaderError("请填写服务商提供的模型 ID。", "Enter the model ID supplied by your provider.") }
         guard !settings.provider.requiresAdultConfirmation || settings.adultConfirmed == true else {
             throw ReaderError("使用此服务前，请在设置中确认年满 18 岁并阅读服务条款。", "Before using this provider, confirm you are 18 or older and review its terms in Settings.")
@@ -92,7 +98,7 @@ public final class AIClient: @unchecked Sendable {
             payload["max_tokens"] = 4096
         default: payload["max_tokens"] = 4096
         }
-        var request = URLRequest(url: try settings.requestEndpoint())
+        var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         if settings.provider == .claude {
             request.setValue(key, forHTTPHeaderField: "x-api-key")
@@ -137,7 +143,8 @@ public final class AIClient: @unchecked Sendable {
     }
     public func complete(settings: Settings, key: String, task: AITask, source: String) async throws -> String {
         try Task.checkCancellation()
-        let request = try Self.request(settings: settings, key: key, task: task, source: source)
+        if hosted { return try await QuestionCredits.shared.complete(settings: settings, task: task, source: source) }
+        let request = try Self.request(settings: settings, key: key, task: task, source: source, appStore: false)
         do {
             let (bytes, response) = try await session.bytes(for: request)
             guard let response = response as? HTTPURLResponse else { throw URLError(.badServerResponse) }
@@ -193,3 +200,5 @@ public final class AIClient: @unchecked Sendable {
         return parts.first ?? ""
     }
 }
+
+#endif // iOS uses only bundled LocalQwen, never a remote AI client.

@@ -182,7 +182,7 @@ struct ReaderScreen: View {
                 } label: { Image(systemName: "ellipsis.circle") }
             }
         }
-        .onChange(of: model.position) { model.savePosition(); model.selected = ""; model.context = ""; model.pending = nil }
+        .onChange(of: model.position) { model.savePosition(); model.selected = ""; model.context = "" }
         .onDisappear { model.savePosition(); model.dismissAssistant() }
     }
     private func resizeHandle(_ layout: ReaderSplitLayout) -> some View {
@@ -263,7 +263,7 @@ struct FloatingAssistant: View {
     var body: some View {
         GeometryReader { geometry in
             let width = min(collapsed ? 260 : 380, max(0, geometry.size.width - 24))
-            let preferredHeight: CGFloat = model.pending != nil ? 520 : (model.answer.isEmpty && !model.busy ? 270 : 400)
+            let preferredHeight: CGFloat = model.answer.isEmpty && !model.busy ? 270 : 400
             let height = collapsed ? 52 : min(preferredHeight, max(100, geometry.size.height - 24))
             let initial = CGSize(width: 0, height: max(0, geometry.size.height - height - 24))
             let base = bounded(offset ?? initial, in: geometry.size, panel: CGSize(width: width, height: height))
@@ -300,7 +300,6 @@ struct FloatingAssistant: View {
             .shadow(color: .black.opacity(0.16), radius: 16, y: 6)
             .offset(x: geometry.size.width - width - 12 + position.width, y: 12 + position.height)
             .onChange(of: model.selected) { collapsed = false }
-            .onChange(of: model.pending?.id) { if model.pending != nil { collapsed = false } }
         }
     }
     private func bounded(_ value: CGSize, in size: CGSize, panel: CGSize) -> CGSize {

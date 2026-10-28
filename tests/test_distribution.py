@@ -113,6 +113,18 @@ class DistributionTests(unittest.TestCase):
         self.assertFalse(self.out.exists())
         self.assertFalse(any(c[0] == 'codesign' for c in self.calls()))
 
+    def test_nested_inference_framework_is_signed_before_app(self):
+        framework = self.app / 'Contents/Frameworks/llama.framework'
+        framework.mkdir(parents=True)
+        (framework / 'llama').write_text('offline framework fixture')
+        result = self.invoke()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        signed = [c for c in self.calls() if c[0] == 'codesign' and '--sign' in c]
+        self.assertTrue(signed[0][-1].endswith('/Contents/Frameworks/llama.framework'))
+        self.assertTrue(signed[1][-1].endswith('/DeepReader.app'))
+        self.assertIn('--timestamp', signed[0])
+        self.assertIn('runtime', signed[0])
+
     def test_existing_output_is_preserved(self):
         self.out.mkdir()
         marker = self.out / 'keep.txt'

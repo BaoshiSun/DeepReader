@@ -1,42 +1,37 @@
 {
-  "status": "macOS 1.3.1 (8) — prepared for App Review",
+  "status": "Mac App Store 1.3.1 (9) resubmitted 2026-10-23 at 02:01 Asia/Riyadh; Waiting for Review. Unchanged free offline build without ads; automatic release after approval.",
   "platform": "macOS",
   "bundle_id_candidate": "org.deepreader.macos",
   "primary_category_candidate": "Books",
   "secondary_category_candidate": "Education",
   "pricing": "free",
   "support_email": "baoshi.sun@icloud.com",
-  "territories": [
-    "CHN",
-    "HKG",
-    "MAC",
-    "TWN",
-    "SAU",
-    "ARE",
-    "QAT",
-    "KWT",
-    "BHR",
-    "OMN"
-  ],
   "age_rating": null,
   "seller_legal_name": "Baoshi Sun",
-  "privacy_policy_url": "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy.md",
-  "support_url_candidate": "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/support.md",
+  "privacy_policy_url": "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-library-admob/docs/app-store/privacy-policy.md",
+  "support_url_candidate": "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-offline-qwen-store/docs/app-store/support.md",
   "localizations": {
     "zh-Hans": {
       "name": "DeepReader: Read with AI",
       "subtitle": "结合上下文理解文档与电子书",
-      "promotional_text": "选中词句，结合上下文获得简短解释，继续追问并保存阅读记录。支持 PDF、EPUB 等格式、评分和书单。AI 功能需要您自己的服务商 API Key，费用与额度由服务商决定。",
-      "keywords": "阅读,电子书,文献,语境,笔记,高亮,书单,总结,PDF,EPUB",
-      "description": "DeepReader 是一款原生 Mac 文档与电子书阅读器，将阅读、语境解释和阅读记录放在同一窗口中。\n\n理解词句的实际含义\n选中单词、短语或句子，按 ⌘⇧D，结合附近上下文获取简短解释。还可继续追问，保存成功的查询和回答，方便以后复习。\n\n选择回答依据\n可选择“仅书中内容”或“结合通用知识（不联网）”。后者可补充模型已有的背景知识，并区分原文与补充解释；不会执行网页搜索。\n\n阅读多种格式\n支持 PDF、EPUB、TXT、Markdown，以及未加 DRM 的 MOBI 和 AZW3。电子书可切换章节并保存本地高亮；PDF 支持高亮批注及保存。\n\n按自己的节奏整理\n调整 AI 侧栏宽度，或切换为悬浮窗口。为书籍评分、标记阅读状态、按星级归档原格式副本，并在书单中搜索和重新打开。\n\n回顾阅读内容\n手动生成文件全文总结，或根据已保存的记录生成日、周、月总结。发送前先查看本地统计和预计请求数。\n\n使用前请了解\n• 本地阅读、评分、归档和书单不需要 AI Key。\n• AI 功能需要您自己的服务商 API Key；密钥保存在 macOS 钥匙串。服务商可能收费，并设置额度和地区限制；应用不附送共享 Key 或无限免费 AI。\n• AI 操作会向所选服务商发送相关文字。全文总结发送可提取全文；周期总结发送选定的保存记录。\n• 支持 DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter 及自定义兼容接口的文字对话模型；具体模型和服务可用性取决于您的账户及地区。\n• 发送前可选择仅本次同意，或记住当前服务商和接口地址的授权。记住后，后续主动发起的 AI 操作不再逐次询问；可在设置中撤销，换接收方需重新授权。\n• AI 回答可能出错，请结合原文核对。\n• 不支持 DRM 保护电子书、Kindle KFX 或扫描文件 OCR。电子书搜索作用于当前章节。\n• 支持中文和英文界面。\n\nDeepReader 是独立项目，不是 SumatraPDF 或模型服务商的官方产品。"
+      "promotional_text": "内置千问，免费离线解释选文和追问，无广告、API Key 或购买次数。支持可调侧栏与悬浮助手。AI 答案可能不准确，请核对原文。",
+      "keywords": "阅读,电子书,离线,千问,文献,笔记,高亮,书单,PDF,EPUB",
+      "description": "DeepReader 是原生 Mac 文档与电子书阅读器，把免费离线 AI 助手放在正文旁边。\n\n内置千问，全部免费\nQwen3 0.6B 量化小模型随应用安装，解释和追问完全在 Mac 本机运行。无需账户、API Key、服务器或额外模型下载；无广告、订阅、内购或问答次数限制。阅读内容不会为 AI 推理上传。\n\n边读边理解\n打开文件，选中文字后按 ⌘⇧D，获得结合附近语境的简短解释。继续追问，成功回答自动保存在本机历史。拖动侧栏边缘调整正文与答案空间，或切换为悬浮窗口，保持阅读位置。\n\n选择回答依据\n可选择仅依据书中文字，或结合模型已有的通用知识；两者都不联网搜索。仅书中内容也不能保证答案完全准确。\n\n自己的阅读书库\n支持 PDF、EPUB、TXT、Markdown 和未加 DRM 的 MOBI/AZW3。搜索正文、保存高亮、评分、标记读完、整理书单，并按星级归档原格式副本。PDF 可保存批注或副本；电子书高亮保存在本机。\n\n答案可能不准确\nAI 可能给出错误、不完整或虚构的信息，仅供辅助阅读。请核对原文，不要仅凭 AI 回答作出重要决定。小模型适合简单词句释义，复杂推理、计算和专业知识可能不可靠。\n\n使用限制\n• 短段落问答最多取选文前 500 字、附近语境前 600 字；追问前 300 字及历史末尾 250 字。输入和回答有长度上限；这不是付费次数限制。\n• 本版不提供全文或日、周、月总结。\n• 需要 macOS 13.3 或更高版本，支持 Apple 芯片和 Intel Mac。约需 500 MB 存储空间，首次运行需初始化，生成会增加耗电和发热，速度取决于设备。\n• 不支持 DRM、Kindle KFX、扫描文件 OCR 或跨设备同步。电子书搜索作用于当前章节。\n• 提供中文和英文界面。\n\nDeepReader 是独立阅读器，不是模型开发者的官方产品。"
     },
     "en-US": {
       "name": "DeepReader: Read with AI",
       "subtitle": "Read with context",
-      "promotional_text": "Read PDFs and ebooks, explain selected passages in context, and save your learning. AI features use your own provider API key; provider fees and quotas apply.",
-      "keywords": "pdf,epub,reader,ebooks,context,notes,highlights,reading,summary,books",
-      "description": "DeepReader is a native Mac reader that brings documents, contextual explanations and saved reading records into one window.\n\nUnderstand text in context\nSelect a word, phrase or sentence and press Command-Shift-D for a concise explanation based on nearby text. Ask follow-up questions and revisit successful conversations in History.\n\nChoose the answer scope\nChoose Book only or General knowledge (no browsing). General knowledge can add background already learned by the model and distinguishes it from the source; it does not search the web.\n\nRead across formats\nOpen PDF, EPUB, TXT, Markdown, and DRM-free MOBI and AZW3 files. Navigate ebook chapters and save local highlights. Add and save PDF highlight annotations.\n\nOrganize your reading\nResize or float the AI sidebar. Rate books, mark Reading or Finished, archive original-format copies into rating folders, and search your book list.\n\nReview what you have read\nManually generate document summaries or daily, weekly and monthly reviews from saved records. Preview local statistics and estimated request counts before generating a summary.\n\nBefore you begin\n• Reading, ratings, archiving and book lists work without an AI key.\n• AI features require your own provider API key, stored in macOS Keychain. Provider charges, quotas and regional availability apply. No shared key or unlimited free AI is included.\n• AI actions send the relevant text to your chosen provider. Document summaries send extractable full text; period summaries send selected saved records.\n• Supports text chat models through DeepSeek, OpenAI, Claude, Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, Grok, Mistral, OpenRouter and custom compatible endpoints. Model and service availability depend on your account and region.\n• Allow one operation or remember permission for the current provider and endpoint. Remembered permission covers later AI actions you explicitly request, can be revoked in Setup, and does not apply to a new recipient.\n• AI answers can be inaccurate. Check them against the source.\n• DRM-protected books, Kindle KFX and OCR for scanned documents are not supported. Ebook search works within the current chapter.\n• Chinese and English interface options are included.\n\nDeepReader is an independent project, not an official product of SumatraPDF or the model providers."
+      "promotional_text": "Free offline Qwen explanations and follow-ups, with a resizable or floating assistant. No ads, API keys or purchases. AI answers may be inaccurate; check the source.",
+      "keywords": "pdf,epub,reader,offline,qwen,ebooks,context,notes,highlights,reading,books",
+      "description": "DeepReader is a native Mac document and ebook reader with a free offline AI assistant beside your text.\n\nBundled Qwen, entirely free\nA quantized Qwen3 0.6B model is installed with the app. Explanations and follow-ups run on your Mac, without an account, API key, server or separate model download. No ads, subscriptions, in-app purchases or question quota. Reading content is not uploaded for AI inference.\n\nUnderstand as you read\nOpen a file, select text and press Command-Shift-D for a short contextual explanation. Ask follow-ups and revisit successful answers in local History. Resize the sidebar or switch to a floating window while preserving your reading position.\n\nChoose the answer scope\nUse only the supplied book text, or allow the model's learned general knowledge. Neither mode searches the web. Book-only mode does not guarantee accurate answers.\n\nYour own library\nRead PDF, EPUB, TXT, Markdown and DRM-free MOBI/AZW3. Search, highlight, rate books, mark them finished and archive original-format copies into rating folders. Save PDF annotations or copies; ebook highlights remain local.\n\nAnswers may be inaccurate\nAI may produce incorrect, incomplete or fabricated information. Use it as a reading aid, check the source, and do not rely solely on AI for important decisions. The small model suits simple explanations; complex reasoning, calculations and specialist knowledge may be unreliable.\n\nLimitations\n• Short-passage Q&A uses up to the first 500 characters of a selection, 600 of nearby context, 300 of a question and the last 250 of history. Input/output length limits protect responsiveness; they are not paid quotas.\n• Full-document and daily, weekly or monthly summaries are not included.\n• Requires macOS 13.3 or later on Apple silicon or Intel. Allow about 500 MB of storage. Initial model setup takes time; generation increases power use and warmth. Speed depends on the device.\n• DRM, Kindle KFX, scanned-document OCR and cross-device sync are unsupported. Ebook search covers the current chapter.\n• Chinese and English interfaces are included.\n\nDeepReader is an independent reader, not an official product of the model developer."
     }
   },
-  "app_store_connect_id": "6821368213"
+  "app_store_connect_id": "6821368213",
+  "version": "1.3.1",
+  "build": "9",
+  "support_url": "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-offline-qwen-store/docs/app-store/support.md",
+  "territory_count": 175,
+  "availability": "Keep the existing 175 selected storefronts",
+  "build_id": "a1b90523-77f2-481a-97e3-5dad22aa9b38",
+  "review_submission_id": "a27a00be-9cc0-4190-95a8-46a09cf4c64d"
 }

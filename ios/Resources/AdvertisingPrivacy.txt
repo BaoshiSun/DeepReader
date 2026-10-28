@@ -1,0 +1,5 @@
+Google Mobile Ads SDK and Google User Messaging Platform are distributed by Google under their respective terms, not the DeepReader source license.
+Google Mobile Ads: https://developers.google.com/admob/ios
+SDK terms: https://developers.google.com/admob/terms
+Privacy: https://policies.google.com/privacy
+Library advertisements are separate from local document processing and Qwen inference. The application sends no reading content in advertising requests.

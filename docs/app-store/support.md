@@ -6,7 +6,13 @@ DeepReader 是适用于 macOS 的文档与电子书阅读器。应用支持中�
 
 使用问题、故障反馈和功能建议均可发送到此邮箱。请注明 macOS 版本、DeepReader 版本、文件格式和复现步骤。无需提供 API Key 或私人文档；如需附带样本，请使用不含个人信息的内容。
 
-## 常见问题
+## Mac App Store 免费离线版（1.3.1 构建 9）
+
+模型随应用安装，无需 API Key。打开文档，选择短句后按 ⌘⇧D，在侧栏或悬浮窗口查看解释、继续追问。全部免费，无广告、订阅或次数限制；答案可能不准确，请核对原文。不提供全文或周期总结。支持 Apple 芯片和 Intel Mac，最低 macOS 13.3，应用约需 500 MB。
+
+The free offline Mac App Store edition bundles Qwen. Open a document, select a short sentence and press Command-Shift-D. Read the explanation and ask follow-ups in the resizable or floating sidebar. No API key, ads, subscription or question quota. Answers may be inaccurate: check the source. Document/period summaries are unavailable. Requires macOS 13.3 or later on Apple silicon or Intel and about 500 MB of storage.
+
+## GitHub 下载版与旧版常见问题 / Direct-download and older editions
 
 - **AI 功能如何使用？** 在设置中选择服务商和模型，保存自己的 API Key。解释、追问和总结会调用所选服务商，费用、额度和地区可用性由服务商决定。应用免费不代表第三方 API 免费。
 - **不配置 AI 能否阅读？** 可以。本地阅读、搜索、评分、书单和归档不需要 AI Key。

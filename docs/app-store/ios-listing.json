@@ -1,34 +1,26 @@
 {
   "platform": "iOS",
   "version": "1.1.0",
-  "build": "2",
+  "build": "5",
   "bundle_id": "org.deepreader.macos",
   "app_store_connect_id": "6821368213",
   "pricing": "free",
-  "territories": [
-    "CHN",
-    "HKG",
-    "MAC",
-    "TWN",
-    "SAU",
-    "ARE",
-    "QAT",
-    "KWT",
-    "BHR",
-    "OMN"
-  ],
-  "support_url": "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/ios-support.md",
-  "privacy_policy_url": "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy.md",
+  "territories": "All 175 currently selected App Store storefronts (owner confirmed 2026-10-19)",
+  "support_url": "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-library-admob/docs/app-store/ios-support.md",
+  "privacy_policy_url": "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-library-admob/docs/app-store/privacy-policy.md",
   "localizations": {
     "zh-Hans": {
-      "description": "DeepReader 是原生 iPhone 和 iPad 文档阅读器，让上下文解释留在阅读页面。\n\n边读边理解\n长按选择词句，在半透明阅读助手中获得解释、继续追问。浮窗可拖动、收起或关闭，正文保持在原处。成功的回答保存在本机历史，方便回顾和分享。\n\n调整阅读空间\n宽屏可使用右侧 AI 栏，拖动分隔线调整正文和答案各自的空间，也可切换悬浮模式。窄屏自动使用浮窗；布局偏好保存在本机。\n\n选择回答依据\n可选择“仅书中内容”或“结合通用知识（不联网）”。后者可补充模型已有的背景知识，并区分原文与补充解释；不会执行网页搜索。\n\n自己的阅读书库\n从“文件”导入 PDF、EPUB、TXT 和 Markdown。支持搜索、高亮、阅读位置、评分和读完状态。PDF 可导出带高亮的副本；导入不会修改原文件。\n\n按需总结\n主动选择全文总结，提取文档文字并生成摘要。长文会分段处理。\n\n使用前请了解\n• 应用免费下载，本地阅读无需 API Key。\n• AI 需要您自己的服务商 API Key，服务商可能收费，并设置额度及地区限制。应用不附送共享 Key 或无限免费 AI。\n• 首次向接收方发送前说明数据范围并征求授权；授权绑定服务商及完整接口地址，记住后仅在点击 AI 操作时发送，可在设置中撤销。更换接收方需重新授权。\n• 支持 DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter 及自定义兼容接口的文字对话模型；具体模型和服务可用性取决于您的账户及地区。\n• 解释发送选文与语境，追问包含先前回答与问题，全文总结发送可提取全文。数据直接发送给所选服务商和接口地址。\n• EPUB 暂以纯文本章节显示，不显示原书版式和图片；Markdown 显示源文本。电子书搜索限当前章节。\n• 不支持 DRM、MOBI/AZW3、Kindle KFX、扫描文件 OCR 或跨设备同步。\n• AI 回答可能出错，请结合原文核对。\n• 支持中文和英文界面。\n\nDeepReader 是独立项目，不是 SumatraPDF 或模型服务商 的官方产品。",
-      "promotional_text": "阅读 PDF 和电子书，在悬浮框或可调侧栏中解释选文、继续追问。可选择仅书中内容或结合通用知识（不联网）。AI 使用自己的服务商 API Key，费用与额度另计。",
-      "keywords": "阅读,电子书,文献,语境,笔记,高亮,书单,总结,PDF,EPUB"
+      "promotional_text": "内置千问小模型，无需 API Key，在设备上离线解释选文、继续追问。支持悬浮助手和可调侧栏。AI 答案可能不准确或不完整，请核对原文。",
+      "keywords": "阅读,电子书,离线,千问,文献,语境,笔记,高亮,书单,PDF,EPUB",
+      "description": "DeepReader 是原生 iPhone 和 iPad 文档阅读器，把离线 AI 阅读助手放在正文旁边。\n\n免费阅读与离线 AI\n阅读和本机 AI 问答全部免费，无订阅或问答次数配额。书库可展示一条标注“广告”的内容，阅读页面不展示广告。广告需联网并按您的隐私选择展示；阅读和 AI 可离线使用。\n\n内置模型，离线问答\n应用内置 Qwen3 0.6B 量化小模型。选文解释和追问直接在设备上生成，无需账户、API Key、服务器、订阅或购买问答次数。模型随应用安装，不需要另行下载；阅读内容不会为 AI 推理上传到服务器。\n\n边读边理解\n长按选择词句，在半透明阅读助手中点击“解释选文”，并可继续追问。浮窗可拖动、收起或关闭，阅读位置保持不变。成功回答保存在本机历史，可回顾或主动分享。\n\n调整阅读空间\n宽屏可使用右侧 AI 栏，拖动分隔线调整正文和答案的空间，也可选择悬浮模式。窄屏自动使用浮窗，布局偏好保存在本机。\n\n选择回答依据\n可要求 AI 仅依据提供的书中文字，或结合模型已有的通用知识。两种模式都不联网搜索。选择“仅书中内容”也不能保证模型不会出错。\n\n自己的阅读书库\n从“文件”导入 PDF、EPUB、TXT 和 Markdown。支持搜索、高亮、阅读位置、评分和读完状态。PDF 可导出带高亮的副本；导入不会修改原文件。内置原创示例文章，打开即可体验。\n\n答案可能不准确\nAI 答案可能不准确、不完整或产生虚构信息，仅供辅助阅读。请核对原文，不要仅凭 AI 回答作出重要决定。小模型更适合简单词句释义，专业知识、复杂推理和计算可能不可靠。\n\n使用限制\n• 本机问答适用于短段落：最多取选文前 500 字、附近语境前 600 字；追问前 300 字及先前回答前 250 字。过长输入可能需要缩短，回答也有长度上限。\n• 本版不提供全文总结。\n• 应用约需 500 MB 存储空间；首次使用需初始化模型，生成时可能增加耗电和发热，速度取决于设备。\n• EPUB 暂以纯文本章节显示，不显示原书排版和图片；Markdown 显示源文本，电子书搜索限当前章节。\n• 不支持 DRM、MOBI/AZW3、Kindle KFX、扫描文件 OCR 或跨设备同步。\n• 提供中文和英文界面。\n\nDeepReader 是独立阅读器，不是模型开发者的官方产品。"
     },
     "en-US": {
-      "description": "DeepReader is a native iPhone and iPad document reader that keeps contextual explanations beside your reading.\n\nUnderstand as you read\nTouch and hold to select words or sentences. Explain and ask follow-up questions in a translucent assistant that you can drag, collapse or close without leaving the document. Successful answers stay in local History for review and sharing.\n\nAdjust your reading space\nOn wide screens, use a right AI sidebar and drag its divider to resize the document and answer areas, or switch to floating mode. Narrow screens use the floating panel automatically. Layout preferences are saved locally.\n\nChoose the answer scope\nChoose Book only or General knowledge (no browsing). General knowledge can add background already learned by the model and distinguishes it from the source; it does not search the web.\n\nYour own reading library\nImport PDF, EPUB, TXT and Markdown from Files. Search, highlight, remember reading positions, rate books and mark them finished. Export highlighted PDF copies. Importing preserves your original files.\n\nSummarize on demand\nChoose a full-document summary to extract and summarize text. Long documents are processed in sections.\n\nBefore you begin\n• Free download; local reading needs no API key.\n• AI requires your own provider API key. Provider fees, quotas and regional restrictions may apply. No shared key or unlimited free AI is included.\n• First-use disclosure asks for sharing permission for the provider and full endpoint. Remembered permission applies only when you tap an AI action, can be revoked in Settings, and does not apply to a new recipient.\n• Supports text chat models through DeepSeek, OpenAI, Claude, Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, Grok, Mistral, OpenRouter and custom compatible endpoints. Model and service availability depend on your account and region.\n• Explanations send the selection and context; follow-ups add the previous answer and question; summaries send extractable full text directly to the selected provider and endpoint.\n• EPUB displays chapter text without original layout or images. Markdown displays source text. Ebook search covers the current chapter.\n• DRM, MOBI/AZW3, Kindle KFX, scanned-document OCR and cross-device sync are unsupported.\n• AI answers may be inaccurate. Check the source.\n• Chinese and English interfaces are included.\n\nDeepReader is an independent project, not an official product of SumatraPDF or the model providers.",
-      "promotional_text": "Read with a floating assistant or resizable sidebar. Choose book-only answers or general knowledge without browsing. AI uses your own API key; provider fees apply.",
-      "keywords": "pdf,epub,reader,ebooks,context,notes,highlights,reading,summary,books"
+      "promotional_text": "Built-in Qwen powers offline reading explanations and follow-ups. No API key or AI purchases. AI answers may be inaccurate or incomplete; check the original text.",
+      "keywords": "pdf,epub,reader,offline,qwen,ebooks,context,notes,highlights,reading,books",
+      "description": "DeepReader is a native iPhone and iPad document reader with an offline AI assistant beside your text.\n\nFree reading and offline AI\nReading and on-device AI are free, with no subscriptions or question quota. One clearly labelled ad may appear in the library, never in the reader. Ads use a network connection and respect your privacy choices; reading and AI work offline.\n\nBuilt-in, on-device AI\nA quantized Qwen3 0.6B model is included in the app. Explanations and follow-ups are generated on your device without an account, API key, server, subscription or purchased question credits. No separate model download is required. Reading content is not uploaded for AI inference.\n\nUnderstand as you read\nTouch and hold to select a passage, then tap Explain in the translucent reading assistant. Ask follow-up questions without leaving your reading position. Drag, collapse or close the floating panel. Successful answers are saved in local History for review or optional sharing.\n\nAdjust your reading space\nOn wide screens, use a right sidebar and drag its divider to resize the document and answer areas, or choose floating mode. Narrow screens use the floating panel automatically. Layout preferences are stored locally.\n\nChoose an answer scope\nAsk the model to use only the supplied book text, or allow its learned general knowledge. Neither mode searches the web. Book-only mode does not guarantee error-free answers.\n\nYour own library\nImport PDF, EPUB, TXT and Markdown from Files. Search, highlight, save reading positions, rate books and mark them finished. Export highlighted PDF copies while preserving the original. An original sample article is included for immediate use.\n\nAnswers may be inaccurate\nAI answers may be inaccurate, incomplete or fabricated. They are reading aids: check the original text and do not rely solely on AI for important decisions. This small model is best suited to simple explanations; specialist knowledge, complex reasoning and calculations may be unreliable.\n\nLimitations\n• Short-passage Q&A uses up to the first 500 characters of a selection, 600 of nearby context, 300 of a follow-up and 250 of the previous answer. Long inputs may need shortening and answers have a length limit.\n• Full-document summaries are not included in this version.\n• Allow about 500 MB of storage. Initial model setup takes time. Generation may increase battery use and warmth; speed depends on the device.\n• EPUB displays chapter text without original layout or images. Markdown displays source text. Ebook search covers the current chapter.\n• DRM, MOBI/AZW3, Kindle KFX, scanned-document OCR and cross-device sync are unsupported.\n• Chinese and English interfaces are included.\n\nDeepReader is an independent reader, not an official product of the model developer."
     }
-  }
+  },
+  "status": "iOS 1.1.0 (5) submitted 2026-10-23 at 01:53 Asia/Riyadh; Waiting for Review. Free in 175 storefronts; automatic release after approval. macOS 1.3.1 (9) was separately resubmitted without ads at 02:01 and is also Waiting for Review.",
+  "build_id": "0e023673-340e-4b05-8636-3768136d2703",
+  "submission_id": "c376efed-e84c-40e0-ad6b-143a3d957918"
 }
