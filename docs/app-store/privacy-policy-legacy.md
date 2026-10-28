@@ -1,10 +1,12 @@
 # DeepReader 历史及其他版本隐私说明 / Privacy information for other editions
 
+GitHub macOS 离线版 1.3.2 适用[现行隐私政策](privacy-policy.md)，不适用以下旧联网构建说明。GitHub macOS offline 1.3.2 follows the current policy, not the online-build descriptions below.
+
 归档日期 / Archived: 2026-10-28。运营者 / Operator: Baoshi Sun。联系 / Contact: baoshi.sun@icloud.com。
 
 **本页不适用于当前提交审核的 iOS / iPadOS 1.1.0（构建 5）或 Mac App Store 1.3.1（构建 9）。请阅读[当前商店版隐私政策](privacy-policy.md)。** 下文保留旧联网构建、站外下载版、早期离线构建和未发布实验分支的说明。“当前版本”等旧措辞仅指其所在章节描述的历史版本。未发布内购方案从未成为当前离线商店版的功能。
 
-**This archive does not describe iOS/iPadOS 1.1.0 build 5 or Mac App Store 1.3.1 build 9. See the [current store-edition privacy policy](privacy-policy.md).** It retains information for older online builds, the separate direct-download edition, earlier offline builds and an unreleased experiment. References to “current” within historical sections refer only to the editions described there. The unreleased purchase backend is not part of the current offline store editions.
+**This archive does not describe iOS/iPadOS 1.1.0 build 5 or Mac App Store 1.3.1 build 9. See the [current store-edition privacy policy](privacy-policy.md).** It retains information for older online builds, the earlier direct-download online edition, earlier offline builds and an unreleased experiment. References to “current” within historical sections refer only to the editions described there. The unreleased purchase backend is not part of the current offline editions.
 
 ## iOS / iPadOS 1.1.0（构建 3、4）：离线 AI / Offline AI
 
@@ -46,7 +48,7 @@ macOS 1.3.1 和 iOS 1.1.0 在用户主动执行 AI 操作时，将相同范围�
 
 Apple 版 Key 按服务商与地址隔离保存于本机钥匙串；模型 ID 与接口地址保存在本机设置中。iOS 的发送授权绑定服务商和地址，改变接收方需要新授权，可在设置中撤销；旧版全局授权不自动用于新服务商。macOS 新版支持绑定接收方的记住授权，并保留“仅本次发送”；旧版仍逐次确认。仅修改设置或选择文字不会发起模型请求。Gemini 与 OpenRouter 的成人使用确认不替代对服务条款、整体受众和上架年龄分级的复核。
 
-This historical section covers the earlier online macOS/iOS builds and the separate direct-download edition. It does not apply to iOS/iPadOS 1.1.0 builds 3, 4 or 5, or Mac App Store 1.3.1 build 9. The older iOS / iPadOS 1.0.0 build is DeepSeek-only. On an explicit AI action, those online builds send the same text scopes to the selected provider and full HTTPS endpoint: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, xAI Grok, Mistral, OpenRouter, or a user-configured compatible server. DeepReader operates no AI proxy. OpenRouter forwards requests to model providers; custom server operators may also use downstream services.
+This historical section covers the earlier online macOS/iOS builds and the earlier direct-download online edition. It does not apply to iOS/iPadOS 1.1.0 builds 3, 4 or 5, or Mac App Store 1.3.1 build 9. The older iOS / iPadOS 1.0.0 build is DeepSeek-only. On an explicit AI action, those online builds send the same text scopes to the selected provider and full HTTPS endpoint: DeepSeek, OpenAI, Anthropic Claude, Google Gemini, Qwen, Kimi, GLM, Doubao, MiniMax, xAI Grok, Mistral, OpenRouter, or a user-configured compatible server. DeepReader operates no AI proxy. OpenRouter forwards requests to model providers; custom server operators may also use downstream services.
 
 Recipients receive authentication credentials, submitted text, IP addresses and connection information. Retention, training, logging, account linkage and international processing depend on the actual recipient’s policies and account settings. Review those policies before sharing; contact the recipient to delete provider-held data. Apple builds isolate Keychain credentials by provider and endpoint. iOS remembers permission for a recipient, supports revocation and requires fresh permission for changed recipients; legacy global consent is not reused. macOS 1.3.1 supports remembered permission for the current provider and endpoint, one-operation permission and revocation in Setup; older store builds ask per operation. Selecting text or editing settings sends no AI request. Age confirmation for Gemini and OpenRouter does not by itself establish compliance with all provider terms or store requirements.
 

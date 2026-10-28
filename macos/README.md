@@ -1,81 +1,64 @@
-# DeepReader for macOS · 1.3.2
+# DeepReader for macOS · 1.3.2 离线千问版
 
-GitHub 直接下载版保留多服务商 API、回答依据切换、追问、总结和可记住／撤销的发送授权；需使用自己的服务商 Key。Mac App Store 另有内置 Qwen 的免费离线构建，详见 [商店版](AppStore/README.md)。
+内置 **Qwen3 0.6B · Q4_K_M**，选文解释和追问在 Mac 上运行。免费，无广告、账户、API Key、订阅或问答次数限制。模型随安装包提供，无需首次下载，不调用云端 AI，也不联网搜索。**答案可能不准确、不完整或产生虚构信息，请核对原文。**
 
-macOS 13 Ventura 或更新版本，通用应用同时支持 Apple Silicon（M 系列）和 Intel。使用 Apple PDFKit、AppKit、SwiftUI 与 WebKit 实现阅读界面，无需 Python、Wine、Calibre 或外部助手。1.2.1 在原有 PDF 阅读功能上新增 EPUB、TXT、Markdown、MOBI 和 AZW3，继续共用 AI 解释、追问、历史、总结、评分、阅读状态、归档和书单。
+需要 macOS **13.3 或更新版本**；同一安装包支持 Apple Silicon（M 系列）与 Intel。应用约需 550 MB 磁盘空间，生成答案还需要额外运行内存。速度、耗电和发热取决于设备。小模型适合简单词句释义，复杂推理、专业知识及计算可能不可靠。
 
-| 格式 | 阅读支持 |
+## 下载与安装
+
+从 [macOS 1.3.2 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.3.2-macos)下载 `DeepReader-v1.3.2-macos-universal.dmg`，打开后将 DeepReader 拖到 Applications，再从 Applications 启动。也可使用 universal ZIP。更新前退出旧应用并保存文档。
+
+正式 Release 附件在 Developer ID 签名、Apple 公证、票据及 Gatekeeper 验证通过后发布。自行构建的包仅有 ad-hoc 签名。公证与 Mac App Store 审核是独立流程；本安装包不会替换商店送审构建。
+
+旧 GitHub 直接安装版的书单、设置、高亮和历史使用相同本机资料目录。新版本不读取旧 API Key，钥匙串中的旧条目可能仍保留。Mac App Store 使用独立沙盒，数据不会自动迁移到 GitHub 版。
+
+## 阅读与问答
+
+1. 按 **⌘O** 打开文档，或在设置中选择“打开示例文章”。
+2. 选择短句，按 **⌘⇧D** 解释选文；输入追问后按 **⌘Return**。
+3. “仅书中内容”要求依据提供的选文和附近语境回答；“结合通用知识”允许使用本地模型已有知识。两种模式都离线，也都可能出错。
+4. 拖动侧栏边界调整空间，或切换为悬浮助手；按 **⌘⇧A** 重新显示助手。
+5. PDF 高亮按 **⌘S** 保存，或“保存 PDF 副本”。电子书高亮保存在本机，不改写原文件。
+6. 可评分、标记阅读状态、归档原书副本、搜索和导出书单。成功问答保存到本机历史；界面支持中文和英文。
+
+问答使用选文前 500 字、附近语境前 600 字；追问前 300 字和历史末尾 250 字。输入上限 1536 tokens、回答上限 320 tokens。**本版不提供全文或日／周／月 AI 总结。**
+
+| 格式 | 支持范围 |
 | --- | --- |
-| PDF | 保留原生 PDFKit 阅读、搜索、保存高亮批注；扫描图片仍需另行 OCR |
-| EPUB | 按书内 spine 顺序切换章节，显示内嵌图片和样式；顶部目录切换章节 |
+| PDF | 原生 PDFKit 阅读、搜索、保存高亮；不提供扫描 OCR |
+| EPUB | 章节、内嵌图片和样式；复杂固定版式可能有差异 |
 | TXT | UTF-8、带 BOM 的 UTF-16、GB18030，兼容部分西文文本 |
-| Markdown（.md / .markdown） | 标题、段落、列表、引用、粗体、斜体、代码块；原始 HTML 按文字显示；不执行脚本 |
-| MOBI / AZW3 | 内置 libmobi 读取旧 MOBI 和 KF8/AZW3，包括正文、图片、章节；无需外部转换 |
+| Markdown | 常用 Markdown 排版；原始 HTML 显示为文字，不执行脚本 |
+| MOBI / AZW3 | 内置 libmobi，读取无 DRM 的旧 MOBI 和 KF8/AZW3 |
 
-仅支持未加 DRM 的电子书；Kindle KFX、漫画档案、音视频和交互式电子书不在本版范围内。电子书采用连续滚动排版，顶部数字为章节数，搜索作用于当前章节。书内的远程资源与脚本不会加载；仅允许在本书章节之间跳转。EPUB 字体混淆使用系统替代字体，复杂固定版式可能与原阅读器不同。
+不支持 DRM、Kindle KFX、漫画档案、音视频和交互式电子书。电子书连续滚动，搜索限当前章节；书内脚本及远程资源被阻止。文件上限 128 MB，解包总量 256 MB，单个资源 32 MB，单个正文/XML 文件 8 MB。
 
-电子书文件上限 128 MB，解包总量 256 MB，单个资源 32 MB、单个正文或 XML 文件 8 MB。全文 AI 总结最多提取 200 万 UTF-16 字符，超过时会明确提示，不会悄悄截断。
+## 隐私与源码
 
-## 安装
+阅读资料保存在 `~/Library/Application Support/DeepReader/`，包括设置、AIHistory、BookLibrary、BookHighlights 和文件访问书签。问答、选文和附近语境不会为 AI 推理上传。无广告、遥测或开发者服务器；主动导出、分享和打开外部链接由用户控制。备份此目录可以保留阅读资料。详见[隐私政策](https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy.md)。
 
-从 [macOS 1.3.2 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.3.2-macos)下载安装包；同页提供对应源码和 `SHA256SUMS.txt`。
+代码采用 **AGPL-3.0-or-later**，对应源码和提交号随应用放在 `Contents/Resources/Source.zip`、`SOURCE-COMMIT.txt`。libmobi 保留 LGPL-3.0-or-later，Qwen 模型为 Apache 2.0，llama.cpp 为 MIT；许可和第三方署名随包提供。构建脚本使用固定版本、校验模型及推理依赖，并提供重新构建／链接方法。
 
-打开 `DeepReader-v1.3.2-macos-universal.dmg`，将 DeepReader 拖到 Applications，然后从 Applications 启动。也可以解压 universal ZIP，将其中的 DeepReader.app 拖到 Applications。不要从只读磁盘映像运行。更新时替换应用即可，现有设置、钥匙串密钥、历史和书单沿用。
+## 构建与验证
 
-GitHub 正式发布附件使用 Developer ID 签名，并在 Apple 公证通过、附加票据及 Gatekeeper 检查通过后发布。自行运行 build.sh 生成的包仍仅为本地 ad-hoc 签名，不能与正式附件混同。
-
-## 开始使用
-
-1. 右侧 AI 面板默认可见；首次启动在“设置”页显示引导，后续不再重复弹出。
-2. 默认使用 DeepSeek。选择模型，填写自己的 API Key 并保存；密钥仅存入 macOS 钥匙串。空白密钥框保留已有 Key。OpenRouter 免费路由也需要您自己的账号和 Key，不承诺永久免费额度。
-3. 按 **⌘O** 打开文档或电子书，拖动选中文字，按 **⌘⇧D** 获取简短语境解释。扫描 PDF 需先通过其他工具 OCR。
-4. 解释下方可继续追问，**⌘↩** 发送。成功查询和追问自动保存到本机。
-5. 拖动侧栏边界调整宽度；顶部窗口按钮切换悬浮和停靠。选文与解释初始各占一半，细分隔线可调整比例。**⌘⇧A** 重新显示侧栏。
-6. “高亮／不高亮”切换该选区的标记。PDF 按 **⌘S** 写入批注，关闭或换文件前会提示未保存改动；可用“文件 → 保存 PDF 副本”另存。电子书高亮自动保存在本机 `BookHighlights/`，重新打开可恢复，不改写 EPUB/MOBI 等原文件。文件内容变化后旧高亮不会错误地套用到新文字上。
-7. 点 1–5 星、选择“阅读中／读完”，再归档。程序按原格式复制到指定目录下 `1星`–`5星`，保留原文件，不覆盖同名不同内容的文件。原书与归档副本使用同一条书单记录及本地高亮；仅把电子书文件拷到另一台电脑不包含本地高亮。书单可搜索、筛选、打开和导出。
-8. “总结”中选择文件／日／周／月，先预览真实本地统计和预计 API 请求数，再生成 AI 总结。长文分段处理全部可提取文本；没有文字的页面会明确提示，暂不提供 OCR。周从周一开始。日、周、月依据保存的记录，手动生成。
-
-点击 EN／中文可同时切换界面和后续 AI 回答。已有历史保留生成时的语言。
-
-## 隐私与数据
-
-个人文件保存在 `~/Library/Application Support/DeepReader/`，包括 `settings.json`、`AIHistory/`、`BookLibrary/`、`BookHighlights/`；API Key 单独存入系统钥匙串。备份此目录可保留阅读记录和电子书高亮。Mac 与 Windows 使用独立配置，不会自动迁移 Windows 的 DPAPI 密钥或路径。
-
-仅主动执行 AI 操作时联网：解释发送选文及附近语境，追问增加当前对话，全文总结发送按章节顺序提取的全文，周期总结发送该日期范围的记录。文档二进制不会上传；程序不会把本机目录路径主动加入提示词。文字中原本包含的信息仍会发送。无遥测、无内置共享 Key、无自动付费后备模型。API 费用与服务可用性由用户选定服务商决定。
-
-查询失败、取消或截断的回答不计入成功查询。API Key 不写入设置 JSON、日志和发行包。归档、评分、书单与本地统计不需要 API。AI 可能出错，请结合原文核对。
-
-## 源码构建与验证
-
-Developer ID 签名、公证工具及安装 Xcode 的步骤见 [发行工具说明](DISTRIBUTION.md)。商店文案、隐私政策草稿和尚未完成的沙盒／审核事项见 [Mac App Store 准备包](../docs/app-store/README.md)。这些准备材料不表示当前测试版已满足商店提交要求。
-
-安装 Xcode 15 或更新版本以及其命令行工具。没有第三方 Swift 包依赖；libmobi 0.12 的固定版本源码随仓库提供，使用系统 libarchive 和 zlib。
+安装完整 Xcode 及 Python 3.12+，在仓库根目录执行：
 
 ```sh
-cd macos
-python3 Tests/make_format_fixtures.py
-swift test
-bash build.sh
+python3 tools/public_release.py --check-tracked
+python3 -m unittest discover -s tests -p test_distribution.py -v
+bash macos/build_offline.sh artifacts/macos-offline
 ```
 
-CI 额外执行 `python3 macos/Tests/make_format_fixtures.py --upstream`，下载并校验固定 SHA-256 的 libmobi 官方 MOBI/KF8/DRM 样本，再离线测试；样本只在 `.build/` 中，不打入应用。没有下载官方样本时，仅这一项真实 MOBI/KF8 样本测试跳过，其余合成文档、界面和 AI 离线测试仍执行。
+输出目录必须不存在。脚本校验并准备模型/llama.cpp，编译 arm64 和 x86_64，嵌入推理框架与模型，生成开发 ZIP，并运行文档阅读烟雾检查及真实本地推理、追问、取消和示例文章检查。测试使用独立资料目录。
 
-输出在 `macos/dist/`：Universal `.app` ZIP、DMG、对应源码 ZIP、SHA-256，以及离线应用启动测试结果。脚本分别编译 arm64 和 x86_64，再通过 lipo 合并；只进行 ad-hoc 签名，不使用 Apple 账户凭据。GitHub Actions 分别在 Apple Silicon 和 Intel macOS 15 上执行离线测试，并在 ARM 主机上运行打包应用的启动测试。最低目标版本为 macOS 13；CI 结果不代表已在每个 macOS 版本或实体设备上人工测试。
+通过 `macos/distribute.sh` 对生成的 `.app` 做 Developer ID 签名，生成 DMG/ZIP；按 [发行工具说明](DISTRIBUTION.md)完成公证、票据和 Gatekeeper 验证后才上传正式 Release。发布版源码提交必须与 `SOURCE-COMMIT.txt`、源码包清单一致。
 
-## 开源说明
-
-此 Mac 实现是 DeepReader 项目的一部分，采用 **AGPL-3.0-or-later**；源码与构建脚本随应用保存在 `DeepReader.app/Contents/Resources/Source.zip`，可通过 Finder“显示包内容”查看。libmobi 保留 **LGPL-3.0-or-later** 原许可、版权、对应源码和重新链接构建步骤，详见 `Vendor/libmobi/` 及第三方声明。PDFKit、AppKit、SwiftUI、WebKit 为系统框架，没有复制 SumatraPDF 的 Windows 阅读器引擎。Windows 代码及其上游许可证、署名继续保留。
-
-新增代码和文档主要由 AI 制作，日常维护托管给 AI，管理者不定期审查。项目：[BaoshiSun/DeepReader](https://github.com/BaoshiSun/DeepReader)。
+`macos/Package.swift` 和 `macos/build.sh` 仍保留可选在线多服务商开发构建，需要用户自己的 Key；它不是 1.3.2 离线 Release 的构建入口。其数据处理见[旧联网版本说明](../docs/app-store/privacy-policy-legacy.md)。Mac App Store 的独立构建见 [AppStore/README.md](AppStore/README.md)。
 
 ## English quick start
 
-Requires macOS 13+, Apple Silicon or Intel. Version 1.3.2 supports PDF, EPUB, TXT, Markdown, and DRM-free MOBI/KF8/AZW3. Mount the DMG and drag DeepReader to Applications. Existing settings, history and Keychain credentials are retained when replacing the app. Published release assets are Developer ID signed and released only after Apple notarization, ticket stapling and Gatekeeper validation. Locally running build.sh produces ad-hoc development artifacts.
+DeepReader 1.3.2 bundles Qwen3 0.6B for entirely on-device passage explanations and follow-up questions. Free, no ads, account, API key, subscription or question quota. Requires macOS 13.3+ on Apple Silicon or Intel. Allow approximately 550 MB of disk space plus runtime memory. AI answers may be inaccurate; verify against the source. Document and period summaries are unavailable.
 
-Open Setup, click EN, choose a provider and save your own API key. DeepSeek is the default; free OpenRouter models still require an account and key. Keys are stored in macOS Keychain. Open a document with **⌘O**, select text, press **⌘⇧D**, and ask follow-ups with **⌘Return**. Resize or float the AI sidebar; use **⌘⇧A** to show it again. Save PDF highlights with **⌘S**; ebook highlights save automatically in local BookHighlights data. Use the chapter menu or arrows to navigate ebooks; search applies to the current chapter. Remote resources and scripts are blocked. Rate and mark books as Reading/Finished, copy them in their original format into star-rating archive folders, and export your book list. Summary supports full extracted document text and daily/weekly/monthly reading records, with local statistics and a request preview before sending.
+Download the universal DMG or ZIP, quit the previous app, and drag DeepReader to Applications. Open a document with **⌘O**, select text and press **⌘⇧D**. Ask follow-ups with **⌘Return**. Resize or float the sidebar; **⌘⇧A** shows it again. Book only and General knowledge both use the bundled model without web search. Save PDF highlights with **⌘S**. EPUB/TXT/Markdown and DRM-free MOBI/AZW3 are also supported.
 
-The app stores its data in `~/Library/Application Support/DeepReader/`. It does not migrate Windows settings automatically. No OCR, telemetry, shared API keys or automatic paid fallback. AGPL-3.0-or-later; corresponding source and licenses are embedded in the app. Development and maintenance are primarily AI-assisted, with periodic human review.
-
-### AI 发送授权
-
-首次使用 AI 时可选择“同意并记住，发送”，之后向同一服务商和接口地址的解释、追问及总结不再反复弹窗，重启后仍有效。只在主动点击 AI 操作时发送。新接收方需要新授权；设置中可“撤销 AI 发送授权”。也可选择“仅本次发送”或取消，旧版本的单次同意不会自动转换成长期授权。
+Published assets require Developer ID signing and accepted Apple notarization. Locally generated development ZIPs are ad-hoc signed. Reading data remains on the Mac; direct-download profiles persist across updates, while Mac App Store sandbox data does not migrate automatically. Corresponding source, licenses and build instructions are included. Development is assisted by AI and periodically reviewed by the maintainer.

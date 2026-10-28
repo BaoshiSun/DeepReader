@@ -1,10 +1,10 @@
 # DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-28。运营者 / Operator: Baoshi Sun。隐私联系 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。
+更新日期 / Updated: 2026-10-29。运营者 / Operator: Baoshi Sun。隐私联系 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。
 
-本政策适用于 **iOS / iPadOS 1.1.0（构建 5）** 和 **Mac App Store 1.3.1（构建 9）**。是否可下载以 App Store 的实际状态为准。两者均使用随安装包提供的本地 Qwen3 0.6B 模型；iOS 版另有可选的 Google AdMob 书库广告，Mac App Store 版没有广告。旧联网版本及站外下载版适用单独的[其他版本隐私说明](privacy-policy-legacy.md)，不代表本政策所述商店构建的数据处理。
+本政策适用于 **iOS / iPadOS 1.1.0（构建 5）**、**Mac App Store 1.3.1（构建 9）** 和 **GitHub macOS 离线版 1.3.2（构建 10）**。商店版是否可下载以 App Store 的实际状态为准；GitHub 版以 Release 的发布状态为准。这些版本均使用随安装包提供的本地 Qwen3 0.6B 模型；iOS 版另有可选的 Google AdMob 书库广告，两个 macOS 离线版本没有广告。旧联网版本（包括 GitHub macOS 1.3.0 和 1.3.1 联网构建）适用单独的[其他版本隐私说明](privacy-policy-legacy.md)，不代表本政策所述离线构建的数据处理。
 
-This policy covers **iOS/iPadOS 1.1.0 build 5** and **Mac App Store 1.3.1 build 9**. Availability depends on App Store status. Both bundle Qwen3 0.6B for local AI. The iOS edition separately offers optional Google AdMob library ads; the Mac App Store edition has no ads. Earlier online builds and the separate direct-download edition are described in [other-edition privacy information](privacy-policy-legacy.md); their network behavior does not apply to these store builds.
+This policy covers **iOS/iPadOS 1.1.0 build 5**, **Mac App Store 1.3.1 build 9**, and **GitHub macOS offline 1.3.2 build 10**. Store availability depends on App Store status; direct-download availability depends on the GitHub Release. All these editions bundle Qwen3 0.6B for local AI. The iOS edition separately offers optional Google AdMob library ads; both offline macOS editions have no ads. Earlier online builds, including GitHub macOS 1.3.0 and the online 1.3.1 build, are described in [other-edition privacy information](privacy-policy-legacy.md); their network behavior does not apply to these offline builds.
 
 ## 中文
 
@@ -18,7 +18,7 @@ This policy covers **iOS/iPadOS 1.1.0 build 5** and **Mac App Store 1.3.1 build 
 
 iOS 从“文件”导入的 PDF、EPUB、TXT 和 Markdown 副本保存在本机应用容器，原文件不变。应用还在本机保存书名、阅读位置、评分、读完状态、高亮、语言和显示偏好，以及成功的问答历史。历史可能包括选文、语境、问题、答案、页码和时间。没有开发者提供的云同步或阅读内容分析服务。
 
-Mac App Store 版在本机保存书单、文件访问书签、偏好、高亮和问答历史；仅在您主动保存 PDF、导出或归档时写入所选位置。电子书在本机渲染，应用内文档禁止加载网络资源。升级可能保留旧阅读记录及设置，但本版不读取或发送旧服务商密钥；旧钥匙串条目可能仍留在系统中。
+macOS 离线版在本机保存书单、文件访问书签、偏好、高亮和问答历史；仅在您主动保存 PDF、导出或归档时写入所选位置。电子书在本机渲染，应用内文档禁止加载网络资源。升级可能保留旧阅读记录及设置，但本版不读取或发送旧服务商密钥；旧钥匙串条目可能仍留在系统中。
 
 本地资料保留到您删除为止。iOS 可在书库删除导入副本，在历史中单独删除记录；删除书籍不会删除原文件或既有历史。卸载 iOS 应用会移除应用容器。Mac 历史可逐条删除；需要清除全部应用资料时可联系我们获取操作步骤。操作系统账户权限和您启用的设备加密保护本机资料，应用不另行加密阅读数据库。系统备份、您选择的同步目录、导出和归档可能产生额外副本，应在对应服务或位置另行管理；删除本机资料不会删除这些副本。
 
@@ -52,7 +52,7 @@ Selected text, nearby context, questions and prior answers are processed on the 
 
 On iOS, copies of PDF, EPUB, TXT and Markdown files imported from Files are stored in the local app container; originals are unchanged. The app also stores titles, reading positions, ratings, finished status, highlights, language/display preferences and successful answer history locally. History may contain selections, context, questions, answers, page numbers and timestamps. There is no developer cloud sync or reading-content analytics service.
 
-The Mac App Store edition locally stores book lists, file-access bookmarks, preferences, highlights and answer history. Saving PDFs, exports and archives writes only to locations you choose when you request it. Ebooks render locally with network document resources blocked. Updates may preserve earlier reading data/settings but this build does not read or transmit old provider keys; earlier Keychain entries may remain.
+The offline macOS editions locally store book lists, file-access bookmarks, preferences, highlights and answer history. Saving PDFs, exports and archives writes only to locations you choose when you request it. Ebooks render locally with network document resources blocked. Updates may preserve earlier reading data/settings but this build does not read or transmit old provider keys; earlier Keychain entries may remain.
 
 Local data remains until you delete it. On iOS, delete imported copies in Library and records separately in History; removing a book does not delete its original file or existing history. Uninstalling the iOS app removes its container. On Mac, individual History records can be deleted; contact support for steps to remove all app data. OS account permissions and enabled device encryption protect local files; the app does not separately encrypt its reading database. System backups, chosen synced folders, exports and archives may hold extra copies. Manage these at their respective locations; local deletion does not delete those copies.
 

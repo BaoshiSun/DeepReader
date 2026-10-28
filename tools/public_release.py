@@ -11,6 +11,14 @@ ROOT = Path(__file__).resolve().parents[1]
 VERSION = "1.2.0"
 PRODUCT = "DeepReader"
 PUBLIC_PATHS = tuple("""
+macos/build_offline.sh
+docs/app-store/ios-advertising.md
+docs/app-store/privacy-policy-legacy.md
+ios/Advertising.json
+ios/Resources/AdvertisingPrivacy.txt
+ios/Resources/PrivacyInfo.xcprivacy
+ios/Sources/LibraryAdvertising.swift
+ios/Tests/LibraryAdTests.swift
 macos/prepare_offline_package.py
 macos/AppStore/OfflineAI.swift
 macos/AppStore/OfflineCheck.swift

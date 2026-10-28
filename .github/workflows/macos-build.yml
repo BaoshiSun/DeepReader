@@ -31,13 +31,14 @@ jobs:
       - name: Offline unit and document integration tests
         working-directory: macos
         run: swift test
-      - name: Build universal app and run packaged smoke test
+      - name: Prepare local inference dependencies
+        run: python3 ios/prepare_local_model.py --dependencies-only
+      - name: Build offline universal app and run packaged inference test
         if: matrix.os == 'macos-15'
-        run: bash macos/build.sh
+        run: bash macos/build_offline.sh artifacts/macos-offline
       - name: Validate native App Store archive without signing
         if: matrix.os == 'macos-15'
         run: |
-          python3 ios/prepare_local_model.py
           python3 macos/prepare_app_store.py
           xcodebuild -project macos/DeepReader.xcodeproj -scheme DeepReaderStore -configuration Release \
             -destination 'generic/platform=macOS' -archivePath artifacts/app-store/DeepReader-unsigned.xcarchive \
@@ -48,9 +49,8 @@ jobs:
         with:
           name: DeepReader-macOS-universal
           path: |
-            macos/dist/*.zip
-            macos/dist/*.dmg
-            macos/dist/SHA256SUMS.txt
+            artifacts/macos-offline/*.zip
+            artifacts/macos-offline/SHA256SUMS.txt
           if-no-files-found: error
       - name: Keep offline smoke evidence
         if: always() && matrix.os == 'macos-15'
@@ -58,6 +58,7 @@ jobs:
         with:
           name: macOS-smoke-evidence
           path: |
-            macos/dist/smoke/*.png
-            macos/dist/smoke/smoke-result.txt
+            artifacts/macos-offline/smoke/*.png
+            artifacts/macos-offline/smoke/smoke-result.txt
+            artifacts/macos-offline/offline-check.txt
           if-no-files-found: ignore

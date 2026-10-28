@@ -73,6 +73,7 @@ def main():
                 raise RuntimeError('Unsafe archive path')
     subprocess.run(['ditto', '-x', '-k', str(archive), str(DEST)], check=True)
     if '--simulator' in sys.argv: simulator_framework()
-    subprocess.run([sys.executable, str(ROOT / 'prepare_project.py'), '--local-qwen'], check=True)
+    if '--dependencies-only' not in sys.argv:
+        subprocess.run([sys.executable, str(ROOT / 'prepare_project.py'), '--local-qwen'], check=True)
 
 if __name__ == '__main__': main()

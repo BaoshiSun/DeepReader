@@ -6,11 +6,11 @@
 
 项目地址：[BaoshiSun/DeepReader](https://github.com/BaoshiSun/DeepReader)。**1.0.0 是首个公开发行版本。**
 
-这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.2.0**；[下载 Windows 便携版](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.0)。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
+这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.2.0**；[下载 Windows 便携版（afa5e8d，追问修正）](https://github.com/BaoshiSun/DeepReader/releases/tag/windows-afa5e8d)。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
 
-**macOS 1.3.2 直接下载版**：[下载 Mac 安装包（DMG / ZIP）](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.3.2-macos)。macOS 13+，支持 Apple Silicon 与 Intel，保留多服务商 API、回答依据切换、追问、总结，以及可记住／撤销的发送授权。此下载版使用用户自己的 API Key；详情见 [Mac 版说明](macos/README.md)。
+**macOS 1.3.2 离线版**：[下载 Mac 安装包（DMG / ZIP）](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.3.2-macos)。macOS 13.3+，支持 Apple Silicon 与 Intel。内置 Qwen3 0.6B，免费、无广告、无需 API Key，无订阅或问答次数限制。支持选文解释、追问、两种回答依据和可调／悬浮助手；小模型答案可能不准确，不提供全文或周期总结。详情见 [Mac 版说明](macos/README.md)。
 
-**Mac App Store 版**：1.3.1（9）已提交审核，内置 Qwen3 0.6B，免费离线、无广告、API Key、内购或次数限制，需要 macOS 13.3+。包含可调／悬浮助手；小模型答案可能不准确。它与上面的 GitHub 多服务商安装包是不同构建，审核状态见[提交记录](docs/app-store/readiness.md)。
+**Mac App Store 版**：1.3.1（9）为独立商店构建，同样采用免费无广告的本地 Qwen。审核状态见[提交记录](docs/app-store/readiness.md)。GitHub Release 发布不改变商店送审版本。
 
 ## 多服务商与回答依据
 
@@ -25,7 +25,7 @@ iOS/iPadOS、macOS、Windows 原生侧栏和旧版 Windows 助手均可在阅读
 
 追问修正：切到通用知识后，要求模型重新判断问题，避免沿用上一次“原文未说明”的答复。量化问题可补充计算方法、条件和明确标注的假设算例；不能编造书中设备的实测值或通用范围。Windows 新追问的回答标题记录该次请求的实际模式，旧记录保留原样。此修正仍需重新构建下载包才能供已安装版本使用；离线测试验证请求与模式传递，不代表实测模型一定遵循指令。
 
-以下多服务商说明适用于 GitHub macOS 直接下载版、Windows 原生阅读器和旧版 Windows 助手；当前 iOS 和 Mac App Store 版仅使用内置离线 Qwen。桌面源码提供的服务选择：DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter，以及自定义 OpenAI 兼容接口。支持阅读所需的**文字对话**，不表示支持图像生成、视频、语音、工具调用，或每家所有专用 API。
+以下多服务商说明适用于旧 GitHub macOS 联网版、可选的在线开发构建、Windows 原生阅读器和旧版 Windows 助手；当前 GitHub macOS 1.3.2、iOS 和 Mac App Store 版仅使用内置离线 Qwen。桌面源码提供的服务选择：DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter，以及自定义 OpenAI 兼容接口。支持阅读所需的**文字对话**，不表示支持图像生成、视频、语音、工具调用，或每家所有专用 API。
 
 在设置中选择服务商 → 选择或填写模型 ID → 核对完整 HTTPS 接口地址 → 填入该服务的 Key → 保存。豆包须填写账户可用的模型 / 推理接入点 ID；自定义接口也须填写模型 ID。模型预设只是起点，可输入新 ID，实际可用性由服务商、账户权限和地区决定。OpenRouter 可接入其提供的其他模型，例如 Llama；DeepReader 不会自动切换服务商或付费线路。
 

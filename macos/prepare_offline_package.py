@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: AGPL-3.0-or-later
-"""Prepare the store-only Swift package from canonical shared reader sources."""
+"""Prepare the offline Swift package shared by GitHub and Mac App Store builds."""
 from pathlib import Path
 import hashlib
 import shutil
@@ -14,9 +14,12 @@ def prepare():
     model = dependencies / 'Qwen3-0.6B-Q4_K_M.gguf'
     framework = dependencies / 'build-apple/llama.xcframework'
     if not model.exists() or not framework.exists():
-        raise SystemExit('Run python3 ios/prepare_local_model.py before preparing the offline Mac store build.')
+        raise SystemExit('Run python3 ios/prepare_local_model.py --dependencies-only before preparing the offline Mac build.')
     with model.open('rb') as stream:
-        if hashlib.file_digest(stream, 'sha256').hexdigest() != 'cd47557a67d7e8f2891d98b5e1dbf2988544569fdf4f1bdb30e92b71aa61b548':
+        digest = hashlib.sha256()
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(chunk)
+        if digest.hexdigest() != 'cd47557a67d7e8f2891d98b5e1dbf2988544569fdf4f1bdb30e92b71aa61b548':
             raise SystemExit('Local model checksum mismatch.')
     OUTPUT.mkdir(parents=True, exist_ok=True)
     # Replace only generated sources, preserving incremental build output.
@@ -48,4 +51,4 @@ def prepare():
 
 if __name__ == '__main__':
     prepare()
-    print('Prepared offline Mac store package.')
+    print('Prepared offline Mac package.')

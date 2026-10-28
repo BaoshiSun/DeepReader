@@ -64,3 +64,4 @@ server/certs/
 
 /ios/DeepReaderOfflineStore.xcodeproj/
 /ios/OfflineStoreInfo.plist
+macos/dist-offline/
