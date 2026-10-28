@@ -1,6 +1,6 @@
 # DeepReader · AI 阅读器
 
-**iPhone / iPad：** [`iOS 工程`](ios/README.md)现已统一为内置 Qwen3 0.6B 的离线阅读器，支持 iOS 17+。阅读和 AI 问答免费，无广告、API Key、订阅或问答次数配额。答案可能不准确，请核对原文。上架进度见[提交记录](docs/app-store/ios-readiness.md)。
+**iPhone / iPad：** [`iOS 工程`](ios/README.md)现已统一为内置 Qwen3 0.6B 的离线阅读器，支持 iOS 17+。阅读和 AI 问答免费，无 API Key、订阅或问答次数配额；书库可选择展示一条带标签的广告，阅读页不展示广告。答案可能不准确，请核对原文。上架进度见[提交记录](docs/app-store/ios-readiness.md)。
 
 基于 **SumatraPDF 3.6.1rel** 的 Windows x64 原生定制版，提供可调宽度、可收起或悬浮的 AI 侧栏。选中词句、按 **Ctrl + Alt + D**，即可结合附近上下文获得简短解释。
 

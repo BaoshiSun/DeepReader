@@ -39,7 +39,7 @@ final class LocalQwenTests: XCTestCase {
         model.persistSettings()
         XCTAssertNil(model.error)
         XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "DeepReaderLocalAI") as? Bool, true)
-        for key in ["DeepReaderGatewayURL", "DeepReaderSandboxGatewayURL", "GADApplicationIdentifier", "NSUserTrackingUsageDescription"] {
+        for key in ["DeepReaderGatewayURL", "DeepReaderSandboxGatewayURL", "NSUserTrackingUsageDescription"] {
             XCTAssertNil(Bundle.main.object(forInfoDictionaryKey: key), "Unexpected online configuration: \(key)")
         }
     }
