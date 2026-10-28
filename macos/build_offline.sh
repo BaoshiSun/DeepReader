@@ -68,7 +68,7 @@ codesign --verify --deep --strict "$app"
 lipo "$app/Contents/MacOS/DeepReader" -verify_arch arm64 x86_64
 lipo "$app/Contents/Frameworks/llama.framework/llama" -verify_arch arm64 x86_64
 mkdir "$out/smoke"
-"$app/Contents/MacOS/DeepReader" --smoke-test "$out/smoke"
+(cd "$root/macos" && "$app/Contents/MacOS/DeepReader" --smoke-test "$out/smoke")
 "$app/Contents/MacOS/DeepReader" --offline-check > "$out/offline-check.txt" 2>&1
 grep -q 'OFFLINE_PACKAGED_QA_PASS' "$out/offline-check.txt"
 ditto -c -k --sequesterRsrc --keepParent "$app" "$out/DeepReader-v${version}-macos-universal.zip"
