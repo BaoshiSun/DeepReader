@@ -12,7 +12,13 @@ DeepReader 是适用于 macOS 的文档与电子书阅读器。应用支持中�
 
 The free offline Mac App Store edition bundles Qwen. Open a document, select a short sentence and press Command-Shift-D. Read the explanation and ask follow-ups in the resizable or floating sidebar. No API key, ads, subscription or question quota. Answers may be inaccurate: check the source. Document/period summaries are unavailable. Requires macOS 13.3 or later on Apple silicon or Intel and about 500 MB of storage.
 
-## GitHub 下载版与旧版常见问题 / Direct-download and older editions
+## 没有网络时使用 / Using the offline editions
+
+Mac App Store 1.3.1（9）和 GitHub macOS 1.3.2（10）均免费、无广告，使用内置本地千问。安装后，阅读、解释选文和追问无需联网，可在飞机、无信号的旅途、野外和断网时使用；无需联网激活或首次下载模型。请提前把云盘书籍完整下载到 Mac。下载和更新应用、打开外部支持链接需要网络。AI 不联网搜索，答案可能不准确。
+
+Mac App Store 1.3.1 (9) and GitHub macOS 1.3.2 (10) are free and ad-free, with bundled on-device Qwen. After installation, reading and AI Q&A work without a connection, including on flights, off-grid and during outages. No online activation or first-run model download is needed. Download cloud-only books to your Mac in advance. App downloads, updates and external support links require a connection. AI does not search the web and may be inaccurate.
+
+## 旧联网版本常见问题 / Earlier online editions
 
 - **AI 功能如何使用？** 在设置中选择服务商和模型，保存自己的 API Key。解释、追问和总结会调用所选服务商，费用、额度和地区可用性由服务商决定。应用免费不代表第三方 API 免费。
 - **不配置 AI 能否阅读？** 可以。本地阅读、搜索、评分、书单和归档不需要 AI Key。
@@ -24,7 +30,7 @@ The free offline Mac App Store edition bundles Qwen. Open a document, select a s
 
 For help, bug reports or feature requests, email **[baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)**. Include your macOS version, DeepReader version, file format and steps to reproduce the issue. Do not include API keys or private documents; use a non-sensitive sample when needed.
 
-DeepReader supports English and Chinese interfaces. Local reading, search, ratings, book lists and archiving work without an AI key. AI explanations, follow-ups and summaries require your own provider API key. Provider charges, quotas and regional availability apply even when the app is free.
+DeepReader supports English and Chinese interfaces. The current Mac offline editions do not require an API key. In earlier online editions only, AI explanations, follow-ups and summaries require your own provider API key; provider charges, quotas and regional availability apply. Local reading, search, ratings, book lists and archiving remain available without an AI key.
 
 Supported formats include PDF, EPUB, TXT, Markdown, and DRM-free MOBI and AZW3. DRM-protected books, Kindle KFX and OCR for scanned documents are not supported. If a saved book cannot be opened, use Open to select it again and restore access.
 

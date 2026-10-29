@@ -4,6 +4,12 @@
 
 需要 macOS **13.3 或更新版本**；同一安装包支持 Apple Silicon（M 系列）与 Intel。应用约需 550 MB 磁盘空间，生成答案还需要额外运行内存。速度、耗电和发热取决于设备。小模型适合简单词句释义，复杂推理、专业知识及计算可能不可靠。
 
+## 没有网络，也能使用
+
+**免费、本地运行，阅读与 AI 问答无需联网。** 安装完成并把书籍保存到 Mac 后，可以在飞机上、无信号的旅途、野外或临时断网时阅读、解释选文和继续追问。千问模型已包含在安装包中，无需联网激活，也无需首次下载模型。
+
+出发前请将 iCloud 等云盘里的书籍完整下载到本机，并打开确认可读。下载安装、更新应用和主动打开外部链接需要网络；这些不影响已安装应用中的本地阅读和问答。AI 使用模型已有知识，不查询实时信息，也不保证答案正确。
+
 ## 下载与安装
 
 从 [macOS 1.3.2 发布页](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.3.2-macos)下载 `DeepReader-v1.3.2-macos-universal.dmg`，打开后将 DeepReader 拖到 Applications，再从 Applications 启动。也可使用 universal ZIP。更新前退出旧应用并保存文档。
@@ -58,6 +64,8 @@ bash macos/build_offline.sh artifacts/macos-offline
 ## English quick start
 
 DeepReader 1.3.2 bundles Qwen3 0.6B for entirely on-device passage explanations and follow-up questions. Free, no ads, account, API key, subscription or question quota. Requires macOS 13.3+ on Apple Silicon or Intel. Allow approximately 550 MB of disk space plus runtime memory. AI answers may be inaccurate; verify against the source. Document and period summaries are unavailable.
+
+**Read and ask without a connection.** After installation, books saved on your Mac and the bundled AI work on flights, off-grid and during network outages. No online activation or first-run model download is needed. Fully download cloud-only books before leaving connectivity. Installing or updating the app and opening external links require a connection; local reading and AI do not.
 
 Download the universal DMG or ZIP, quit the previous app, and drag DeepReader to Applications. Open a document with **⌘O**, select text and press **⌘⇧D**. Ask follow-ups with **⌘Return**. Resize or float the sidebar; **⌘⇧A** shows it again. Book only and General knowledge both use the bundled model without web search. Save PDF highlights with **⌘S**. EPUB/TXT/Markdown and DRM-free MOBI/AZW3 are also supported.
 

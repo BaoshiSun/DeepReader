@@ -1,4 +1,10 @@
-> Current status — 2026-10-23: macOS 1.3.1 (9) was resubmitted at 02:01 Asia/Riyadh and is **Waiting for Review**. It remains free, fully on-device and without ads. iOS 1.1.0 (5) is also Waiting for Review, with optional library ads. Historical status/privacy declarations below are superseded by the current entries.
+> Current macOS status — verified 2026-10-30 (Asia/Riyadh): **1.3.1 (9) is Ready for Distribution**, with `READY_FOR_SALE`, `downloadable=true` and automatic release after approval confirmed by App Store Connect. It remains free, fully on-device and without ads. Earlier status/privacy declarations below are historical. This check does not update iOS status.
+
+## macOS publication — verified 2026-10-30
+
+The existing approved build is downloadable; no manual release request or replacement binary is needed. Chinese and English promotional text emphasizes free on-device AI and reading/Q&A without a network, including flights, off-grid travel and outages. Books must be stored locally; cloud-only files should be downloaded before going offline. Installing/updating the app and user-initiated external links still require a connection. The bundled model needs no online activation or first-run download and does not search for real-time information.
+
+Only the editable promotional text is updated in App Store Connect; the approved descriptions, screenshots, binary, availability and iOS metadata are retained. [App Store listing](https://apps.apple.com/app/id6821368213). GitHub macOS 1.3.2 is separately available with a Developer ID signature and accepted Apple notarization. The Release notes and repository documentation describe the same offline use cases.
 
 ## macOS resubmission — 2026-10-23
 

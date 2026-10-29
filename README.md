@@ -10,7 +10,9 @@
 
 **macOS 1.3.2 离线版**：[下载 Mac 安装包（DMG / ZIP）](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.3.2-macos)。macOS 13.3+，支持 Apple Silicon 与 Intel。内置 Qwen3 0.6B，免费、无广告、无需 API Key，无订阅或问答次数限制。支持选文解释、追问、两种回答依据和可调／悬浮助手；小模型答案可能不准确，不提供全文或周期总结。详情见 [Mac 版说明](macos/README.md)。
 
-**Mac App Store 版**：1.3.1（9）为独立商店构建，同样采用免费无广告的本地 Qwen。审核状态见[提交记录](docs/app-store/readiness.md)。GitHub Release 发布不改变商店送审版本。
+**没有网络，也能阅读和问答。** Mac 版安装完成、书籍已保存到本机后，阅读、选文解释与追问均无需联网。飞机上、无信号的旅途、野外或临时断网时都可使用；无需联网激活或首次下载模型。出发前请把云盘书籍完整下载到 Mac。下载安装、更新和主动打开外部链接需要网络。
+
+**Mac App Store 版**：1.3.1（9）已可分发（2026-10-30 核实），同样采用免费无广告的本地 Qwen。[前往 App Store](https://apps.apple.com/app/id6821368213) · [发布记录](docs/app-store/readiness.md)。它与 GitHub 1.3.2 是独立发行构建。
 
 ## 多服务商与回答依据
 
