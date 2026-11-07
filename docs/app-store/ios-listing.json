@@ -22,8 +22,8 @@
       "whats_new": "Added the developer website to our App Store page. Reading, on-device AI and optional library advertising are unchanged."
     }
   },
-  "status": "iOS 1.1.1 (6) prepared 2026-11-08 for developer-website/app-ads.txt setup. Upload/review submission pending. Approved 1.1.0 (5) remains available.",
-  "build_id": null,
-  "submission_id": null,
+  "status": "iOS 1.1.1 (6) submitted 2026-11-08 at 00:58 Asia/Riyadh; Waiting for Review. Developer website added in both localizations. Approved 1.1.0 (5) remains available; AdMob verification awaits publication.",
+  "build_id": "5fbfd284-9848-4352-b6d1-77a5cafcc414",
+  "submission_id": "7c0f7ef8-72dd-4df5-9306-fa03ab064f67",
   "marketing_url": "https://baoshisun.github.io/"
 }

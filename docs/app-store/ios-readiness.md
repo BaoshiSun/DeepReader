@@ -1,13 +1,15 @@
-> Current status — 2026-11-08: iOS 1.1.0 (5) is available on the App Store. iOS 1.1.1 (6) is being uploaded for the authorized developer-website update. AdMob's store link is corrected; app-ads.txt is publicly hosted, but Google verification still awaits the website link appearing on the public App Store listing.
+> Current status — 2026-11-08: iOS 1.1.0 (5) is available on the App Store. iOS 1.1.1 (6) was submitted at 00:58 Asia/Riyadh and is **Waiting for Review** for the authorized developer-website update. AdMob's store link is corrected; app-ads.txt is publicly hosted, but Google verification still awaits the website link appearing on the public App Store listing.
 
 ## 2026-11-08: developer website update 1.1.1 (6)
 
 - App Store version ID: `6eb45115-54fd-444a-83ac-cafd8ee8ea2e`.
+- App Store Connect API and browser confirmed **Waiting for Review**. [Submission `7c0f7ef8-72dd-4df5-9306-fa03ab064f67`](https://appstoreconnect.apple.com/apps/6821368213/distribution/reviewsubmissions/details/7c0f7ef8-72dd-4df5-9306-fa03ab064f67), build `5fbfd284-9848-4352-b6d1-77a5cafcc414` (VALID). Automatic release after approval is selected; existing ratings are retained.
+- Upload succeeded at 00:46; Apple processing completed before submission at 00:58. Non-blocking Google Mobile Ads/UMP vendor dSYM warnings remain; app and matching llama symbols were included.
 - Marketing URL in both English and Simplified Chinese: `https://baoshisun.github.io/`.
 - The only compiled changes are the version/build values. App source, bundled resources, model and production ad identifiers match approved build 5; package versions stay pinned.
 - All 20 existing simulator regression tests passed on iPhone 17 Pro / iOS 26.3, including actual offline inference, follow-up, history/cancellation, document handling, layouts and ad consent/placement policy.
 - Signed archive, exported IPA metadata, production ad IDs and pinned model SHA-256 were checked. Matching llama dSYM UUID is retained. No new physical-device test is claimed.
-- Existing approved iPhone/iPad screenshots were copied by App Store Connect. The previously supplied October 28 physical-device video is being attached with an explicit earlier-development-build description.
+- Existing approved iPhone/iPad screenshots were copied by App Store Connect. The previously supplied October 28 physical-device video is attached and its delivery state is COMPLETE, with an explicit earlier-development-build description.
 - Local proofs and upload logs: `artifacts/ios-1.1.1-admob/` (ignored by Git).
 
 > Current status — 2026-10-23: iOS 1.1.0 (5) is **Waiting for Review**, submitted at 01:53 Asia/Riyadh. macOS 1.3.1 (9) was separately resubmitted without ads at 02:01 and is also Waiting for Review. Historical records below are superseded by this entry.
