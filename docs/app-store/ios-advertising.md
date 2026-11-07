@@ -5,7 +5,7 @@ The owner requested one book-like native ad row in the library. Reading and Qwen
 ## Configuration
 
 - AdMob account: shengxi (account approval confirmed in its dashboard).
-- iOS app: DeepReader: Read with AI, not yet linked to a public store listing.
+- iOS app: DeepReader: Read with AI, linked on 2026-11-08 to App Store ID `6821368213`. The linked production app ID remains `ca-app-pub-9226197175186931~9369232249`.
 - App ID: `ca-app-pub-9226197175186931~9369232249`.
 - Native unit: Library Native Row, `ca-app-pub-9226197175186931/1421178207`.
 - Media: Image on, Video off. Google-optimized floor / all prices.
@@ -53,8 +53,12 @@ The European message **DeepReader library privacy** is published in AdMob, with 
 - Existing reading screenshots still show the unchanged offline assistant. Google sample advertisements are not presented as production inventory in store screenshots.
 - iOS 1.1.0 (5) is Waiting for Review, submitted at 01:53 Asia/Riyadh. See [readiness](ios-readiness.md) for the build/submission IDs. macOS 1.3.1 (9) was separately resubmitted without ads at 02:01 and is also Waiting for Review; see [Mac readiness](readiness.md).
 
-## After publication
+## AdMob verification — 2026-11-08
 
-Link the public App Store listing in AdMob and complete Google's app-readiness/app-ads.txt requirements. Production filling is not guaranteed before approval. Review the additional UMP translations and real regional consent behavior as coverage expands; only English EEA rendering is currently verified.
+The public store listing is linked to production app ID `9369232249`, with its existing native ad unit retained. A separately created empty duplicate (`7924676648`) had held the store association; its store details were cleared and the app record was retained.
+
+The developer website is [baoshisun.github.io](https://baoshisun.github.io/), hosted from [BaoshiSun/BaoshiSun.github.io](https://github.com/BaoshiSun/BaoshiSun.github.io). Its [app-ads.txt](https://baoshisun.github.io/app-ads.txt) returns HTTP 200 / text/plain with the exact Google-provided publisher line. Website publication does not itself mean AdMob verification passed.
+
+AdMob verification is blocked until the public App Store listing exposes the Developer Website link. Apple rejected updating `marketingUrl` on released 1.1.0; both localizations of the authorized 1.1.1 update now use `https://baoshisun.github.io/`. iOS 1.1.1 (6) was submitted on November 8 at 00:58 Asia/Riyadh and is Waiting for Review. After 1.1.1 is published, request app verification in AdMob and wait for Google's readiness review. Production filling is not guaranteed before approval. Review the additional UMP translations and real regional consent behavior as coverage expands; only English EEA rendering is currently verified.
 
 Official references: [native display](https://developers.google.com/admob/ios/native/advanced), [native policies](https://support.google.com/admob/answer/6329638), [UMP](https://developers.google.com/admob/ios/privacy), [data disclosure](https://developers.google.com/admob/ios/privacy/data-disclosure), [US states and RDP](https://developers.google.com/admob/ios/privacy/us-states), [Apple privacy details](https://developer.apple.com/app-store/app-privacy-details/).

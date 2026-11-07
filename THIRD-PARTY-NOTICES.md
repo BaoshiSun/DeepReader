@@ -45,3 +45,10 @@ Mac 1.2.1 新增 **libmobi 0.12**，Copyright Bartek Fabiszewski and contributor
 ## iOS / iPadOS edition
 
 The independent iOS target uses ZIPFoundation 0.9.20 by Thomas Zoechling and the ZIP Foundation project authors under the MIT License. Source: https://github.com/weichsel/ZIPFoundation/tree/0.9.20 . The full license is preserved in `ios/Resources/ZIPFoundation-LICENSE.txt` and bundled in Settings → Open-source licenses. The iOS target does not compile or link libmobi, libarchive, SumatraPDF or MuPDF. Existing icon attribution above also applies to the iOS icon.
+
+
+## Offline Qwen and llama.cpp (iOS and macOS offline editions)
+
+- Qwen3-0.6B model: Alibaba/Qwen, Apache License 2.0. The bundled Q4_K_M GGUF is pinned to the lmstudio-community repository revision and SHA-256 in `ios/prepare_local_model.py`. Model license: `ios/Resources/Qwen-LICENSE.txt`, also included in app resources.
+- llama.cpp: ggml-org contributors, MIT License. The Apple framework is pinned to release b11624 / source commit af0579c78a07a555d84830d01da7b61cfadbc7ef and verified by SHA-256. License: `ios/Resources/llama-LICENSE.txt`. Source: https://github.com/ggml-org/llama.cpp/tree/af0579c78a07a555d84830d01da7b61cfadbc7ef.
+- The model and engine run locally. Their presence does not integrate an Alibaba/Qwen cloud service. These licenses do not replace the reader or libmobi licenses above.

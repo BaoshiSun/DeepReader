@@ -6,13 +6,17 @@
 
 项目地址：[BaoshiSun/DeepReader](https://github.com/BaoshiSun/DeepReader)。**1.0.0 是首个公开发行版本。**
 
-这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.2.0**；[下载 Windows 便携版](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.0)。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
+这是独立开源项目，不是 SumatraPDF 官方发布。当前版本 **1.2.0**；[下载 Windows 便携版（afa5e8d，追问修正）](https://github.com/BaoshiSun/DeepReader/releases/tag/windows-afa5e8d)。代码采用 **AGPL-3.0-or-later**，上游组件保留原有许可证。
 
-**macOS 1.2.1 测试版**：[下载 Mac 安装包（DMG / ZIP）](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.2.1-macos)。macOS 13+，支持 Apple Silicon 与 Intel，可打开 **PDF、EPUB、TXT、Markdown、MOBI 和 AZW3**，提供可调／悬浮 AI 侧栏、追问、历史、总结、评分、归档和书单。电子书提供章节切换及本地高亮，MOBI/AZW3 无需外部转换软件；暂不支持 DRM 保护文件。构建方法、格式限制、安装及未公证说明见 [Mac 版说明](macos/README.md)。Mac 与 Windows 使用独立配置。
+**macOS 1.3.2 离线版**：[下载 Mac 安装包（DMG / ZIP）](https://github.com/BaoshiSun/DeepReader/releases/tag/v1.3.2-macos)。macOS 13.3+，支持 Apple Silicon 与 Intel。内置 Qwen3 0.6B，免费、无广告、无需 API Key，无订阅或问答次数限制。支持选文解释、追问、两种回答依据和可调／悬浮助手；小模型答案可能不准确，不提供全文或周期总结。详情见 [Mac 版说明](macos/README.md)。
 
-## 多模型开发版（2026-10-12，尚未发布）
+**没有网络，也能阅读和问答。** Mac 版安装完成、书籍已保存到本机后，阅读、选文解释与追问均无需联网。飞机上、无信号的旅途、野外或临时断网时都可使用；无需联网激活或首次下载模型。出发前请把云盘书籍完整下载到 Mac。下载安装、更新和主动打开外部链接需要网络。
 
-### 回答依据切换（开发版）
+**Mac App Store 版**：1.3.1（9）已可分发（2026-10-30 核实），同样采用免费无广告的本地 Qwen。[前往 App Store](https://apps.apple.com/app/id6821368213) · [发布记录](docs/app-store/readiness.md)。它与 GitHub 1.3.2 是独立发行构建。
+
+## 多服务商与回答依据
+
+### 回答依据切换
 
 iOS/iPadOS、macOS、Windows 原生侧栏和旧版 Windows 助手均可在阅读助手内选择“回答依据”：
 
@@ -23,7 +27,7 @@ iOS/iPadOS、macOS、Windows 原生侧栏和旧版 Windows 助手均可在阅读
 
 追问修正：切到通用知识后，要求模型重新判断问题，避免沿用上一次“原文未说明”的答复。量化问题可补充计算方法、条件和明确标注的假设算例；不能编造书中设备的实测值或通用范围。Windows 新追问的回答标题记录该次请求的实际模式，旧记录保留原样。此修正仍需重新构建下载包才能供已安装版本使用；离线测试验证请求与模式传递，不代表实测模型一定遵循指令。
 
-以下多服务商说明适用于 macOS、Windows 原生阅读器和旧版 Windows 助手；当前 iOS 仅使用内置离线 Qwen。桌面源码提供的服务选择：DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter，以及自定义 OpenAI 兼容接口。支持阅读所需的**文字对话**，不表示支持图像生成、视频、语音、工具调用，或每家所有专用 API。
+以下多服务商说明适用于旧 GitHub macOS 联网版、可选的在线开发构建、Windows 原生阅读器和旧版 Windows 助手；当前 GitHub macOS 1.3.2、iOS 和 Mac App Store 版仅使用内置离线 Qwen。桌面源码提供的服务选择：DeepSeek、OpenAI、Claude、Gemini、Qwen、Kimi、GLM、Doubao、MiniMax、Grok、Mistral、OpenRouter，以及自定义 OpenAI 兼容接口。支持阅读所需的**文字对话**，不表示支持图像生成、视频、语音、工具调用，或每家所有专用 API。
 
 在设置中选择服务商 → 选择或填写模型 ID → 核对完整 HTTPS 接口地址 → 填入该服务的 Key → 保存。豆包须填写账户可用的模型 / 推理接入点 ID；自定义接口也须填写模型 ID。模型预设只是起点，可输入新 ID，实际可用性由服务商、账户权限和地区决定。OpenRouter 可接入其提供的其他模型，例如 Llama；DeepReader 不会自动切换服务商或付费线路。
 

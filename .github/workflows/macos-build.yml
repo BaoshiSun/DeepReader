@@ -1,9 +1,9 @@
 name: macOS build and tests
 on:
   push:
-    branches: ['codex/macos-native']
+    branches: ['codex/main', 'codex/macos-native']
   pull_request:
-    paths: ['macos/**', '.github/workflows/macos-build.yml']
+    paths: ['macos/**', 'ios/Sources/LocalQwen.swift', 'ios/prepare_local_model.py', '.github/workflows/macos-build.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,9 +14,12 @@ jobs:
       matrix:
         os: [macos-15, macos-15-intel]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Check public sources
         run: python3 tools/public_release.py --check-tracked
       - name: Check distribution preparation tools offline
@@ -28,9 +31,11 @@ jobs:
       - name: Offline unit and document integration tests
         working-directory: macos
         run: swift test
-      - name: Build universal app and run packaged smoke test
+      - name: Prepare local inference dependencies
+        run: python3 ios/prepare_local_model.py --dependencies-only
+      - name: Build offline universal app and run packaged inference test
         if: matrix.os == 'macos-15'
-        run: bash macos/build.sh
+        run: bash macos/build_offline.sh artifacts/macos-offline
       - name: Validate native App Store archive without signing
         if: matrix.os == 'macos-15'
         run: |
@@ -44,9 +49,8 @@ jobs:
         with:
           name: DeepReader-macOS-universal
           path: |
-            macos/dist/*.zip
-            macos/dist/*.dmg
-            macos/dist/SHA256SUMS.txt
+            artifacts/macos-offline/*.zip
+            artifacts/macos-offline/SHA256SUMS.txt
           if-no-files-found: error
       - name: Keep offline smoke evidence
         if: always() && matrix.os == 'macos-15'
@@ -54,6 +58,7 @@ jobs:
         with:
           name: macOS-smoke-evidence
           path: |
-            macos/dist/smoke/*.png
-            macos/dist/smoke/smoke-result.txt
+            artifacts/macos-offline/smoke/*.png
+            artifacts/macos-offline/smoke/smoke-result.txt
+            artifacts/macos-offline/offline-check.txt
           if-no-files-found: ignore

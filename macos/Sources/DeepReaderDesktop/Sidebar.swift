@@ -294,7 +294,11 @@ struct Sidebar: View {
                 Text(m.t("解释发送选文与附近上下文；全文总结发送提取的全文；周期总结发送该范围的历史记录。只在您点击 AI 操作时发送。", "Lookups send selected text and nearby context. Document summaries send extracted full text; period summaries send that period's records. Data is sent only when you request an AI action.")).font(.caption).foregroundStyle(.secondary)
 #endif
                 Link(m.t("源代码与许可证", "Source and license"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader")!)
-                Link(m.t("隐私政策", "Privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/ios-offline-qwen-store/docs/app-store/privacy-policy.md")!)
+#if OFFLINE_QWEN
+                Link(m.t("隐私政策", "Privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy.md")!)
+#else
+                Link(m.t("隐私政策", "Privacy policy"), destination: URL(string: "https://github.com/BaoshiSun/DeepReader/blob/codex/main/docs/app-store/privacy-policy-legacy.md")!)
+#endif
                 Text("DeepReader for macOS · \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "development") · AGPL-3.0-or-later").font(.caption2).foregroundStyle(.secondary)
             }.padding(3).textFieldStyle(.roundedBorder).disabled(m.busy)
         }

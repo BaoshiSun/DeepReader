@@ -2,7 +2,7 @@
 import AppKit
 import DeepReaderCore
 
-/// Opt-in packaged-build QA. Uses an isolated profile inside the app sandbox.
+/// Opt-in packaged-build QA. Uses an isolated profile, also inside the sandbox for store builds.
 @MainActor enum OfflineCheck {
     static func run(_ controller: ReaderWindow) async throws {
         let model = controller.model
@@ -34,7 +34,7 @@ import DeepReaderCore
         guard model.reader.ebook.ready, model.reader.url?.lastPathComponent == "Reading-Garden.txt" else {
             throw ReaderError("示例未打开。", "Bundled sample did not open. Status: \(model.status); loaded: \(model.reader.url?.lastPathComponent ?? "none"); ready: \(model.reader.ebook.ready)")
         }
-        try "PASS: signed sandbox app loaded bundled model, generated explanation/follow-up, preserved cancellation/history and opened bundled sample.\n".write(to: folder.appendingPathComponent("result.txt"), atomically: true, encoding: .utf8)
+        try "PASS: packaged app loaded bundled model, generated explanation/follow-up, preserved cancellation/history and opened bundled sample.\n".write(to: folder.appendingPathComponent("result.txt"), atomically: true, encoding: .utf8)
     }
     static func wait(_ model: ReaderModel) async throws {
         for _ in 0..<2400 {

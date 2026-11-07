@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Foundation
 
-/// Compiled only into the offline Mac App Store package.
+/// Compiled only into the offline macOS package (GitHub and App Store).
 public final class AIClient: @unchecked Sendable {
     private let modelURL: URL?
     public init(modelURL: URL? = nil) { self.modelURL = modelURL }
