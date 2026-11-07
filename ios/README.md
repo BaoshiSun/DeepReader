@@ -6,7 +6,7 @@ One optional, labelled AdMob native image row can appear in the library. The rea
 No remote AI client, Keychain credential implementation or StoreKit gateway is compiled into iOS.
 The model is bundled, with no first-launch download. Google Mobile Ads and UMP handle optional ads and consent.
 
-Current submission: **1.1.0 (5), Waiting for Review**, submitted 2026-10-23. See the dated [submission record](../docs/app-store/ios-readiness.md)
+Current update: **1.1.1 (6), preparing for submission**, dated 2026-11-08. Approved **1.1.0 (5)** is available on the App Store. See the dated [submission record](../docs/app-store/ios-readiness.md)
 and [advertising configuration](../docs/app-store/ios-advertising.md) for verified status.
 
 ## Build and run
@@ -38,7 +38,7 @@ xcodebuild -project ios/DeepReader.xcodeproj -scheme DeepReaderiOS \
 
 xcodebuild -project ios/DeepReader.xcodeproj -scheme DeepReaderiOS \
   -configuration Release -destination 'generic/platform=iOS' \
-  -archivePath artifacts/ios-free-qwen/DeepReader-1.1.0-5.xcarchive \
+  -archivePath artifacts/ios-free-qwen/DeepReader-1.1.1-6.xcarchive \
   -allowProvisioningUpdates archive
 ```
 
