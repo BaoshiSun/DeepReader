@@ -1,10 +1,10 @@
 # DeepReader 隐私政策 / Privacy Policy
 
-更新日期 / Updated: 2026-10-28。运营者 / Operator: Baoshi Sun。隐私联系 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。
+更新日期 / Updated: 2026-11-08。运营者 / Operator: Baoshi Sun。隐私联系 / Privacy contact: [baoshi.sun@icloud.com](mailto:baoshi.sun@icloud.com)。
 
-本政策适用于 **iOS / iPadOS 1.1.0（构建 5）** 和 **Mac App Store 1.3.1（构建 9）**。是否可下载以 App Store 的实际状态为准。两者均使用随安装包提供的本地 Qwen3 0.6B 模型；iOS 版另有可选的 Google AdMob 书库广告，Mac App Store 版没有广告。旧联网版本及站外下载版适用单独的[其他版本隐私说明](privacy-policy-legacy.md)，不代表本政策所述商店构建的数据处理。
+本政策适用于 **iOS / iPadOS 1.1.0（构建 5）及 1.1.1（构建 6）** 和 **Mac App Store 1.3.1（构建 9）**。是否可下载以 App Store 的实际状态为准。两者均使用随安装包提供的本地 Qwen3 0.6B 模型；iOS 版另有可选的 Google AdMob 书库广告，Mac App Store 版没有广告。旧联网版本及站外下载版适用单独的[其他版本隐私说明](privacy-policy-legacy.md)，不代表本政策所述商店构建的数据处理。
 
-This policy covers **iOS/iPadOS 1.1.0 build 5** and **Mac App Store 1.3.1 build 9**. Availability depends on App Store status. Both bundle Qwen3 0.6B for local AI. The iOS edition separately offers optional Google AdMob library ads; the Mac App Store edition has no ads. Earlier online builds and the separate direct-download edition are described in [other-edition privacy information](privacy-policy-legacy.md); their network behavior does not apply to these store builds.
+This policy covers **iOS/iPadOS 1.1.0 build 5 and 1.1.1 build 6** and **Mac App Store 1.3.1 build 9**. Availability depends on App Store status. Both bundle Qwen3 0.6B for local AI. The iOS edition separately offers optional Google AdMob library ads; the Mac App Store edition has no ads. Earlier online builds and the separate direct-download edition are described in [other-edition privacy information](privacy-policy-legacy.md); their network behavior does not apply to these store builds.
 
 ## 中文
 
